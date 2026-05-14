@@ -107,6 +107,8 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 	} = props;
 	const [hovered, setHovered] = React.useState(false);
 	const [rootInstance, setRootInstance] = React.useState<Frame>();
+	const [overlayFrame, setOverlayFrame] = React.useState<Frame>();
+	const [overlayOrigin, setOverlayOrigin] = React.useState<Vector2>();
 	const tooltipContent = content ?? label;
 	const hasContent = tooltipContent !== undefined;
 	const primitiveTooltipContent = isPrimitiveTooltipContent(tooltipContent) ? tooltipContent : undefined;
@@ -139,6 +141,25 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 
 		setHovered(false);
 	}, [disabled, hasContent]);
+	React.useEffect(() => {
+		if (overlayFrame === undefined) {
+			setOverlayOrigin(undefined);
+			return;
+		}
+
+		const updateOverlayOrigin = () => {
+			setOverlayOrigin(overlayFrame.AbsolutePosition);
+		};
+
+		updateOverlayOrigin();
+		const absolutePositionConnection = overlayFrame.GetPropertyChangedSignal("AbsolutePosition").Connect(updateOverlayOrigin);
+		const ancestryConnection = overlayFrame.AncestryChanged.Connect(updateOverlayOrigin);
+
+		return () => {
+			absolutePositionConnection.Disconnect();
+			ancestryConnection.Disconnect();
+		};
+	}, [overlayFrame]);
 	const overlayLayout = React.useMemo<TooltipOverlayLayout | undefined>(() => {
 		if (triggerOverlayLayout === undefined) {
 			return undefined;
@@ -160,6 +181,9 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 				};
 		}
 	}, [placement, sizeStyles.gap, sizeStyles.tailHeight, triggerOverlayLayout]);
+	const localAnchorPosition = overlayOrigin === undefined || overlayLayout === undefined
+		? undefined
+		: overlayLayout.anchorPosition.sub(overlayOrigin);
 
 	let computedSize: UDim2 | undefined;
 	let computedAutoSize: Enum.AutomaticSize | undefined;
@@ -243,6 +267,7 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 			{isOpen && overlayLayout !== undefined
 				? ReactRoblox.createPortal(
 						<frame
+							ref={setOverlayFrame}
 							BackgroundTransparency={1}
 							BackgroundColor3={theme.colors.background.default}
 							BorderSizePixel={0}
@@ -252,10 +277,11 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 							ZIndex={resolvedOverlayZIndex}
 							{...overlaySlotProps}
 						>
+							{localAnchorPosition !== undefined ? (
 							<frame
 								BackgroundTransparency={1}
 								BorderSizePixel={0}
-								Position={new UDim2(0, overlayLayout.anchorPosition.X, 0, overlayLayout.anchorPosition.Y)}
+								Position={new UDim2(0, localAnchorPosition.X, 0, localAnchorPosition.Y)}
 								AnchorPoint={new Vector2(0.5, 1)}
 								Size={UDim2.fromOffset(0, 0)}
 								ClipsDescendants={false}
@@ -349,6 +375,7 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 									{...tailSlotProps}
 								/>
 							</frame>
+							) : undefined}
 						</frame>,
 						overlayLayout.portalTarget,
 					)

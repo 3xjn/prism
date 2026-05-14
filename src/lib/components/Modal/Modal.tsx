@@ -303,6 +303,10 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 	const resolvedBodyHeight = math.max(0, math.min(bodyContentHeight > 0 ? bodyContentHeight : fallbackBodyHeight, availableBodyHeight));
 	const bodyScrollable = bodyContentHeight > availableBodyHeight + 1;
 	const scrollBarThickness = bodyScrollable ? theme.spacing.xs : 0;
+	const bodyHorizontalOverflow = math.max(
+		0,
+		math.min(resolvePaddingOffset(paddingLeft), resolvePaddingOffset(paddingRight)),
+	);
 
 	let panelSize: UDim2;
 	let panelAutoSize: Enum.AutomaticSize | undefined;
@@ -463,36 +467,45 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 					) : undefined}
 				</frame>
 				) : undefined}
-				<scrollingframe
-				Active={bodyScrollable}
-				AutomaticCanvasSize={Enum.AutomaticSize.Y}
-				BackgroundTransparency={1}
-				BorderSizePixel={0}
-				CanvasSize={UDim2.fromOffset(0, 0)}
-				Position={UDim2.fromOffset(0, 0)}
-				ScrollBarImageColor3={theme.colors.text.disabled}
-				ScrollBarImageTransparency={0.2}
-				ScrollBarThickness={scrollBarThickness}
-				ScrollingDirection={Enum.ScrollingDirection.Y}
-				ScrollingEnabled={bodyScrollable}
-				Selectable={false}
-				Size={new UDim2(1, 0, 0, resolvedBodyHeight)}
-				LayoutOrder={2}
-				ZIndex={bodyZIndex}
-				{...slotProps?.body}
-			>
 				<frame
 					BackgroundTransparency={1}
 					BorderSizePixel={0}
-					Size={new UDim2(1, bodyScrollable ? -scrollBarThickness : 0, 0, 0)}
-					AutomaticSize={Enum.AutomaticSize.Y}
-					ZIndex={bodyContentZIndex}
-					ref={bodyContentRef}
-					{...slotProps?.bodyContent}
+					ClipsDescendants={false}
+					Size={new UDim2(1, 0, 0, resolvedBodyHeight)}
+					LayoutOrder={2}
+					ZIndex={bodyZIndex}
 				>
-					{children}
+					<scrollingframe
+						Active={bodyScrollable}
+						AutomaticCanvasSize={Enum.AutomaticSize.Y}
+						BackgroundTransparency={1}
+						BorderSizePixel={0}
+						CanvasSize={UDim2.fromOffset(0, 0)}
+						Position={UDim2.fromOffset(-bodyHorizontalOverflow, 0)}
+						ScrollBarImageColor3={theme.colors.text.disabled}
+						ScrollBarImageTransparency={0.2}
+						ScrollBarThickness={scrollBarThickness}
+						ScrollingDirection={Enum.ScrollingDirection.Y}
+						ScrollingEnabled={bodyScrollable}
+						Selectable={false}
+						Size={new UDim2(1, bodyHorizontalOverflow * 2, 1, 0)}
+						ZIndex={bodyZIndex}
+						{...slotProps?.body}
+					>
+						<frame
+							BackgroundTransparency={1}
+							BorderSizePixel={0}
+							Size={new UDim2(1, -(bodyHorizontalOverflow * 2 + scrollBarThickness), 0, 0)}
+							Position={UDim2.fromOffset(bodyHorizontalOverflow, 0)}
+							AutomaticSize={Enum.AutomaticSize.Y}
+							ZIndex={bodyContentZIndex}
+							ref={bodyContentRef}
+							{...slotProps?.bodyContent}
+						>
+							{children}
+						</frame>
+					</scrollingframe>
 				</frame>
-				</scrollingframe>
 			</canvasgroup>
 		</frame>
 	);
