@@ -1,0 +1,30 @@
+{
+	"name": "prism-v2",
+	"private": true,
+	"version": "0.0.0",
+	"scripts": {
+		"build": "rbxtsc",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"lint": "eslint src --ext .ts,.tsx",
+		"format": "prettier --check ."
+	},
+	"dependencies": {
+		"@rbxts/react": "17.3.7-ts.1",
+		"@rbxts/react-roblox": "17.3.7-ts.1",
+		"@rbxts/ui-labs": "2.4.2",
+		"roblox-ts": "3.0.0"
+	},
+	"devDependencies": {
+		"@rbxts/compiler-types": "3.0.0-types.0",
+		"@rbxts/fusion": "0.2.0",
+		"@rbxts/iris": "2.3.1-ts.1",
+		"@rbxts/roact": "3.0.1",
+		"@rbxts/types": "1.0.916",
+		"@rbxts/vide": "0.6.1",
+		"@typescript-eslint/parser": "8.58.2",
+		"eslint": "8.57.1",
+		"eslint-plugin-roblox-ts": "1.4.0",
+		"prettier": "3.8.3",
+		"typescript": "5.8.3"
+	}
+}

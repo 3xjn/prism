@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"allowJs": false,
+		"allowSyntheticDefaultImports": true,
+		"baseUrl": "src",
+		"experimentalDecorators": true,
+		"moduleDetection": "force",
+		"jsx": "react",
+		"jsxFactory": "React.createElement",
+		"jsxFragmentFactory": "React.Fragment",
+		"module": "commonjs",
+		"moduleResolution": "Node",
+		"noLib": true,
+		"skipLibCheck": true,
+		"outDir": "out",
+		"rootDir": "src",
+		"paths": {
+			"@prism": ["lib/index"],
+			"@prism/*": ["lib/*"]
+		},
+		"strict": true,
+		"target": "ESNext",
+		"typeRoots": ["node_modules/@rbxts"]
+	},
+	"include": ["src"],
+	"exclude": ["node_modules", "out"]
+}

@@ -1,0 +1,34 @@
+{
+	"name": "Prism",
+	"globIgnorePaths": ["**/package.json", "**/tsconfig.json"],
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"Prism": {
+				"$path": "out/lib"
+			},
+			"rbxts_include": {
+				"$path": "include",
+					"node_modules": {
+						"$className": "Folder",
+						"@rbxts": {
+							"$path": "node_modules/@rbxts"
+						},
+						"@rbxts-js": {
+							"$path": "node_modules/@rbxts-js"
+						}
+					}
+				}
+		},
+		"StarterPlayer": {
+			"StarterPlayerScripts": {
+				"BridgeLuauConsumer": {
+					"$path": "src/playground/BridgeLuauConsumer.client.luau"
+				},
+				"Playground": {
+					"$path": "out/playground"
+				}
+			}
+		}
+	}
+}
