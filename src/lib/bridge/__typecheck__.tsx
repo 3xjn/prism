@@ -22,6 +22,20 @@ const selectTree: PrismLuauNode = {
 	},
 };
 
+const segmentedControlTree: PrismLuauNode = {
+	component: "SegmentedControl",
+	props: {
+		options: [
+			{ value: "solo", label: "Solo" },
+			{ value: "duo", label: "Duo" },
+			{ value: "squad", label: "Squad", disabled: true },
+		],
+		value: "duo",
+		onChange: (_value: string) => undefined,
+		slotProps: { segment: { ZIndex: 3 } },
+	},
+};
+
 const draggableTree: PrismLuauNode = {
 	component: "Draggable",
 	props: {
@@ -51,13 +65,14 @@ function acceptMountFunction(
 ): PrismLuauMountHandle {
 	const handle: PrismLuauMountHandle = mount(parent, tree);
 	handle.update(selectTree);
+	handle.update(segmentedControlTree);
 	handle.update(draggableTree);
 	handle.update(pressableTree);
 	handle.destroy();
 	return handle;
 }
 
-const acceptsBridgeTrees: PrismLuauNode[] = [fragmentTree, selectTree, draggableTree, pressableTree];
+const acceptsBridgeTrees: PrismLuauNode[] = [fragmentTree, selectTree, segmentedControlTree, draggableTree, pressableTree];
 const acceptsMountFunction: (parent: Instance, tree: PrismLuauNode) => PrismLuauMountHandle = mountPrism;
 
 export { acceptMountFunction, acceptsBridgeTrees, acceptsMountFunction };

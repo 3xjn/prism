@@ -15,6 +15,7 @@ import { Input } from "../components/Input";
 import { Modal } from "../components/Modal";
 import { Pressable } from "../components/Pressable";
 import { ScrollArea } from "../components/ScrollArea";
+import { SegmentedControl } from "../components/SegmentedControl";
 import { Select } from "../components/Select";
 import { Slider } from "../components/Slider";
 import { Stack } from "../components/Stack";
@@ -24,6 +25,7 @@ import { Tooltip } from "../components/Tooltip";
 import { ThemeProvider } from "@prism/theme";
 import type { ColorToken, SemanticIntent, ThemeSize, Variant } from "@prism/theme";
 import type { SizeValue, SizeValue2D } from "@prism/utils";
+import type { SegmentedControlOption } from "../components/SegmentedControl";
 import type { SelectOption } from "../components/Select";
 
 declare const __DEV__: boolean;
@@ -431,6 +433,10 @@ function readSelectOptions(props: LuauProps): readonly SelectOption[] {
 	return options;
 }
 
+function readSegmentedControlOptions(props: LuauProps): readonly SegmentedControlOption[] {
+	return readSelectOptions(props);
+}
+
 function readStringArray(props: LuauProps, key: string): readonly string[] | undefined {
 	const value = props[key];
 	if (!typeIs(value, "table")) {
@@ -815,6 +821,29 @@ function renderNode(node: PrismLuauNode, key = "root"): React.ReactElement {
 					layoutOrder={readNumber(props, "layoutOrder")}
 					zIndex={readNumber(props, "zIndex")}
 					maxVisibleOptions={readNumber(props, "maxVisibleOptions")}
+					onChange={readStringCallback(props, "onChange")}
+					slotProps={readSlotProps(props)}
+				/>
+			);
+		case "SegmentedControl":
+			return (
+				<SegmentedControl
+					key={key}
+					options={readSegmentedControlOptions(props)}
+					value={readString(props, "value")}
+					defaultValue={readString(props, "defaultValue")}
+					variant={readVariant(props, "variant")}
+					color={readIntent(props, "color")}
+					size={readThemeSize(props, "size")}
+					disabled={readBoolean(props, "disabled")}
+					fullWidth={readBoolean(props, "fullWidth")}
+					width={readSizeValue(props, "width")}
+					height={readSizeValue(props, "height")}
+					position={readSizeValue2D(props, "position")}
+					anchor={readVector2(props, "anchor")}
+					visible={readBoolean(props, "visible")}
+					layoutOrder={readNumber(props, "layoutOrder")}
+					zIndex={readNumber(props, "zIndex")}
 					onChange={readStringCallback(props, "onChange")}
 					slotProps={readSlotProps(props)}
 				/>
