@@ -1,5 +1,4 @@
 import React from "@rbxts/react";
-import ReactRoblox from "@rbxts/react-roblox";
 
 import { useTheme } from "@prism/theme";
 
@@ -16,8 +15,7 @@ import {
 	resolveThemeSizeSafe,
 	useResolvedStyleProps,
 } from "../_shared/useResolvedStyleProps";
-
-import { useTriggerOverlayLayout } from "../_shared/useTriggerOverlayLayout";
+import { LayerPortal, useOverlayLocalPosition, useTriggerOverlayLayout } from "../_shared/layering";
 
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
@@ -86,7 +84,7 @@ function resolveTooltipVisualStyles(theme: ReturnType<typeof useTheme>): Tooltip
 		textColor: theme.colors.text.primary,
 		tailFillColor: theme.colors.background.surface,
 		tailBorderColor: theme.colors.border.default,
-		tailBorderTransparency: 0.08,
+		tailBorderTransparency: 0.24,
 	};
 }
 
@@ -108,7 +106,6 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 	const [hovered, setHovered] = React.useState(false);
 	const [rootInstance, setRootInstance] = React.useState<Frame>();
 	const [overlayFrame, setOverlayFrame] = React.useState<Frame>();
-	const [overlayOrigin, setOverlayOrigin] = React.useState<Vector2>();
 	const tooltipContent = content ?? label;
 	const hasContent = tooltipContent !== undefined;
 	const primitiveTooltipContent = isPrimitiveTooltipContent(tooltipContent) ? tooltipContent : undefined;
@@ -141,25 +138,6 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 
 		setHovered(false);
 	}, [disabled, hasContent]);
-	React.useEffect(() => {
-		if (overlayFrame === undefined) {
-			setOverlayOrigin(undefined);
-			return;
-		}
-
-		const updateOverlayOrigin = () => {
-			setOverlayOrigin(overlayFrame.AbsolutePosition);
-		};
-
-		updateOverlayOrigin();
-		const absolutePositionConnection = overlayFrame.GetPropertyChangedSignal("AbsolutePosition").Connect(updateOverlayOrigin);
-		const ancestryConnection = overlayFrame.AncestryChanged.Connect(updateOverlayOrigin);
-
-		return () => {
-			absolutePositionConnection.Disconnect();
-			ancestryConnection.Disconnect();
-		};
-	}, [overlayFrame]);
 	const overlayLayout = React.useMemo<TooltipOverlayLayout | undefined>(() => {
 		if (triggerOverlayLayout === undefined) {
 			return undefined;
@@ -181,9 +159,7 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 				};
 		}
 	}, [placement, sizeStyles.gap, sizeStyles.tailHeight, triggerOverlayLayout]);
-	const localAnchorPosition = overlayOrigin === undefined || overlayLayout === undefined
-		? undefined
-		: overlayLayout.anchorPosition.sub(overlayOrigin);
+	const localAnchorPosition = useOverlayLocalPosition(overlayFrame, overlayLayout?.anchorPosition);
 
 	let computedSize: UDim2 | undefined;
 	let computedAutoSize: Enum.AutomaticSize | undefined;
@@ -264,20 +240,20 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 				{renderSizeConstraintDecorator({ constraint: resolvedConstraint, slotProps: slotProps?.sizeConstraint })}
 				{children}
 			</frame>
-			{isOpen && overlayLayout !== undefined
-				? ReactRoblox.createPortal(
-						<frame
-							ref={setOverlayFrame}
-							BackgroundTransparency={1}
-							BackgroundColor3={theme.colors.background.default}
-							BorderSizePixel={0}
-							Size={UDim2.fromScale(1, 1)}
-							Active={false}
-							Selectable={false}
-							ZIndex={resolvedOverlayZIndex}
-							{...overlaySlotProps}
-						>
-							{localAnchorPosition !== undefined ? (
+			{isOpen && overlayLayout !== undefined ? (
+				<LayerPortal target={overlayLayout.portalTarget}>
+					<frame
+						BackgroundTransparency={1}
+						BackgroundColor3={theme.colors.background.default}
+						BorderSizePixel={0}
+						Size={UDim2.fromScale(1, 1)}
+						Active={false}
+						Selectable={false}
+						ZIndex={resolvedOverlayZIndex}
+						{...overlaySlotProps}
+						ref={setOverlayFrame}
+					>
+						{localAnchorPosition !== undefined ? (
 							<frame
 								BackgroundTransparency={1}
 								BorderSizePixel={0}
@@ -375,11 +351,10 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 									{...tailSlotProps}
 								/>
 							</frame>
-							) : undefined}
-						</frame>,
-						overlayLayout.portalTarget,
-					)
-				: undefined}
+						) : undefined}
+						</frame>
+					</LayerPortal>
+			) : undefined}
 		</>
 	);
 });
