@@ -15,6 +15,7 @@ export * from "./components/Progress";
 export * from "./components/CircularProgress";
 export * from "./components/WorldPortal";
 export * from "./components/Switch";
+export * from "./components/SegmentedControl";
 export * from "./components/Select";
 export * from "./components/Modal";
 export * from "./components/Slider";
