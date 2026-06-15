@@ -1,14 +1,13 @@
 import React from "@rbxts/react";
-import ReactRoblox from "@rbxts/react-roblox";
 
 import { useTheme } from "@prism/theme";
 
+import { CaptureOverlay, usePortalTarget } from "../_shared/layering";
 import {
 	mergeSharedStyleProps,
 	resolveUDimSafe,
 	useResolvedStyleProps,
 } from "../_shared/useResolvedStyleProps";
-import { CAPTURE_OVERLAY_Z_INDEX } from "../_shared/overlayLayerPolicy";
 import {
 	pushDecorator,
 	renderCornerDecorator,
@@ -35,7 +34,6 @@ import {
 	incrementZIndex,
 	normalizeSliderValue,
 	resolveAlphaFromPositionX,
-	resolveLayerCollector,
 	resolveSliderRange,
 	resolveTextFontFace,
 	resolveValidStep,
@@ -93,7 +91,7 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 	const [dragging, setDragging] = React.useState(false);
 	const [dragValueOverride, setDragValueOverride] = React.useState<number | undefined>(undefined);
 	const [hitboxInstance, setHitboxInstance] = React.useState<TextButton>();
-	const [portalTarget, setPortalTarget] = React.useState<LayerCollector>();
+	const portalTarget = usePortalTarget(hitboxInstance);
 	const [uncontrolledValue, setUncontrolledValue] = React.useState(() => {
 		const initialRange = resolveSliderRange(min, max);
 		return normalizeSliderValue(value ?? defaultValue ?? initialRange.min, initialRange, resolveValidStep(step));
@@ -158,24 +156,6 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 		dragKindRef.current = undefined;
 		activeTouchRef.current = undefined;
 	}, []);
-
-	React.useEffect(() => {
-		if (hitboxInstance === undefined) {
-			setPortalTarget(undefined);
-			return;
-		}
-
-		const updatePortalTarget = () => {
-			setPortalTarget(resolveLayerCollector(hitboxInstance));
-		};
-
-		updatePortalTarget();
-		const ancestryConnection = hitboxInstance.AncestryChanged.Connect(updatePortalTarget);
-
-		return () => {
-			ancestryConnection.Disconnect();
-		};
-	}, [hitboxInstance]);
 
 	const endDrag = React.useCallback(
 		(emitChangeEnd: boolean) => {
@@ -588,24 +568,7 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 					/>
 				</frame>
 			</frame>
-			{mouseDragCaptureActive && dragCaptureOverlayEvent !== undefined && portalTarget !== undefined
-				? ReactRoblox.createPortal(
-						<textbutton
-							AutoButtonColor={false}
-							Active={true}
-							Selectable={false}
-							BackgroundTransparency={1}
-							BorderSizePixel={0}
-							Size={UDim2.fromScale(1, 1)}
-							Text=""
-							TextTransparency={1}
-							TextStrokeTransparency={1}
-							ZIndex={CAPTURE_OVERLAY_Z_INDEX}
-							Event={dragCaptureOverlayEvent}
-						/>,
-						portalTarget,
-				  )
-				: undefined}
+			<CaptureOverlay active={mouseDragCaptureActive} target={portalTarget} Event={dragCaptureOverlayEvent} />
 		</>
 	);
 });

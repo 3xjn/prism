@@ -105,7 +105,3 @@ export function resolveAlphaFromPositionX(track: GuiObject | undefined, position
 
 	return math.clamp((positionX - track.AbsolutePosition.X) / trackWidth, 0, 1);
 }
-
-export function resolveLayerCollector(instance: Instance | undefined): LayerCollector | undefined {
-	return instance?.FindFirstAncestorWhichIsA("LayerCollector");
-}
