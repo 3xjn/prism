@@ -1,7 +1,7 @@
 export { assignRef, composeEventMaps, isPressInput } from "../_shared/interaction";
 export { incrementZIndex, type GuiZIndex } from "../_shared/overlayLayerPolicy";
 export { resolveTextFontFace } from "../_shared/textFont";
-import type { TriggerOverlayLayout } from "../_shared/useTriggerOverlayLayout";
+import type { TriggerOverlayLayout } from "../_shared/layering";
 
 import type { SelectOption } from "./types";
 

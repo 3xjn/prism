@@ -11,7 +11,7 @@ import {
 	renderSizeConstraintDecorator,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
-import { useTriggerOverlayLayout } from "../_shared/useTriggerOverlayLayout";
+import { useTriggerOverlayLayout } from "../_shared/layering";
 import {
 	mergeSharedStyleProps,
 	resolveUDimSafe,
