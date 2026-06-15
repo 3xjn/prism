@@ -7,7 +7,7 @@ import type { Theme } from "@prism/theme";
 import { getLucideIconAsset } from "../../icons/lucide";
 
 import { Backdrop } from "../Backdrop";
-import { PortalLayer } from "../_shared/PortalLayer";
+import { PortalLayer } from "../_shared/layering";
 import {
 	renderCornerDecorator,
 	renderPaddingDecorator,
