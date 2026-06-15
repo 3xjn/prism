@@ -1,6 +1,6 @@
 {
 	"name": "Prism",
-	"globIgnorePaths": ["**/package.json", "**/tsconfig.json"],
+	"globIgnorePaths": ["**/package.json", "**/tsconfig.json", "**/BridgeLuauConsumer.client.luau"],
 	"tree": {
 		"$className": "DataModel",
 		"ReplicatedStorage": {
@@ -23,7 +23,7 @@
 		"StarterPlayer": {
 			"StarterPlayerScripts": {
 				"BridgeLuauConsumer": {
-					"$path": "src/playground/BridgeLuauConsumer.client.luau"
+					"$path": "src/playground/BridgeLuauConsumer.disabled.client.luau"
 				},
 				"Playground": {
 					"$path": "out/playground"
