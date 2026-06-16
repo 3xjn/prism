@@ -36,6 +36,22 @@ const segmentedControlTree: PrismLuauNode = {
 	},
 };
 
+const stepperInputTree: PrismLuauNode = {
+	component: "StepperInput",
+	props: {
+		value: 4,
+		min: 1,
+		max: 8,
+		step: 1,
+		onChange: (_value: number) => undefined,
+		onChangeEnd: (_value: number) => undefined,
+		disabled: false,
+		readOnly: false,
+		fullWidth: true,
+		slotProps: { rail: { ZIndex: 4 } },
+	},
+};
+
 const draggableTree: PrismLuauNode = {
 	component: "Draggable",
 	props: {
@@ -46,6 +62,20 @@ const draggableTree: PrismLuauNode = {
 		value: ["one", "two"],
 		onReorder: (_value: readonly string[]) => undefined,
 	},
+};
+
+const popoverTree: PrismLuauNode = {
+	component: "Popover",
+	props: {
+		content: "Bridge popover content",
+		placement: "bottom",
+		align: "center",
+		triggerMode: "click",
+		defaultOpened: true,
+		onOpenedChange: (_opened: boolean) => undefined,
+		slotProps: { panel: { ZIndex: 5 } },
+	},
+	children: { component: "Button", props: { label: "Popover trigger" } },
 };
 
 const pressableTree: PrismLuauNode = {
@@ -66,13 +96,15 @@ function acceptMountFunction(
 	const handle: PrismLuauMountHandle = mount(parent, tree);
 	handle.update(selectTree);
 	handle.update(segmentedControlTree);
+	handle.update(stepperInputTree);
 	handle.update(draggableTree);
+	handle.update(popoverTree);
 	handle.update(pressableTree);
 	handle.destroy();
 	return handle;
 }
 
-const acceptsBridgeTrees: PrismLuauNode[] = [fragmentTree, selectTree, segmentedControlTree, draggableTree, pressableTree];
+const acceptsBridgeTrees: PrismLuauNode[] = [fragmentTree, selectTree, segmentedControlTree, stepperInputTree, draggableTree, popoverTree, pressableTree];
 const acceptsMountFunction: (parent: Instance, tree: PrismLuauNode) => PrismLuauMountHandle = mountPrism;
 
 export { acceptMountFunction, acceptsBridgeTrees, acceptsMountFunction };

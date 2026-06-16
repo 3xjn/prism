@@ -13,18 +13,22 @@ import { Icon } from "../components/Icon";
 import { Image } from "../components/Image";
 import { Input } from "../components/Input";
 import { Modal } from "../components/Modal";
+import { Popover } from "../components/Popover";
+import type { PopoverAlign, PopoverPlacement, PopoverTriggerMode } from "../components/Popover";
 import { Pressable } from "../components/Pressable";
 import { ScrollArea } from "../components/ScrollArea";
 import { SegmentedControl } from "../components/SegmentedControl";
 import { Select } from "../components/Select";
 import { Slider } from "../components/Slider";
 import { Stack } from "../components/Stack";
+import { StepperInput } from "../components/StepperInput";
 import { Switch } from "../components/Switch";
 import { Text } from "../components/Text";
 import { Tooltip } from "../components/Tooltip";
 import { ThemeProvider } from "@prism/theme";
 import type { ColorToken, SemanticIntent, ThemeSize, Variant } from "@prism/theme";
 import type { SizeValue, SizeValue2D } from "@prism/utils";
+import type { SharedCursorValue } from "../components/_shared/useResolvedStyleProps";
 import type { SegmentedControlOption } from "../components/SegmentedControl";
 import type { SelectOption } from "../components/Select";
 
@@ -34,7 +38,7 @@ type LuauProps = Record<string, unknown>;
 type BridgeColorValue = ColorToken | Color3;
 type BridgeSizeValue = SizeValue;
 type BridgeSizeValue2D = SizeValue2D;
-type BridgeCursorValue = "default" | "pointer" | `rbxasset://${string}`;
+type BridgeCursorValue = SharedCursorValue;
 
 interface BridgeDraggableItem extends DraggableItem {
 	readonly label: string;
@@ -114,11 +118,26 @@ function readIntent(props: LuauProps, key: string, fallback?: SemanticIntent): S
 
 function readCursor(props: LuauProps, key: string): BridgeCursorValue | undefined {
 	const value = readString(props, key);
-	if (value === "default" || value === "pointer" || string.sub(value ?? "", 1, 11) === "rbxasset://") {
-		return value as BridgeCursorValue;
+	switch (value) {
+		case "default":
+		case "pointer":
+		case "grab":
+		case "grabbing":
+		case "resize-ew":
+		case "resize-ns":
+		case "resize-nesw":
+		case "resize-nwse":
+		case "resize-all":
+		case "split-ew":
+		case "split-ns":
+		case "forbidden":
+		case "wait":
+		case "busy":
+		case "crosshair":
+			return value;
+		default:
+			return value !== undefined && string.sub(value, 1, 11) === "rbxasset://" ? value as `rbxasset://${string}` : undefined;
 	}
-
-	return undefined;
 }
 
 function readDividerOrientation(props: LuauProps): "horizontal" | "vertical" | undefined {
@@ -175,6 +194,43 @@ function readScrollAreaDirection(props: LuauProps): "vertical" | "horizontal" | 
 		case "vertical":
 		case "horizontal":
 		case "both":
+			return value;
+		default:
+			return undefined;
+	}
+}
+
+function readPopoverPlacement(props: LuauProps): PopoverPlacement | undefined {
+	const value = readString(props, "placement");
+	switch (value) {
+		case "top":
+		case "bottom":
+		case "left":
+		case "right":
+			return value;
+		default:
+			return undefined;
+	}
+}
+
+function readPopoverAlign(props: LuauProps): PopoverAlign | undefined {
+	const value = readString(props, "align");
+	switch (value) {
+		case "start":
+		case "center":
+		case "end":
+			return value;
+		default:
+			return undefined;
+	}
+}
+
+function readPopoverTriggerMode(props: LuauProps): PopoverTriggerMode | undefined {
+	const value = readString(props, "triggerMode");
+	switch (value) {
+		case "click":
+		case "hover":
+		case "manual":
 			return value;
 		default:
 			return undefined;
@@ -825,6 +881,34 @@ function renderNode(node: PrismLuauNode, key = "root"): React.ReactElement {
 					slotProps={readSlotProps(props)}
 				/>
 			);
+		case "Popover":
+			return (
+				<Popover
+					key={key}
+					content={readStringOrNumber(props, "content")}
+					placement={readPopoverPlacement(props)}
+					align={readPopoverAlign(props)}
+					triggerMode={readPopoverTriggerMode(props)}
+					disabled={readBoolean(props, "disabled")}
+					opened={readBoolean(props, "opened")}
+					defaultOpened={readBoolean(props, "defaultOpened")}
+					closeOnOutsidePress={readBoolean(props, "closeOnOutsidePress")}
+					gap={readNumber(props, "gap")}
+					offset={readVector2(props, "offset")}
+					width={readSizeValue(props, "width")}
+					height={readSizeValue(props, "height")}
+					position={readSizeValue2D(props, "position")}
+					anchor={readVector2(props, "anchor")}
+					visible={readBoolean(props, "visible")}
+					layoutOrder={readNumber(props, "layoutOrder")}
+					zIndex={readNumber(props, "zIndex")}
+					cursor={readCursor(props, "cursor")}
+					onOpenedChange={readBooleanCallback(props, "onOpenedChange")}
+					slotProps={readSlotProps(props)}
+				>
+					{children}
+				</Popover>
+			);
 		case "SegmentedControl":
 			return (
 				<SegmentedControl
@@ -886,6 +970,32 @@ function renderNode(node: PrismLuauNode, key = "root"): React.ReactElement {
 					disabled={readBoolean(props, "disabled", false)}
 					fullWidth={readBoolean(props, "fullWidth", false)}
 					tooltip={readBoolean(props, "tooltip", false)}
+					width={readSizeValue(props, "width")}
+					height={readSizeValue(props, "height")}
+					position={readSizeValue2D(props, "position")}
+					anchor={readVector2(props, "anchor")}
+					visible={readBoolean(props, "visible")}
+					layoutOrder={readNumber(props, "layoutOrder")}
+					zIndex={readNumber(props, "zIndex")}
+					onChange={readNumberCallback(props, "onChange")}
+					onChangeEnd={readNumberCallback(props, "onChangeEnd")}
+					slotProps={readSlotProps(props)}
+				/>
+			);
+		case "StepperInput":
+			return (
+				<StepperInput
+					key={key}
+					value={readNumber(props, "value")}
+					defaultValue={readNumber(props, "defaultValue")}
+					min={readNumber(props, "min")}
+					max={readNumber(props, "max")}
+					step={readNumber(props, "step")}
+					variant={readVariant(props, "variant")}
+					size={readThemeSize(props, "size")}
+					disabled={readBoolean(props, "disabled")}
+					readOnly={readBoolean(props, "readOnly")}
+					fullWidth={readBoolean(props, "fullWidth")}
 					width={readSizeValue(props, "width")}
 					height={readSizeValue(props, "height")}
 					position={readSizeValue2D(props, "position")}
