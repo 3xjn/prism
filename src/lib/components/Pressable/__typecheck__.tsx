@@ -45,7 +45,7 @@ const acceptsPressableChildren: React.ReactNode = validPressableExamples;
 const acceptsPressableProps: PressableProps[] = validPressableProps;
 const acceptsExportedPressableProps: ExportedPressableProps[] = validExportedPressableProps;
 
-type InvalidPressableCursorAllowed = "crosshair" extends NonNullable<PressableProps["cursor"]> ? true : false;
+type InvalidPressableCursorAllowed = "resize-horizontal" extends NonNullable<PressableProps["cursor"]> ? true : false;
 type RenderStatePressedAllowed = Extract<PressableInteractionState, "pressed"> extends never ? false : true;
 type RenderPropAllowed = ((state: PressableRenderState) => React.ReactNode) extends NonNullable<PressableProps["render"]> ? true : false;
 

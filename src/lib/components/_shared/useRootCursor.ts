@@ -5,8 +5,6 @@ import type { SharedCursorValue } from "./useResolvedStyleProps";
 
 const UserInputService = game.GetService("UserInputService");
 
-const POINTING_HAND_CURSOR = "rbxasset://SystemCursors/PointingHand";
-
 type EventMapLike = Record<string, unknown>;
 
 interface CursorClaim {
@@ -23,7 +21,38 @@ function resolveMouseCursor(cursor: SharedCursorValue | undefined): string | und
 		return undefined;
 	}
 
-	return cursor === "pointer" ? POINTING_HAND_CURSOR : cursor;
+	switch (cursor) {
+		case "pointer":
+			return "rbxasset://SystemCursors/PointingHand";
+		case "grab":
+			return "rbxasset://SystemCursors/OpenHand";
+		case "grabbing":
+			return "rbxasset://SystemCursors/ClosedHand";
+		case "resize-ew":
+			return "rbxasset://SystemCursors/SizeEW";
+		case "resize-ns":
+			return "rbxasset://SystemCursors/SizeNS";
+		case "resize-nesw":
+			return "rbxasset://SystemCursors/SizeNESW";
+		case "resize-nwse":
+			return "rbxasset://SystemCursors/SizeNWSE";
+		case "resize-all":
+			return "rbxasset://SystemCursors/SizeAll";
+		case "split-ew":
+			return "rbxasset://SystemCursors/SplitEW";
+		case "split-ns":
+			return "rbxasset://SystemCursors/SplitNS";
+		case "forbidden":
+			return "rbxasset://SystemCursors/Forbidden";
+		case "wait":
+			return "rbxasset://SystemCursors/Wait";
+		case "busy":
+			return "rbxasset://SystemCursors/Busy";
+		case "crosshair":
+			return "rbxasset://SystemCursors/Cross";
+		default:
+			return cursor;
+	}
 }
 
 function applyActiveMouseCursor(): void {

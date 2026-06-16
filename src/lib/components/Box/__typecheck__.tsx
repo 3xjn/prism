@@ -15,6 +15,9 @@ const validBoxExamples = [
 	<Box key="background" bg="primary.main" />,
 	<Box key="cursor-pointer" cursor="pointer" />,
 	<Box key="cursor-default" cursor="default" />,
+	<Box key="cursor-grab" cursor="grab" />,
+	<Box key="cursor-resize-ew" cursor="resize-ew" />,
+	<Box key="cursor-crosshair" cursor="crosshair" />,
 	<Box key="cursor-raw" cursor="rbxasset://SystemCursors/PointingHand" />,
 	<Box key="stroke" stroke={{ color: "border.strong", thickness: 2 }} />,
 	<Box key="padding" p="md" />,
@@ -30,11 +33,13 @@ const validBoxExamples = [
 const acceptsBoxChildren: React.ReactNode = validBoxExamples;
 
 type InvalidTokenAllowed = AssertFalse<IsAssignable<"invalid.token", NonNullable<BoxProps["bg"]>>>;
-type InvalidCursorAllowed = AssertFalse<IsAssignable<"crosshair", NonNullable<BoxProps["cursor"]>>>;
+type InvalidCursorAllowed = AssertFalse<IsAssignable<"resize-horizontal", NonNullable<BoxProps["cursor"]>>>;
+type NamedCursorAllowed = AssertTrue<IsAssignable<"resize-ew", NonNullable<BoxProps["cursor"]>>>;
 type RawCursorAllowed = AssertTrue<IsAssignable<"rbxasset://SystemCursors/PointingHand", NonNullable<BoxProps["cursor"]>>>;
 
 const invalidToken: InvalidTokenAllowed = false;
 const invalidCursor: InvalidCursorAllowed = false;
+const namedCursor: NamedCursorAllowed = true;
 const rawCursor: RawCursorAllowed = true;
 
-export { acceptsBoxChildren, invalidCursor, invalidToken, rawCursor };
+export { acceptsBoxChildren, invalidCursor, invalidToken, namedCursor, rawCursor };

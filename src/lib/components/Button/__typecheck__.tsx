@@ -69,7 +69,7 @@ const acceptsExportedButtonProps: ExportedButtonProps[] = validExportedButtonPro
 
 type InvalidButtonColorAllowed = "palette.orange.5" extends NonNullable<ButtonProps["color"]> ? true : false;
 type InvalidButtonVariantAllowed = "ghost" extends NonNullable<ButtonProps["variant"]> ? true : false;
-type InvalidButtonCursorAllowed = "crosshair" extends NonNullable<ButtonProps["cursor"]> ? true : false;
+type InvalidButtonCursorAllowed = "resize-horizontal" extends NonNullable<ButtonProps["cursor"]> ? true : false;
 type ReactElementButtonChildAllowed = React.ReactElement extends NonNullable<ButtonProps["children"]> ? true : false;
 type ButtonLabelNumberAllowed = 42 extends NonNullable<ButtonProps["label"]> ? true : false;
 type ExportedButtonStringChildAllowed = "Save" extends NonNullable<ExportedButtonProps["children"]> ? true : false;

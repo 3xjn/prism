@@ -7,7 +7,23 @@ declare const __DEV__: boolean;
 
 export type SharedSpacingValue = ThemeSize | SizeValue;
 
-export type SharedCursorValue = "default" | "pointer" | `rbxasset://${string}`;
+export type SharedCursorValue =
+	| "default"
+	| "pointer"
+	| "grab"
+	| "grabbing"
+	| "resize-ew"
+	| "resize-ns"
+	| "resize-nesw"
+	| "resize-nwse"
+	| "resize-all"
+	| "split-ew"
+	| "split-ns"
+	| "forbidden"
+	| "wait"
+	| "busy"
+	| "crosshair"
+	| `rbxasset://${string}`;
 
 export interface SharedSizeConstraint {
 	readonly min?: Vector2;
