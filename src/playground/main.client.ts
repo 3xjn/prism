@@ -1,29 +1,13 @@
 import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 
-import { SegmentedControlSmokeTest } from "./SegmentedControlSmokeTest";
+import { StepperInputSmokeTest } from "./StepperInputSmokeTest";
 
 const Players = game.GetService("Players");
-const SCREEN_GUI_NAME = "PrismSegmentedControlSmokeTest";
-const STALE_BRIDGE_GUI_NAME = "PrismBridgeLuauSmoke";
+const SCREEN_GUI_NAME = "PrismStepperInputSmokeTest";
 
-const player = Players.LocalPlayer;
-const playerGui = player.WaitForChild("PlayerGui") as PlayerGui;
+const playerGui = Players.LocalPlayer.WaitForChild("PlayerGui") as PlayerGui;
 const existingGui = playerGui.FindFirstChild(SCREEN_GUI_NAME);
-
-const destroyStaleBridgeGui = () => {
-	const staleBridgeGui = playerGui.FindFirstChild(STALE_BRIDGE_GUI_NAME);
-
-	if (staleBridgeGui?.IsA("ScreenGui")) {
-		staleBridgeGui.Destroy();
-	}
-};
-
-destroyStaleBridgeGui();
-task.defer(destroyStaleBridgeGui);
-task.delay(0.25, destroyStaleBridgeGui);
-task.delay(1, destroyStaleBridgeGui);
-task.delay(2, destroyStaleBridgeGui);
 
 if (existingGui?.IsA("ScreenGui")) {
 	existingGui.Destroy();
@@ -38,9 +22,10 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
 screenGui.Parent = playerGui;
 
 const root = ReactRoblox.createRoot(screenGui);
-root.render(React.createElement(SegmentedControlSmokeTest));
+root.render(React.createElement(StepperInputSmokeTest));
 
 let cleanedUp = false;
+let ancestryConnection: RBXScriptConnection | undefined;
 
 const cleanup = () => {
 	if (cleanedUp) {
@@ -50,10 +35,10 @@ const cleanup = () => {
 	cleanedUp = true;
 	root.unmount();
 	screenGui.Destroy();
-	ancestryConnection.Disconnect();
+	ancestryConnection?.Disconnect();
 };
 
-const ancestryConnection = script.AncestryChanged.Connect((_instance, parent) => {
+ancestryConnection = script.AncestryChanged.Connect((_instance, parent) => {
 	if (parent === undefined) {
 		cleanup();
 	}
