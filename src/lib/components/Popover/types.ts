@@ -17,7 +17,7 @@ export interface PopoverSlots {
 	readonly trigger: TextButton;
 	readonly overlay: Frame;
 	readonly outsideCapture: TextButton;
-	readonly panel: Frame;
+	readonly panel: TextButton;
 	readonly panelCorner: UICorner;
 	readonly panelStroke: UIStroke;
 	readonly panelPadding: UIPadding;

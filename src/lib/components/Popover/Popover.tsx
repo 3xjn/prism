@@ -8,6 +8,7 @@ import {
 	renderSizeConstraintDecorator,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
+import { Backdrop } from "../Backdrop";
 import { assignRef, composeEventMaps, isPressInput } from "../_shared/interaction";
 import { LayerPortal, useOverlayLocalPosition, useTriggerOverlayLayout } from "../_shared/layering";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
@@ -46,6 +47,7 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 	const [uncontrolledOpened, setUncontrolledOpened] = React.useState(defaultOpened);
 	const [rootInstance, setRootInstance] = React.useState<Frame>();
 	const [overlayFrame, setOverlayFrame] = React.useState<Frame>();
+	const [panelInstance, setPanelInstance] = React.useState<TextButton>();
 	const pressArmedRef = React.useRef(false);
 	const hasContent = content !== undefined;
 	const isOpen = !disabled && hasContent && (opened ?? uncontrolledOpened);
@@ -133,6 +135,7 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 	const resolvedLabelZIndex = labelSlotProps?.ZIndex ?? incrementZIndex(resolvedContentZIndex, 1);
 	const resolvedLabelFont = labelSlotProps?.Font ?? theme.fontFamily;
 	const resolvedLabelFontFace = resolveTextFontFace(labelSlotProps?.Font, labelSlotProps?.FontFace, theme.fontFamily);
+	const shouldRenderOutsideCapture = closeOnOutsidePress && triggerMode !== "hover";
 
 	const internalTriggerEvent: TriggerEventMap = {
 		MouseEnter: () => {
@@ -170,9 +173,6 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 		triggerSlotProps?.Event === undefined ? props.cursor ?? "pointer" : undefined,
 		disabled || triggerMode === "manual" || !hasContent,
 	);
-	const outsideCaptureEvent: React.InstanceProps<TextButton>["Event"] = {
-		Activated: () => setOpened(false),
-	};
 	const rootRef = React.useCallback(
 		(instance: Frame | undefined) => {
 			setRootInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
@@ -180,6 +180,9 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 		},
 		[ref],
 	);
+	const panelRef = React.useCallback((instance: TextButton | undefined) => {
+		setPanelInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
+	}, []);
 	const computedPosition = resolvedPosition ?? (props.center ? UDim2.fromScale(0.5, 0.5) : undefined);
 
 	return (
@@ -231,29 +234,28 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 						ZIndex={resolvedOverlayZIndex}
 						{...overlaySlotProps}
 					>
-						{closeOnOutsidePress ? (
-							<textbutton
-								AutoButtonColor={false}
-								Active={true}
-								Selectable={false}
-								BackgroundTransparency={1}
-								BorderSizePixel={0}
-								Size={UDim2.fromScale(1, 1)}
-								Text=""
-								TextTransparency={1}
-								TextStrokeTransparency={1}
-								ZIndex={resolvedOutsideCaptureZIndex}
-								Event={outsideCaptureEvent}
-								{...outsideCaptureSlotProps}
+						{shouldRenderOutsideCapture ? (
+							<Backdrop
+								visible
+								opacity={0}
+								active
+								zIndex={resolvedOutsideCaptureZIndex}
+								excludeInstance={panelInstance}
+								onPress={() => setOpened(false)}
+								slotProps={{ root: outsideCaptureSlotProps }}
 							/>
 						) : undefined}
 						{localPanelPosition !== undefined ? (
-							<frame
+							<textbutton
+								AutoButtonColor={false}
 								Active={panelSlotProps?.Active ?? true}
 								Selectable={false}
 								BackgroundColor3={panelSlotProps?.BackgroundColor3 ?? visualStyles.backgroundColor}
 								BackgroundTransparency={panelSlotProps?.BackgroundTransparency ?? 0}
 								BorderSizePixel={0}
+								Text=""
+								TextTransparency={1}
+								TextStrokeTransparency={1}
 								Position={new UDim2(0, localPanelPosition.X, 0, localPanelPosition.Y)}
 								AnchorPoint={panelSlotProps?.AnchorPoint ?? panelPlacement.anchorPoint}
 								Size={panelSlotProps?.Size ?? UDim2.fromOffset(0, 0)}
@@ -261,6 +263,7 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 								ClipsDescendants={panelSlotProps?.ClipsDescendants ?? false}
 								ZIndex={resolvedPanelZIndex}
 								{...panelSlotProps}
+								ref={panelRef}
 							>
 								{renderCornerDecorator({ radius: sizeStyles.radius, slotProps: slotProps?.panelCorner })}
 								{renderStrokeDecorator({
@@ -313,7 +316,7 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 						/>
 					)}
 				</frame>
-							</frame>
+							</textbutton>
 						) : undefined}
 					</frame>
 				</LayerPortal>
