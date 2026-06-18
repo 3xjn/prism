@@ -9,6 +9,7 @@ export * from "./components/Icon";
 export * from "./components/Image";
 export * from "./components/Avatar";
 export * from "./components/Input";
+export * from "./components/KeybindInput";
 export * from "./components/Card";
 export * from "./components/Checkbox";
 export * from "./components/Progress";
