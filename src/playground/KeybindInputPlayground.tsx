@@ -17,6 +17,12 @@ interface MockupKeybindTile {
 	readonly listening?: boolean;
 }
 
+interface MockupTileProps {
+	readonly tile: MockupKeybindTile;
+	readonly rowIndex: number;
+	readonly columnIndex: number;
+}
+
 const MOCKUP_WIDTH = 626;
 const MOCKUP_HEIGHT = 445;
 const TILE_WIDTH = 182;
@@ -92,8 +98,12 @@ function resolveCaptureDevice(device: MockupDevice): KeybindInputProps["captureD
 	return device === "gamepad" ? "gamepad" : "keyboard";
 }
 
-function resolveLabelSlot(tile: MockupKeybindTile): KeybindInputLabelSlotProps | undefined {
+function resolveLabelSlot(tile: MockupKeybindTile, value: Enum.KeyCode): KeybindInputLabelSlotProps | undefined {
 	if (tile.label === undefined) {
+		return undefined;
+	}
+
+	if (tile.device !== "mouse" && value !== tile.value) {
 		return undefined;
 	}
 
@@ -103,8 +113,8 @@ function resolveLabelSlot(tile: MockupKeybindTile): KeybindInputLabelSlotProps |
 	};
 }
 
-function resolveSlotProps(tile: MockupKeybindTile): KeybindInputSlotProps | undefined {
-	const label = resolveLabelSlot(tile);
+function resolveSlotProps(tile: MockupKeybindTile, value: Enum.KeyCode): KeybindInputSlotProps | undefined {
+	const label = resolveLabelSlot(tile, value);
 
 	if (tile.listening) {
 		return {
@@ -122,17 +132,20 @@ function shouldRenderReadOnlyTile(tile: MockupKeybindTile): boolean {
 	return tile.device === "mouse" || tile.listening === true;
 }
 
-function renderMockupTile(tile: MockupKeybindTile, rowIndex: number, columnIndex: number): React.ReactElement {
-	const slotProps = resolveSlotProps(tile);
+function MockupTile({ tile, rowIndex, columnIndex }: MockupTileProps): React.ReactElement {
+	const [value, setValue] = React.useState(tile.value);
+	const slotProps = resolveSlotProps(tile, value);
+	const readOnly = shouldRenderReadOnlyTile(tile);
 
 	return (
 		<KeybindInput
 			key={`mockup-keybind-${rowIndex}-${columnIndex}`}
-			value={tile.value}
+			value={value}
+			onChange={setValue}
 			captureDevice={resolveCaptureDevice(tile.device)}
 			displayDevice={tile.device}
 			clearable={false}
-			readOnly={shouldRenderReadOnlyTile(tile)}
+			readOnly={readOnly}
 			size="lg"
 			variant="outline"
 			color="primary"
@@ -158,7 +171,14 @@ function KeybindInputPlaygroundSurface(): React.ReactElement {
 				Size={UDim2.fromOffset(MOCKUP_WIDTH, MOCKUP_HEIGHT)}
 			>
 				{MOCKUP_ROWS.map((row, rowIndex) =>
-					row.map((tile, columnIndex) => renderMockupTile(tile, rowIndex, columnIndex)),
+					row.map((tile, columnIndex) => (
+						<MockupTile
+							key={`mockup-keybind-${rowIndex}-${columnIndex}`}
+							tile={tile}
+							rowIndex={rowIndex}
+							columnIndex={columnIndex}
+						/>
+					)),
 				)}
 				{[1, 2, 3, 4].map((rowIndex) => (
 					<frame
