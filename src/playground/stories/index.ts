@@ -9,6 +9,7 @@ import "./Icon.story";
 import "./Image.story";
 import "./Avatar.story";
 import "./Input.story";
+import "./KeybindInput.story";
 import "./Card.story";
 import "./Checkbox.story";
 import "./Progress.story";
