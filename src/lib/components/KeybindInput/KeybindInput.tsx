@@ -37,6 +37,7 @@ import type { KeybindCaptureDevice, KeybindDisplayDevice, KeybindInputProps, Key
 const UserInputService = game.GetService("UserInputService");
 const GAMEPAD_KEYCODE_MIN = Enum.KeyCode.ButtonX.Value;
 const GAMEPAD_KEYCODE_MAX = Enum.KeyCode.Thumbstick2Right.Value;
+const DEFAULT_CANCEL_KEY_CODES = [Enum.KeyCode.Escape, Enum.KeyCode.ButtonSelect] as const;
 const SPECIAL_KEY_LABELS = new Map<Enum.KeyCode, string>([
 	[Enum.KeyCode.LeftShift, "Left Shift"],
 	[Enum.KeyCode.RightShift, "Right Shift"],
@@ -65,23 +66,67 @@ const DISPLAY_DEVICE_ICON_NAMES: Readonly<Record<KeybindDisplayDevice, IconName>
 	mouse: "mouse",
 	gamepad: "gamepad-2",
 });
-const GAMEPAD_FACE_BUTTON_COLORS = new Map<Enum.KeyCode, Color3>([
-	[Enum.KeyCode.ButtonA, Color3.fromRGB(67, 190, 70)],
-	[Enum.KeyCode.ButtonB, Color3.fromRGB(255, 40, 62)],
-	[Enum.KeyCode.ButtonX, Color3.fromRGB(16, 137, 224)],
-	[Enum.KeyCode.ButtonY, Color3.fromRGB(255, 197, 22)],
+const GAMEPAD_FACE_BUTTON_BADGES = new Map<string, GamepadBadgeDescriptor>([
+	["ButtonA", { label: "A", backgroundColor: Color3.fromRGB(67, 190, 70), textColor: Color3.fromRGB(245, 249, 255) }],
+	["ButtonB", { label: "B", backgroundColor: Color3.fromRGB(255, 40, 62), textColor: Color3.fromRGB(245, 249, 255) }],
+	["ButtonX", { label: "X", backgroundColor: Color3.fromRGB(16, 137, 224), textColor: Color3.fromRGB(245, 249, 255) }],
+	["ButtonY", { label: "Y", backgroundColor: Color3.fromRGB(255, 197, 22), textColor: Color3.fromRGB(18, 24, 33) }],
+	[
+		"ButtonCross",
+		{ label: "✕", backgroundColor: Color3.fromRGB(30, 112, 229), textColor: Color3.fromRGB(245, 249, 255) },
+	],
+	[
+		"ButtonCircle",
+		{ label: "○", backgroundColor: Color3.fromRGB(232, 38, 68), textColor: Color3.fromRGB(245, 249, 255) },
+	],
+	[
+		"ButtonSquare",
+		{ label: "□", backgroundColor: Color3.fromRGB(218, 65, 151), textColor: Color3.fromRGB(245, 249, 255) },
+	],
+	[
+		"ButtonTriangle",
+		{ label: "△", backgroundColor: Color3.fromRGB(39, 176, 104), textColor: Color3.fromRGB(245, 249, 255) },
+	],
 ]);
-const GAMEPAD_FACE_BUTTON_TEXT_COLORS = new Map<Enum.KeyCode, Color3>([
-	[Enum.KeyCode.ButtonA, Color3.fromRGB(245, 249, 255)],
-	[Enum.KeyCode.ButtonB, Color3.fromRGB(245, 249, 255)],
-	[Enum.KeyCode.ButtonX, Color3.fromRGB(245, 249, 255)],
-	[Enum.KeyCode.ButtonY, Color3.fromRGB(18, 24, 33)],
+const PLAYSTATION_FACE_BUTTON_GLYPH_COLORS = new Map<string, Color3>([
+	["ButtonCross", Color3.fromRGB(30, 112, 229)],
+	["ButtonCircle", Color3.fromRGB(232, 38, 68)],
+	["ButtonSquare", Color3.fromRGB(218, 65, 151)],
+	["ButtonTriangle", Color3.fromRGB(39, 176, 104)],
 ]);
-const GAMEPAD_SHOULDER_BUTTON_LABELS = new Map<Enum.KeyCode, string>([
-	[Enum.KeyCode.ButtonL1, "LB"],
-	[Enum.KeyCode.ButtonR1, "RB"],
-	[Enum.KeyCode.ButtonL2, "LT"],
-	[Enum.KeyCode.ButtonR2, "RT"],
+const GAMEPAD_FACE_BUTTON_FALLBACK_BADGES = new Map<Enum.KeyCode, GamepadBadgeDescriptor>([
+	[
+		Enum.KeyCode.ButtonA,
+		{ label: "A", backgroundColor: Color3.fromRGB(67, 190, 70), textColor: Color3.fromRGB(245, 249, 255) },
+	],
+	[
+		Enum.KeyCode.ButtonB,
+		{ label: "B", backgroundColor: Color3.fromRGB(255, 40, 62), textColor: Color3.fromRGB(245, 249, 255) },
+	],
+	[
+		Enum.KeyCode.ButtonX,
+		{ label: "X", backgroundColor: Color3.fromRGB(16, 137, 224), textColor: Color3.fromRGB(245, 249, 255) },
+	],
+	[
+		Enum.KeyCode.ButtonY,
+		{ label: "Y", backgroundColor: Color3.fromRGB(255, 197, 22), textColor: Color3.fromRGB(18, 24, 33) },
+	],
+]);
+const GAMEPAD_SHOULDER_BUTTON_LABELS = new Map<string, string>([
+	["ButtonL1", "L1"],
+	["ButtonR1", "R1"],
+	["ButtonL2", "L2"],
+	["ButtonR2", "R2"],
+	["ButtonLB", "LB"],
+	["ButtonRB", "RB"],
+	["ButtonLT", "LT"],
+	["ButtonRT", "RT"],
+]);
+const GAMEPAD_SHOULDER_BUTTON_FALLBACK_LABELS = new Map<Enum.KeyCode, string>([
+	[Enum.KeyCode.ButtonL1, "L1"],
+	[Enum.KeyCode.ButtonR1, "R1"],
+	[Enum.KeyCode.ButtonL2, "L2"],
+	[Enum.KeyCode.ButtonR2, "R2"],
 ]);
 
 type TextButtonEventMap = React.InstanceProps<TextButton>["Event"];
@@ -149,6 +194,12 @@ interface GamepadBadgeStyle {
 	readonly size: UDim2;
 	readonly radius: UDim;
 	readonly fontSize: number;
+}
+
+interface GamepadBadgeDescriptor {
+	readonly label: string;
+	readonly backgroundColor: Color3;
+	readonly textColor: Color3;
 }
 
 interface GamepadBadgeRenderState {
@@ -323,6 +374,15 @@ function resolveGamepadGlyphImage(keyCode: Enum.KeyCode): string | undefined {
 	return image === "" ? undefined : image;
 }
 
+function resolveGamepadPlatformName(keyCode: Enum.KeyCode): string {
+	const platformName = UserInputService.GetStringForKeyCode(keyCode);
+	return platformName === "" ? keyCode.Name : platformName;
+}
+
+function shouldPreferNativeGamepadGlyph(platformName: string): boolean {
+	return PLAYSTATION_FACE_BUTTON_GLYPH_COLORS.has(platformName) || GAMEPAD_SHOULDER_BUTTON_LABELS.has(platformName);
+}
+
 function resolveDeviceIconName(
 	captureDevice: KeybindCaptureDevice,
 	displayDevice: KeybindDisplayDevice | undefined,
@@ -340,34 +400,43 @@ function resolveDeviceIconName(
 
 function resolveGamepadFaceBadgeStyle(
 	keyCode: Enum.KeyCode,
+	platformName: string,
 	sizeStyles: KeybindInputSizeStyles,
 ): GamepadBadgeStyle | undefined {
-	const faceButtonColor = GAMEPAD_FACE_BUTTON_COLORS.get(keyCode);
-	if (faceButtonColor === undefined) {
+	const faceButtonBadge =
+		GAMEPAD_FACE_BUTTON_BADGES.get(platformName) ?? GAMEPAD_FACE_BUTTON_FALLBACK_BADGES.get(keyCode);
+	if (faceButtonBadge === undefined) {
 		return undefined;
 	}
 
+	const badgeSize = math.max(16, sizeStyles.gamepadGlyphSize - 3);
+
 	return {
-		label: GAMEPAD_KEY_LABELS.get(keyCode) ?? keyCode.Name,
-		backgroundColor: faceButtonColor,
-		textColor: GAMEPAD_FACE_BUTTON_TEXT_COLORS.get(keyCode) ?? Color3.fromRGB(245, 249, 255),
-		strokeColor: faceButtonColor,
+		label: faceButtonBadge.label,
+		backgroundColor: faceButtonBadge.backgroundColor,
+		textColor: faceButtonBadge.textColor,
+		strokeColor: faceButtonBadge.backgroundColor,
 		strokeTransparency: 1,
 		strokeThickness: 0,
-		size: UDim2.fromOffset(sizeStyles.gamepadGlyphSize, sizeStyles.gamepadGlyphSize),
+		size: UDim2.fromOffset(badgeSize, badgeSize),
 		radius: new UDim(1, 0),
-		fontSize: math.max(12, sizeStyles.fontSize - 2),
+		fontSize: math.max(11, sizeStyles.fontSize - 3),
 	};
 }
 
 function resolveGamepadShoulderBadgeStyle(
 	keyCode: Enum.KeyCode,
+	platformName: string,
 	sizeStyles: KeybindInputSizeStyles,
 ): GamepadBadgeStyle | undefined {
-	const shoulderButtonLabel = GAMEPAD_SHOULDER_BUTTON_LABELS.get(keyCode);
+	const shoulderButtonLabel =
+		GAMEPAD_SHOULDER_BUTTON_LABELS.get(platformName) ?? GAMEPAD_SHOULDER_BUTTON_FALLBACK_LABELS.get(keyCode);
 	if (shoulderButtonLabel === undefined) {
 		return undefined;
 	}
+
+	const badgeHeight = math.max(16, sizeStyles.gamepadGlyphSize - 7);
+	const badgeWidth = badgeHeight + 10;
 
 	return {
 		label: shoulderButtonLabel,
@@ -376,17 +445,21 @@ function resolveGamepadShoulderBadgeStyle(
 		strokeColor: Color3.fromRGB(217, 224, 234),
 		strokeTransparency: 0,
 		strokeThickness: 1,
-		size: UDim2.fromOffset(sizeStyles.gamepadGlyphSize + 5, math.max(18, sizeStyles.gamepadGlyphSize - 5)),
+		size: UDim2.fromOffset(badgeWidth, badgeHeight),
 		radius: new UDim(0, 3),
-		fontSize: math.max(11, sizeStyles.fontSize - 5),
+		fontSize: math.max(10, sizeStyles.fontSize - 6),
 	};
 }
 
 function resolveGamepadBadgeStyle(
 	keyCode: Enum.KeyCode,
+	platformName: string,
 	sizeStyles: KeybindInputSizeStyles,
 ): GamepadBadgeStyle | undefined {
-	return resolveGamepadFaceBadgeStyle(keyCode, sizeStyles) ?? resolveGamepadShoulderBadgeStyle(keyCode, sizeStyles);
+	return (
+		resolveGamepadFaceBadgeStyle(keyCode, platformName, sizeStyles) ??
+		resolveGamepadShoulderBadgeStyle(keyCode, platformName, sizeStyles)
+	);
 }
 
 function GamepadBadge({ state }: { readonly state: GamepadBadgeRenderState }): React.ReactElement {
@@ -455,15 +528,31 @@ function KeybindValueContent({
 	const resolvedLabelFontFace = resolveTextFontFace(labelSlotProps?.Font, labelSlotProps?.FontFace, theme.fontFamily);
 	const resolvedHintFont = hintSlotProps?.Font ?? theme.fontFamily;
 	const resolvedHintFontFace = resolveTextFontFace(hintSlotProps?.Font, hintSlotProps?.FontFace, theme.fontFamily);
-	const gamepadBadge =
-		!contentState.capturing && contentState.hasValue && labelSlotProps?.Text === undefined
-			? resolveGamepadBadgeStyle(contentState.value, sizeStyles)
-			: undefined;
-	const gamepadGlyphImage =
-		gamepadBadge === undefined && !contentState.capturing && contentState.hasValue
+	const gamepadPlatformName = contentState.hasValue ? resolveGamepadPlatformName(contentState.value) : undefined;
+	const playStationGlyphColor =
+		gamepadPlatformName === undefined ? undefined : PLAYSTATION_FACE_BUTTON_GLYPH_COLORS.get(gamepadPlatformName);
+	const shouldUseNativeGamepadGlyph =
+		gamepadPlatformName !== undefined && shouldPreferNativeGamepadGlyph(gamepadPlatformName);
+	const preferredGamepadGlyphImage =
+		shouldUseNativeGamepadGlyph && !contentState.capturing && labelSlotProps?.Text === undefined
 			? resolveGamepadGlyphImage(contentState.value)
 			: undefined;
+	const gamepadBadge =
+		preferredGamepadGlyphImage === undefined &&
+		gamepadPlatformName !== undefined &&
+		!contentState.capturing &&
+		labelSlotProps?.Text === undefined
+			? resolveGamepadBadgeStyle(contentState.value, gamepadPlatformName, sizeStyles)
+			: undefined;
+	const gamepadGlyphImage =
+		preferredGamepadGlyphImage ??
+		(gamepadBadge === undefined && !contentState.capturing && contentState.hasValue
+			? resolveGamepadGlyphImage(contentState.value)
+			: undefined);
 	const shouldRenderGamepadGlyph = gamepadGlyphImage !== undefined && labelSlotProps?.Text === undefined;
+	const gamepadGlyphSize = math.max(14, sizeStyles.gamepadGlyphSize - 4);
+	const gamepadGlyphColor =
+		preferredGamepadGlyphImage === undefined ? colors.labelColor : (playStationGlyphColor ?? colors.labelColor);
 	const shouldRenderHint = contentState.hintText !== "" || hintSlotProps?.Text !== undefined;
 	const labelHeight = shouldRenderHint ? 0.62 : 1;
 	const valueWidthOffset = -(layout.leftTextReserve + layout.rightTextReserve);
@@ -487,9 +576,9 @@ function KeybindValueContent({
 					BorderSizePixel={0}
 					Position={new UDim2(0.5, layout.centeredContentOffset, 0.5, 0)}
 					AnchorPoint={new Vector2(0.5, 0.5)}
-					Size={UDim2.fromOffset(sizeStyles.gamepadGlyphSize, sizeStyles.gamepadGlyphSize)}
+					Size={UDim2.fromOffset(gamepadGlyphSize, gamepadGlyphSize)}
 					Image={gamepadGlyphImage}
-					ImageColor3={gamepadGlyphSlotProps?.ImageColor3 ?? colors.labelColor}
+					ImageColor3={gamepadGlyphSlotProps?.ImageColor3 ?? gamepadGlyphColor}
 					ScaleType={Enum.ScaleType.Fit}
 					ZIndex={zIndexes.gamepadGlyph}
 					{...gamepadGlyphSlotProps}
@@ -667,6 +756,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 		defaultValue = Enum.KeyCode.Unknown,
 		onChange,
 		captureDevice = "both",
+		cancelKeyCodes = DEFAULT_CANCEL_KEY_CODES,
 		allowedKeyCodes,
 		blockedKeyCodes,
 		onCaptureStart,
@@ -686,6 +776,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 	const readOnlyRef = React.useRef(readOnly);
 	const clearableRef = React.useRef(clearable);
 	const captureDeviceRef = React.useRef(captureDevice);
+	const cancelKeyCodesRef = React.useRef<readonly Enum.KeyCode[]>(cancelKeyCodes);
 	const allowedKeyCodesRef = React.useRef(allowedKeyCodes);
 	const blockedKeyCodesRef = React.useRef(blockedKeyCodes);
 	const onChangeRef = React.useRef(onChange);
@@ -729,6 +820,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 		readOnlyRef.current = readOnly;
 		clearableRef.current = clearable;
 		captureDeviceRef.current = captureDevice;
+		cancelKeyCodesRef.current = cancelKeyCodes;
 		allowedKeyCodesRef.current = allowedKeyCodes;
 		blockedKeyCodesRef.current = blockedKeyCodes;
 		onChangeRef.current = onChange;
@@ -739,6 +831,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 	}, [
 		allowedKeyCodes,
 		blockedKeyCodes,
+		cancelKeyCodes,
 		captureDevice,
 		clearable,
 		disabled,
@@ -774,14 +867,28 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 		setCapturingState(false);
 		onCaptureCancelRef.current?.();
 	}, [setCapturingState]);
+	const finishCaptureWithCurrentValue = React.useCallback(() => {
+		if (!capturingRef.current) {
+			return;
+		}
+
+		const currentValue = valueRef.current;
+		setCapturingState(false);
+		onCaptureEndRef.current?.(currentValue);
+	}, [setCapturingState]);
 	const startCapture = React.useCallback(() => {
-		if (disabledRef.current || readOnlyRef.current || capturingRef.current) {
+		if (disabledRef.current || readOnlyRef.current) {
+			return;
+		}
+
+		if (capturingRef.current) {
+			finishCaptureWithCurrentValue();
 			return;
 		}
 
 		setCapturingState(true);
 		onCaptureStartRef.current?.();
-	}, [setCapturingState]);
+	}, [finishCaptureWithCurrentValue, setCapturingState]);
 	const clearValue = React.useCallback(() => {
 		if (disabledRef.current || readOnlyRef.current) {
 			return;
@@ -816,7 +923,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 			}
 
 			const keyCode = input.KeyCode;
-			if (keyCode === Enum.KeyCode.Escape || keyCode === Enum.KeyCode.ButtonB) {
+			if (containsKeyCode(cancelKeyCodesRef.current, keyCode)) {
 				cancelCapture();
 				return;
 			}

@@ -11,6 +11,7 @@ const validKeybindInputProps: KeybindInputProps[] = [
 	{ value: Enum.KeyCode.E, onChange: () => undefined },
 	{ defaultValue: Enum.KeyCode.ButtonA, captureDevice: "gamepad" },
 	{ value: Enum.KeyCode.Unknown, placeholder: "Unbound", clearable: false },
+	{ defaultValue: Enum.KeyCode.ButtonB, captureDevice: "gamepad", cancelKeyCodes: [Enum.KeyCode.ButtonSelect] },
 	{ disabled: true, readOnly: true, fullWidth: true },
 	{ variant: "light", color: "success", size: "lg" },
 	{ displayDevice: "mouse", slotProps: { label: { Text: "Mouse4" } } },

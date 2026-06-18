@@ -52,6 +52,7 @@ export interface KeybindInputProps extends KeybindInputStyleProps {
 	readonly defaultValue?: Enum.KeyCode;
 	readonly onChange?: (value: Enum.KeyCode) => void;
 	readonly captureDevice?: KeybindCaptureDevice;
+	readonly cancelKeyCodes?: readonly Enum.KeyCode[];
 	readonly allowedKeyCodes?: readonly Enum.KeyCode[];
 	readonly blockedKeyCodes?: readonly Enum.KeyCode[];
 	readonly onCaptureStart?: () => void;
