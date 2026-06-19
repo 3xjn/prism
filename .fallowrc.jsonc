@@ -9,6 +9,7 @@
 		"src/lib/utils/index.ts",
 		"src/lib/bridge/index.ts",
 		"src/playground/main.client.ts",
+		"src/playground/*Playground.tsx",
 		"src/playground/*SmokeTest.tsx",
 		"src/playground/stories/index.storybook.ts",
 		"src/playground/stories/index.ts",
