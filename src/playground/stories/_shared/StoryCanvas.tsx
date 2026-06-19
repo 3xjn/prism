@@ -1,7 +1,7 @@
 import React from "@rbxts/react";
 import { useTheme } from "@prism/theme";
 
-export interface StoryCanvasProps {
+interface StoryCanvasProps {
 	readonly children?: React.ReactNode;
 }
 

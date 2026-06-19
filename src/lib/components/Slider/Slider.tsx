@@ -3,6 +3,7 @@ import React from "@rbxts/react";
 import { useTheme } from "@prism/theme";
 
 import { CaptureOverlay, usePortalTarget } from "../_shared/layering";
+import { incrementZIndex, type GuiZIndex } from "../_shared/overlayLayerPolicy";
 import {
 	mergeSharedStyleProps,
 	resolveUDimSafe,
@@ -31,14 +32,12 @@ import {
 } from "../_shared/interaction";
 import {
 	alphaToValue,
-	incrementZIndex,
 	normalizeSliderValue,
 	resolveAlphaFromPositionX,
 	resolveSliderRange,
 	resolveTextFontFace,
 	resolveValidStep,
 	valueToAlpha,
-	type GuiZIndex,
 } from "./utils";
 import { resolveSliderSizeStyles, resolveSliderVisualStyles, type SliderInteractionState } from "./styles";
 import type { SliderProps } from "./types";

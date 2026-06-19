@@ -164,7 +164,7 @@ export function resolveUDimSafe(componentName: string, value: SizeValue, label: 
 	return new UDim(0, 0);
 }
 
-export function resolveUDim2Safe(componentName: string, value: SizeValue2D | undefined, label: string): UDim2 | undefined {
+function resolveUDim2Safe(componentName: string, value: SizeValue2D | undefined, label: string): UDim2 | undefined {
 	if (value === undefined) {
 		return undefined;
 	}

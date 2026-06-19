@@ -3,7 +3,7 @@ import { EnumList } from "@rbxts/ui-labs";
 import { ThemeProvider } from "@prism/theme";
 import type { ThemeOverride } from "@prism/theme";
 
-export type StoryThemeMode = "light" | "dark";
+type StoryThemeMode = "light" | "dark";
 
 export const storyThemeControl = EnumList(
 	{
@@ -82,11 +82,11 @@ const DARK_THEME: ThemeOverride = table.freeze({
 	}),
 });
 
-export function resolveStoryTheme(mode: StoryThemeMode | string): ThemeOverride | undefined {
+function resolveStoryTheme(mode: StoryThemeMode | string): ThemeOverride | undefined {
 	return mode === "dark" ? DARK_THEME : undefined;
 }
 
-export interface StoryThemeProviderProps {
+interface StoryThemeProviderProps {
 	readonly mode: StoryThemeMode | string;
 	readonly children?: React.ReactNode;
 }

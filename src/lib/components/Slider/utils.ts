@@ -1,4 +1,3 @@
-export { incrementZIndex, type GuiZIndex } from "../_shared/overlayLayerPolicy";
 export { resolveTextFontFace } from "../_shared/textFont";
 
 export interface SliderRange {

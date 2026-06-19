@@ -14,7 +14,7 @@ export interface TriggerOverlayLayout {
 	readonly zIndexBase: number;
 }
 
-export interface PortalLayerProps {
+interface PortalLayerProps {
 	readonly children?: React.ReactNode;
 	readonly hostSlotProps?: Partial<React.InstanceProps<Frame>>;
 }
@@ -39,7 +39,7 @@ export interface CaptureOverlayProps {
 	readonly slotProps?: Partial<React.InstanceProps<TextButton>>;
 }
 
-export function resolveLayerCollector(instance: Instance | undefined): LayerCollector | undefined {
+function resolveLayerCollector(instance: Instance | undefined): LayerCollector | undefined {
 	return instance?.FindFirstAncestorWhichIsA("LayerCollector");
 }
 
@@ -142,7 +142,7 @@ export function useTriggerOverlayLayout(
 	return layout;
 }
 
-export function useOverlayOrigin(overlayFrame: GuiObject | undefined): Vector2 | undefined {
+function useOverlayOrigin(overlayFrame: GuiObject | undefined): Vector2 | undefined {
 	const [overlayOrigin, setOverlayOrigin] = React.useState<Vector2>();
 
 	React.useEffect(() => {
@@ -181,7 +181,7 @@ export function LayerPortal({ children, target }: LayerPortalProps): React.React
 	return target !== undefined ? ReactRoblox.createPortal(children, target) : undefined;
 }
 
-export function PortalLayer({ children, hostSlotProps }: PortalLayerProps): React.ReactElement {
+function PortalLayer({ children, hostSlotProps }: PortalLayerProps): React.ReactElement {
 	const [hostInstance, setHostInstance] = React.useState<Frame>();
 	const portalTarget = usePortalTarget(hostInstance);
 

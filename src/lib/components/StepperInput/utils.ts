@@ -4,7 +4,7 @@ export interface StepperInputRange {
 	readonly span?: number;
 }
 
-export function isFiniteNumber(value: number | undefined): value is number {
+function isFiniteNumber(value: number | undefined): value is number {
 	return value !== undefined && value === value && value > -math.huge && value < math.huge;
 }
 
@@ -107,7 +107,7 @@ export function resolveStepperInputRailRange(range: StepperInputRange): StepperI
 	};
 }
 
-export function normalizeStepperInputRailValue(value: number | undefined, range: StepperInputRailRange, step: number): number {
+function normalizeStepperInputRailValue(value: number | undefined, range: StepperInputRailRange, step: number): number {
 	return normalizeStepperInputValue(value, range, step, range.min);
 }
 
