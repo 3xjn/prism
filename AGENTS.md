@@ -12,7 +12,35 @@ bd close <id>         # Complete work
 bd sync               # Sync with git
 ```
 
+## Quality Gates
+
+Run the normal quality gates after code changes:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Use **Fallow** for advisory architecture and dead-code scans:
+
+```bash
+npm run fallow
+npm run fallow:json
+npm run fallow:dead-code
+npm run fallow:dupes
+npm run fallow:health
+```
+
+Fallow is currently warning-first. Treat findings as architecture/debt review input before promoting any rule to a hard gate.
+
 ## Landing the Plane (Session Completion)
+
+## QA Agent Workflow
+
+- After implementing or changing a public Prism component, smoke test, playground mount, or behavior-heavy UI flow, run normal quality gates first, then launch a read-only QA agent review before calling the work complete.
+- The QA agent should verify the user-facing goal, practical interaction coverage, and workflow wiring. Fix any blocking QA findings, re-run quality gates, and only then close the related bead.
+- For visual/gameplay smoke tests, QA must explicitly check that the active `src/playground/main.client.ts` mount matches the component being validated.
 
 **When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
 
@@ -33,8 +61,8 @@ bd sync               # Sync with git
 7. **Hand off** - Provide context for next session
 
 **CRITICAL RULES:**
+
 - Work is NOT complete until `git push` succeeds
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
-
