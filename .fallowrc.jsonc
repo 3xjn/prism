@@ -36,6 +36,15 @@
 		"src/lib/icons/lucide.ts",
 	],
 
+	// Tooling packages are consumed by TypeScript/ESLint/roblox-ts through config and type roots,
+	// not source imports, so dependency graph analysis cannot see them as ordinary imports.
+	"ignoreDependencies": [
+		"@rbxts/compiler-types",
+		"@rbxts/types",
+		"@typescript-eslint/parser",
+		"eslint-plugin-roblox-ts",
+	],
+
 	"rules": {
 		"unused-files": "warn",
 		"unused-exports": "warn",
