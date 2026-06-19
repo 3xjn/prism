@@ -19,6 +19,7 @@ import "./Switch.story";
 import "./SegmentedControl.story";
 import "./StepperInput.story";
 import "./Popover.story";
+import "./Menu.story";
 import "./Select.story";
 import "./Modal.story";
 import "./Tooltip.story";
