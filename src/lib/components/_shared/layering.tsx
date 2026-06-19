@@ -19,6 +19,13 @@ export interface PortalLayerProps {
 	readonly hostSlotProps?: Partial<React.InstanceProps<Frame>>;
 }
 
+export interface ScreenOverlayLayerProps {
+	readonly children?: React.ReactNode;
+	readonly hostSlotProps?: Partial<React.InstanceProps<Frame>>;
+	readonly slotProps?: Partial<React.InstanceProps<Frame>>;
+	readonly zIndex?: React.InstanceProps<Frame>["ZIndex"];
+}
+
 export interface LayerPortalProps {
 	readonly children?: React.ReactNode;
 	readonly target: LayerCollector | undefined;
@@ -190,6 +197,24 @@ export function PortalLayer({ children, hostSlotProps }: PortalLayerProps): Reac
 			/>
 			<LayerPortal target={portalTarget}>{children}</LayerPortal>
 		</>
+	);
+}
+
+export function ScreenOverlayLayer({ children, hostSlotProps, slotProps, zIndex }: ScreenOverlayLayerProps): React.ReactElement {
+	return (
+		<PortalLayer hostSlotProps={hostSlotProps}>
+			<frame
+				BackgroundTransparency={1}
+				BorderSizePixel={0}
+				Size={UDim2.fromScale(1, 1)}
+				Active={false}
+				Selectable={false}
+				ZIndex={zIndex}
+				{...slotProps}
+			>
+				{children}
+			</frame>
+		</PortalLayer>
 	);
 }
 

@@ -7,7 +7,7 @@ import type { Theme } from "@prism/theme";
 import { getLucideIconAsset } from "../../icons/lucide";
 
 import { Backdrop } from "../Backdrop";
-import { PortalLayer } from "../_shared/layering";
+import { ScreenOverlayLayer } from "../_shared/layering";
 import {
 	renderCornerDecorator,
 	renderPaddingDecorator,
@@ -511,42 +511,32 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 	);
 
 	return (
-		<PortalLayer>
+		<ScreenOverlayLayer zIndex={rootOverlayZIndex} slotProps={slotProps?.overlay}>
+			<Backdrop
+				active={opened && closeOnBackdropClick}
+				color={theme.colors.text.primary}
+				opacity={animated.backdropOpacity}
+				cursor={mergedStyleProps.cursor ?? "pointer"}
+				zIndex={backdropZIndex}
+				excludeInstance={panelInstance}
+				onPress={closeOnBackdropClick ? onClose : undefined}
+				slotProps={{ root: slotProps?.backdrop }}
+			/>
 			<frame
 				BackgroundTransparency={1}
 				BorderSizePixel={0}
-				Size={UDim2.fromScale(1, 1)}
+				Position={UDim2.fromOffset(sizeStyles.overlayPadding, sizeStyles.overlayPadding)}
+				Size={new UDim2(1, -(sizeStyles.overlayPadding * 2), 1, -(sizeStyles.overlayPadding * 2))}
+				ClipsDescendants={false}
 				Active={false}
 				Selectable={false}
-				ZIndex={rootOverlayZIndex}
-				{...slotProps?.overlay}
+				ZIndex={contentLayerZIndex}
+				ref={contentLayerRef}
+				{...slotProps?.contentLayer}
 			>
-				<Backdrop
-					active={opened && closeOnBackdropClick}
-					color={theme.colors.text.primary}
-					opacity={animated.backdropOpacity}
-					cursor={mergedStyleProps.cursor ?? "pointer"}
-					zIndex={backdropZIndex}
-					excludeInstance={panelInstance}
-					onPress={closeOnBackdropClick ? onClose : undefined}
-					slotProps={{ root: slotProps?.backdrop }}
-				/>
-				<frame
-					BackgroundTransparency={1}
-					BorderSizePixel={0}
-					Position={UDim2.fromOffset(sizeStyles.overlayPadding, sizeStyles.overlayPadding)}
-					Size={new UDim2(1, -(sizeStyles.overlayPadding * 2), 1, -(sizeStyles.overlayPadding * 2))}
-					ClipsDescendants={false}
-					Active={false}
-					Selectable={false}
-					ZIndex={contentLayerZIndex}
-					ref={contentLayerRef}
-					{...slotProps?.contentLayer}
-				>
-					{panelElement}
-				</frame>
+				{panelElement}
 			</frame>
-		</PortalLayer>
+		</ScreenOverlayLayer>
 	);
 });
 
