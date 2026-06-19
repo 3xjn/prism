@@ -1,0 +1,12 @@
+node_modules/
+out/
+include/
+.git/
+.idea/
+.sisyphus/
+.beads/
+.research/
+coverage/
+*.rbxl
+*.rbxlx
+src/lib/icons/lucide.ts

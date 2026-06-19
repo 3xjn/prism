@@ -4,6 +4,12 @@
 	"version": "0.0.0",
 	"scripts": {
 		"build": "rbxtsc",
+		"fallow": "fallow --format human",
+		"fallow:json": "fallow --format json --quiet",
+		"fallow:dead-code": "fallow dead-code --format human",
+		"fallow:dupes": "fallow dupes --format human",
+		"fallow:health": "fallow health --score --hotspots --targets --format human",
+		"fallow:audit": "fallow audit --base origin/master --format human",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
 		"lint": "eslint src --ext .ts,.tsx",
 		"format": "prettier --check ."
@@ -24,6 +30,7 @@
 		"@typescript-eslint/parser": "8.58.2",
 		"eslint": "8.57.1",
 		"eslint-plugin-roblox-ts": "1.4.0",
+		"fallow": "^2.98.0",
 		"prettier": "3.8.3",
 		"typescript": "5.8.3"
 	}

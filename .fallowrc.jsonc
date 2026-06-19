@@ -1,0 +1,79 @@
+{
+	"$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+
+	// Prism is a public rbxts-react library, so the public package seams are explicit entries.
+	"entry": [
+		"src/lib/index.ts",
+		"src/lib/theme/index.ts",
+		"src/lib/motion/index.ts",
+		"src/lib/utils/index.ts",
+		"src/lib/bridge/index.ts",
+		"src/playground/main.client.ts",
+		"src/playground/*SmokeTest.tsx",
+		"src/playground/stories/index.storybook.ts",
+		"src/playground/stories/index.ts",
+		"scripts/**/*.cjs",
+	],
+
+	"ignorePatterns": [
+		"node_modules/**",
+		"out/**",
+		"include/**",
+		".git/**",
+		".idea/**",
+		".sisyphus/**",
+		".beads/**",
+		".research/**",
+		"coverage/**",
+		"package-lock.json",
+		"*.rbxl",
+		"*.rbxlx",
+		"src/**/*.disabled.*",
+		"src/**/__typecheck__.tsx",
+		"src/lib/testing/typeContracts.ts",
+		"src/lib/utils/__test__.ts",
+		"src/lib/icons/lucide.ts",
+	],
+
+	"rules": {
+		"unused-files": "warn",
+		"unused-exports": "warn",
+		"unused-types": "warn",
+		"unused-dependencies": "warn",
+		"unused-dev-dependencies": "warn",
+		"unused-optional-dependencies": "warn",
+		"unused-enum-members": "warn",
+		"unused-class-members": "warn",
+		"unresolved-imports": "warn",
+		"unlisted-dependencies": "warn",
+		"duplicate-exports": "warn",
+		"circular-dependencies": "warn",
+		"re-export-cycle": "warn",
+		"boundary-violation": "warn",
+		"type-only-dependencies": "warn",
+		"test-only-dependencies": "warn",
+		"stale-suppressions": "warn",
+		"private-type-leaks": "off",
+	},
+
+	"duplicates": {
+		"ignoreImports": true,
+		"ignore": ["src/**/*.story.tsx", "src/**/__typecheck__.tsx", "src/lib/icons/lucide.ts"],
+		"mode": "mild",
+		"minTokens": 50,
+		"minLines": 5,
+		"threshold": 0,
+	},
+
+	"health": {
+		"maxCyclomatic": 20,
+		"maxCognitive": 15,
+		"maxCrap": 30,
+	},
+
+	"audit": {
+		"gate": "new-only",
+	},
+
+	"production": false,
+}
