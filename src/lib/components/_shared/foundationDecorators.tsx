@@ -18,6 +18,26 @@ export interface PaddingDecoratorOptions {
 	readonly slotProps?: PaddingSlotProps;
 }
 
+export interface InsetPaddingDecoratorOptions {
+	readonly keyName?: string;
+	readonly enabled: boolean;
+	readonly paddingX: number;
+	readonly paddingY: number;
+	readonly slotProps?: PaddingSlotProps;
+}
+
+export interface OverlayTextLabelOptions {
+	readonly text: string | number | undefined;
+	readonly textColor: Color3;
+	readonly textSize: number;
+	readonly font: React.InstanceProps<TextLabel>["Font"];
+	readonly fontFace: React.InstanceProps<TextLabel>["FontFace"];
+	readonly lineHeight: number;
+	readonly textXAlignment: React.InstanceProps<TextLabel>["TextXAlignment"];
+	readonly zIndex?: React.InstanceProps<TextLabel>["ZIndex"];
+	readonly slotProps?: Partial<React.InstanceProps<TextLabel>>;
+}
+
 export interface SizeConstraintDecoratorOptions {
 	readonly keyName?: string;
 	readonly constraint?: SharedSizeConstraint;
@@ -58,6 +78,45 @@ export function renderPaddingDecorator(options: PaddingDecoratorOptions): React.
 			PaddingRight={options.paddingRight}
 			PaddingBottom={options.paddingBottom}
 			PaddingLeft={options.paddingLeft}
+			{...options.slotProps}
+		/>
+	);
+}
+
+export function renderInsetPaddingDecorator(options: InsetPaddingDecoratorOptions): React.ReactElement | undefined {
+	return renderPaddingDecorator({
+		keyName: options.keyName,
+		enabled: options.enabled,
+		paddingTop: new UDim(0, options.paddingY),
+		paddingRight: new UDim(0, options.paddingX),
+		paddingBottom: new UDim(0, options.paddingY),
+		paddingLeft: new UDim(0, options.paddingX),
+		slotProps: options.slotProps,
+	});
+}
+
+export function renderOverlayTextLabel(options: OverlayTextLabelOptions): React.ReactElement {
+	return (
+		<textlabel
+			AutomaticSize={Enum.AutomaticSize.XY}
+			BackgroundTransparency={1}
+			BorderSizePixel={0}
+			Size={UDim2.fromOffset(0, 0)}
+			Text={options.slotProps?.Text ?? tostring(options.text)}
+			TextColor3={options.slotProps?.TextColor3 ?? options.textColor}
+			TextTransparency={options.slotProps?.TextTransparency ?? 0}
+			TextStrokeTransparency={options.slotProps?.TextStrokeTransparency ?? 1}
+			TextSize={options.slotProps?.TextSize ?? options.textSize}
+			Font={options.font}
+			FontFace={options.fontFace}
+			LineHeight={options.slotProps?.LineHeight ?? options.lineHeight}
+			TextWrapped={options.slotProps?.TextWrapped ?? false}
+			TextTruncate={options.slotProps?.TextTruncate ?? Enum.TextTruncate.None}
+			TextXAlignment={options.slotProps?.TextXAlignment ?? options.textXAlignment}
+			TextYAlignment={options.slotProps?.TextYAlignment ?? Enum.TextYAlignment.Center}
+			TextScaled={options.slotProps?.TextScaled ?? false}
+			RichText={options.slotProps?.RichText ?? false}
+			ZIndex={options.zIndex}
 			{...options.slotProps}
 		/>
 	);

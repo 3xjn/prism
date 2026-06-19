@@ -1,10 +1,10 @@
 import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 
-import { TabsSmokeTest } from "./TabsSmokeTest";
+import { OverlaySmokeTest } from "./OverlaySmokeTest";
 
 const Players = game.GetService("Players");
-const SCREEN_GUI_NAME = "PrismTabsSmokeTest";
+const SCREEN_GUI_NAME = "PrismOverlaySmokeTest";
 
 const playerGui = Players.LocalPlayer.WaitForChild("PlayerGui") as PlayerGui;
 const existingGui = playerGui.FindFirstChild(SCREEN_GUI_NAME);
@@ -22,7 +22,7 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
 screenGui.Parent = playerGui;
 
 const root = ReactRoblox.createRoot(screenGui);
-root.render(React.createElement(TabsSmokeTest));
+root.render(React.createElement(OverlaySmokeTest));
 
 let cleanedUp = false;
 let ancestryConnection: RBXScriptConnection | undefined;

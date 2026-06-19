@@ -156,7 +156,9 @@ function useOverlayOrigin(overlayFrame: GuiObject | undefined): Vector2 | undefi
 		};
 
 		updateOverlayOrigin();
-		const absolutePositionConnection = overlayFrame.GetPropertyChangedSignal("AbsolutePosition").Connect(updateOverlayOrigin);
+		const absolutePositionConnection = overlayFrame
+			.GetPropertyChangedSignal("AbsolutePosition")
+			.Connect(updateOverlayOrigin);
 		const ancestryConnection = overlayFrame.AncestryChanged.Connect(updateOverlayOrigin);
 
 		return () => {
@@ -174,7 +176,9 @@ export function useOverlayLocalPosition(
 ): Vector2 | undefined {
 	const overlayOrigin = useOverlayOrigin(overlayFrame);
 
-	return absolutePosition !== undefined && overlayOrigin !== undefined ? absolutePosition.sub(overlayOrigin) : undefined;
+	return absolutePosition !== undefined && overlayOrigin !== undefined
+		? absolutePosition.sub(overlayOrigin)
+		: undefined;
 }
 
 export function LayerPortal({ children, target }: LayerPortalProps): React.ReactElement | undefined {
@@ -200,7 +204,12 @@ function PortalLayer({ children, hostSlotProps }: PortalLayerProps): React.React
 	);
 }
 
-export function ScreenOverlayLayer({ children, hostSlotProps, slotProps, zIndex }: ScreenOverlayLayerProps): React.ReactElement {
+export function ScreenOverlayLayer({
+	children,
+	hostSlotProps,
+	slotProps,
+	zIndex,
+}: ScreenOverlayLayerProps): React.ReactElement {
 	return (
 		<PortalLayer hostSlotProps={hostSlotProps}>
 			<frame
@@ -218,7 +227,13 @@ export function ScreenOverlayLayer({ children, hostSlotProps, slotProps, zIndex 
 	);
 }
 
-export function CaptureOverlay({ active, target, Event, zIndex = CAPTURE_OVERLAY_Z_INDEX, slotProps }: CaptureOverlayProps): React.ReactElement | undefined {
+export function CaptureOverlay({
+	active,
+	target,
+	Event,
+	zIndex = CAPTURE_OVERLAY_Z_INDEX,
+	slotProps,
+}: CaptureOverlayProps): React.ReactElement | undefined {
 	if (!active || Event === undefined) {
 		return undefined;
 	}

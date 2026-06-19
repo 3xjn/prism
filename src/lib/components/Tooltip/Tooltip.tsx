@@ -2,23 +2,17 @@ import React from "@rbxts/react";
 
 import { useTheme } from "@prism/theme";
 
-import {
-	renderCornerDecorator,
-	renderPaddingDecorator,
-	renderSizeConstraintDecorator,
-	renderStrokeDecorator,
-} from "../_shared/foundationDecorators";
+import { renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
+import { resolveFrameSizeProps } from "../_shared/frameSize";
 import { assignRef, composeEventMaps } from "../_shared/interaction";
+import { TriggerOverlayLayer } from "../_shared/TriggerOverlayLayer";
+import type { TriggerOverlayLayout } from "../_shared/layering";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
-import { resolveTextFontFace } from "../_shared/textFont";
-import {
-	resolveThemeSizeSafe,
-	useResolvedStyleProps,
-} from "../_shared/useResolvedStyleProps";
-import { LayerPortal, useOverlayLocalPosition, useTriggerOverlayLayout } from "../_shared/layering";
+import { resolveThemeSizeSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
+import { TooltipOverlayBubble } from "./TooltipOverlayBubble";
 import type { TooltipPlacement, TooltipProps } from "./types";
 
 const DEFAULT_TOOLTIP_TAIL_IMAGE = "rbxassetid://10983945016";
@@ -52,12 +46,6 @@ interface TooltipVisualStyles {
 	readonly tailFillColor: Color3;
 	readonly tailBorderColor: Color3;
 	readonly tailBorderTransparency: number;
-}
-
-interface TooltipOverlayLayout {
-	readonly portalTarget: LayerCollector;
-	readonly anchorPosition: Vector2;
-	readonly zIndexBase: number;
 }
 
 type TooltipComponent = ((props: TooltipProps) => React.ReactElement) & React.ForwardRefExoticComponent<TooltipProps>;
@@ -105,31 +93,20 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 	} = props;
 	const [hovered, setHovered] = React.useState(false);
 	const [rootInstance, setRootInstance] = React.useState<Frame>();
-	const [overlayFrame, setOverlayFrame] = React.useState<Frame>();
 	const tooltipContent = content ?? label;
 	const hasContent = tooltipContent !== undefined;
 	const primitiveTooltipContent = isPrimitiveTooltipContent(tooltipContent) ? tooltipContent : undefined;
-	const richTooltipContent = tooltipContent !== undefined && !isPrimitiveTooltipContent(tooltipContent) ? tooltipContent : undefined;
+	const richTooltipContent =
+		tooltipContent !== undefined && !isPrimitiveTooltipContent(tooltipContent) ? tooltipContent : undefined;
 	const isOpen = !disabled && hasContent && (opened ?? hovered);
 	const sizeStyles = resolveTooltipSizeStyles(theme, props.gap);
 	const visualStyles = resolveTooltipVisualStyles(theme);
-	const {
-		resolvedWidth,
-		resolvedHeight,
-		resolvedSize,
-		resolvedPosition,
-		resolvedAnchor,
-		resolvedConstraint,
-	} = useResolvedStyleProps("tooltip", props);
+	const { resolvedWidth, resolvedHeight, resolvedSize, resolvedPosition, resolvedAnchor, resolvedConstraint } =
+		useResolvedStyleProps("tooltip", props);
 	const rootSlotProps = slotProps?.root;
 	const overlaySlotProps = slotProps?.overlay;
-	const bubbleSlotProps = slotProps?.bubble;
-	const labelSlotProps = slotProps?.label;
-	const tailSlotProps = slotProps?.tail;
-	const tailBorderSlotProps = slotProps?.tailBorder;
 	const defaultTailRotation = placement === "top" ? TOP_PLACEMENT_TAIL_ROTATION : 0;
 	const defaultTailAttachmentOffsetY = placement === "top" ? TOP_PLACEMENT_TAIL_ATTACHMENT_OFFSET_Y : 0;
-	const triggerOverlayLayout = useTriggerOverlayLayout(rootInstance, isOpen);
 
 	React.useEffect(() => {
 		if (!disabled && hasContent) {
@@ -138,53 +115,34 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 
 		setHovered(false);
 	}, [disabled, hasContent]);
-	const overlayLayout = React.useMemo<TooltipOverlayLayout | undefined>(() => {
-		if (triggerOverlayLayout === undefined) {
-			return undefined;
-		}
+	const resolveTooltipPlacement = React.useCallback(
+		(layout: TriggerOverlayLayout) => {
+			const {
+				bounds: { position, size },
+			} = layout;
+			const centerX = position.X + size.X * 0.5;
 
-		const {
-			portalTarget,
-			bounds: { position, size },
-		} = triggerOverlayLayout;
-		const centerX = position.X + size.X * 0.5;
+			switch (placement) {
+				case "top":
+				default:
+					return {
+						anchorPosition: new Vector2(centerX, position.Y - (sizeStyles.tailHeight + sizeStyles.gap)),
+					};
+			}
+		},
+		[placement, sizeStyles.gap, sizeStyles.tailHeight],
+	);
 
-		switch (placement) {
-			case "top":
-			default:
-				return {
-					portalTarget,
-					zIndexBase: triggerOverlayLayout.zIndexBase,
-					anchorPosition: new Vector2(centerX, position.Y - (sizeStyles.tailHeight + sizeStyles.gap)),
-				};
-		}
-	}, [placement, sizeStyles.gap, sizeStyles.tailHeight, triggerOverlayLayout]);
-	const localAnchorPosition = useOverlayLocalPosition(overlayFrame, overlayLayout?.anchorPosition);
-
-	let computedSize: UDim2 | undefined;
-	let computedAutoSize: Enum.AutomaticSize | undefined;
-	if (resolvedSize !== undefined) {
-		computedSize = resolvedSize;
-	} else if (resolvedWidth !== undefined && resolvedHeight !== undefined) {
-		computedSize = new UDim2(resolvedWidth, resolvedHeight);
-	} else if (resolvedWidth !== undefined) {
-		computedSize = new UDim2(resolvedWidth, new UDim(0, 0));
-		computedAutoSize = Enum.AutomaticSize.Y;
-	} else if (resolvedHeight !== undefined) {
-		computedSize = new UDim2(new UDim(0, 0), resolvedHeight);
-		computedAutoSize = Enum.AutomaticSize.X;
-	} else {
-		computedSize = UDim2.fromOffset(0, 0);
-		computedAutoSize = Enum.AutomaticSize.XY;
-	}
+	const rootSizeProps = resolveFrameSizeProps(resolvedSize, resolvedWidth, resolvedHeight);
 
 	const resolvedRootZIndex = rootSlotProps?.ZIndex ?? props.zIndex;
-	const resolvedOverlayZIndex = overlaySlotProps?.ZIndex ?? incrementZIndex(resolvedRootZIndex ?? overlayLayout?.zIndexBase, 1);
-	const resolvedBubbleZIndex = bubbleSlotProps?.ZIndex ?? incrementZIndex(resolvedOverlayZIndex, 1);
-	const resolvedTailBorderZIndex = tailBorderSlotProps?.ZIndex ?? incrementZIndex(resolvedBubbleZIndex, 1);
-	const resolvedTailZIndex = tailSlotProps?.ZIndex ?? incrementZIndex(resolvedTailBorderZIndex, 1);
-	const resolvedLabelZIndex = labelSlotProps?.ZIndex ?? incrementZIndex(resolvedTailZIndex, 1);
- 
+	const resolveOverlayZIndex = React.useCallback(
+		(layout: TriggerOverlayLayout) => {
+			return incrementZIndex(resolvedRootZIndex ?? layout.zIndexBase, 1);
+		},
+		[resolvedRootZIndex],
+	);
+
 	const internalEvent: FrameEventMap = {
 		MouseEnter: () => {
 			if (disabled || opened !== undefined || !hasContent) {
@@ -206,8 +164,6 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 		rootSlotProps?.Event === undefined ? props.cursor : undefined,
 		disabled,
 	);
-	const resolvedLabelFont = labelSlotProps?.Font ?? theme.fontFamily;
-	const resolvedLabelFontFace = resolveTextFontFace(labelSlotProps?.Font, labelSlotProps?.FontFace, theme.fontFamily);
 	const computedPosition = resolvedPosition ?? (props.center ? UDim2.fromScale(0.5, 0.5) : undefined);
 	const rootInstanceProps: Partial<React.InstanceProps<Frame>> = {
 		Active: !disabled,
@@ -215,8 +171,8 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 		BackgroundTransparency: 1,
 		BackgroundColor3: theme.colors.background.default,
 		BorderSizePixel: 0,
-		Size: computedSize,
-		AutomaticSize: computedAutoSize,
+		Size: rootSizeProps.size,
+		AutomaticSize: rootSizeProps.automaticSize,
 		Position: computedPosition,
 		AnchorPoint: resolvedAnchor,
 		ClipsDescendants: props.clip,
@@ -240,121 +196,32 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 				{renderSizeConstraintDecorator({ constraint: resolvedConstraint, slotProps: slotProps?.sizeConstraint })}
 				{children}
 			</frame>
-			{isOpen && overlayLayout !== undefined ? (
-				<LayerPortal target={overlayLayout.portalTarget}>
-					<frame
-						BackgroundTransparency={1}
-						BackgroundColor3={theme.colors.background.default}
-						BorderSizePixel={0}
-						Size={UDim2.fromScale(1, 1)}
-						Active={false}
-						Selectable={false}
-						ZIndex={resolvedOverlayZIndex}
-						{...overlaySlotProps}
-						ref={setOverlayFrame}
-					>
-						{localAnchorPosition !== undefined ? (
-							<frame
-								BackgroundTransparency={1}
-								BorderSizePixel={0}
-								Position={new UDim2(0, localAnchorPosition.X, 0, localAnchorPosition.Y)}
-								AnchorPoint={new Vector2(0.5, 1)}
-								Size={UDim2.fromOffset(0, 0)}
-								ClipsDescendants={false}
-								Active={false}
-								Selectable={false}
-							>
-								<frame
-									BackgroundColor3={bubbleSlotProps?.BackgroundColor3 ?? visualStyles.backgroundColor}
-									BackgroundTransparency={bubbleSlotProps?.BackgroundTransparency ?? 0}
-									BorderSizePixel={0}
-									Position={bubbleSlotProps?.Position ?? UDim2.fromOffset(0, 0)}
-									AnchorPoint={bubbleSlotProps?.AnchorPoint ?? new Vector2(0.5, 1)}
-									AutomaticSize={Enum.AutomaticSize.XY}
-									ClipsDescendants={false}
-									ZIndex={resolvedBubbleZIndex}
-									Active={false}
-									Selectable={false}
-									{...bubbleSlotProps}
-								>
-									{renderCornerDecorator({ radius: sizeStyles.radius, slotProps: slotProps?.bubbleCorner })}
-									{renderStrokeDecorator({
-										enabled: true,
-										color: visualStyles.strokeColor,
-										transparency: visualStyles.strokeTransparency,
-										thickness: 1,
-										slotProps: slotProps?.bubbleStroke,
-									})}
-									{renderPaddingDecorator({
-										enabled: true,
-										paddingTop: new UDim(0, sizeStyles.paddingY),
-										paddingRight: new UDim(0, sizeStyles.paddingX),
-										paddingBottom: new UDim(0, sizeStyles.paddingY),
-										paddingLeft: new UDim(0, sizeStyles.paddingX),
-										slotProps: slotProps?.bubblePadding,
-									})}
-									{richTooltipContent ?? (
-										<textlabel
-											AutomaticSize={Enum.AutomaticSize.XY}
-											BackgroundTransparency={1}
-											BorderSizePixel={0}
-											Size={UDim2.fromOffset(0, 0)}
-											Text={labelSlotProps?.Text ?? tostring(primitiveTooltipContent)}
-											TextColor3={labelSlotProps?.TextColor3 ?? visualStyles.textColor}
-											TextTransparency={labelSlotProps?.TextTransparency ?? 0}
-											TextStrokeTransparency={labelSlotProps?.TextStrokeTransparency ?? 1}
-											TextSize={labelSlotProps?.TextSize ?? sizeStyles.fontSize}
-											Font={resolvedLabelFont}
-											FontFace={resolvedLabelFontFace}
-											LineHeight={labelSlotProps?.LineHeight ?? sizeStyles.lineHeight}
-											TextWrapped={labelSlotProps?.TextWrapped ?? false}
-											TextTruncate={labelSlotProps?.TextTruncate ?? Enum.TextTruncate.None}
-											TextXAlignment={labelSlotProps?.TextXAlignment ?? Enum.TextXAlignment.Center}
-											TextYAlignment={labelSlotProps?.TextYAlignment ?? Enum.TextYAlignment.Center}
-											TextScaled={labelSlotProps?.TextScaled ?? false}
-											RichText={labelSlotProps?.RichText ?? false}
-											ZIndex={resolvedLabelZIndex}
-											{...labelSlotProps}
-										/>
-									)}
-								</frame>
-								<imagelabel
-									BackgroundTransparency={1}
-									BorderSizePixel={0}
-									Size={UDim2.fromOffset(sizeStyles.tailWidth, sizeStyles.tailHeight)}
-									Position={tailBorderSlotProps?.Position ?? UDim2.fromOffset(0, defaultTailAttachmentOffsetY)}
-									AnchorPoint={tailBorderSlotProps?.AnchorPoint ?? new Vector2(0.5, 0)}
-									Image={tailBorderSlotProps?.Image ?? tailBorderImage}
-									ImageColor3={tailBorderSlotProps?.ImageColor3 ?? visualStyles.tailBorderColor}
-									ImageTransparency={tailBorderSlotProps?.ImageTransparency ?? visualStyles.tailBorderTransparency}
-									Rotation={tailBorderSlotProps?.Rotation ?? defaultTailRotation}
-									ScaleType={tailBorderSlotProps?.ScaleType ?? Enum.ScaleType.Fit}
-									ZIndex={resolvedTailBorderZIndex}
-									Active={false}
-									Selectable={false}
-									{...tailBorderSlotProps}
-								/>
-								<imagelabel
-									BackgroundTransparency={1}
-									BorderSizePixel={0}
-									Size={UDim2.fromOffset(sizeStyles.tailWidth, sizeStyles.tailHeight)}
-									Position={tailSlotProps?.Position ?? UDim2.fromOffset(0, defaultTailAttachmentOffsetY)}
-									AnchorPoint={tailSlotProps?.AnchorPoint ?? new Vector2(0.5, 0)}
-									Image={tailSlotProps?.Image ?? tailImage}
-									ImageColor3={tailSlotProps?.ImageColor3 ?? visualStyles.tailFillColor}
-									ImageTransparency={tailSlotProps?.ImageTransparency ?? 0}
-									Rotation={tailSlotProps?.Rotation ?? defaultTailRotation}
-									ScaleType={tailSlotProps?.ScaleType ?? Enum.ScaleType.Fit}
-									ZIndex={resolvedTailZIndex}
-									Active={false}
-									Selectable={false}
-									{...tailSlotProps}
-								/>
-							</frame>
-						) : undefined}
-						</frame>
-					</LayerPortal>
-			) : undefined}
+			<TriggerOverlayLayer
+				trigger={rootInstance}
+				enabled={isOpen}
+				resolvePlacement={resolveTooltipPlacement}
+				resolveZIndex={resolveOverlayZIndex}
+				backgroundColor={theme.colors.background.default}
+				slotProps={overlaySlotProps}
+				render={({ localAnchorPosition, overlayZIndex }) => {
+					return (
+						<TooltipOverlayBubble
+							localAnchorPosition={localAnchorPosition}
+							overlayZIndex={overlayZIndex}
+							primitiveContent={primitiveTooltipContent}
+							richContent={richTooltipContent}
+							sizeStyles={sizeStyles}
+							visualStyles={visualStyles}
+							slotProps={slotProps}
+							themeFontFamily={theme.fontFamily}
+							tailImage={tailImage}
+							tailBorderImage={tailBorderImage}
+							tailRotation={defaultTailRotation}
+							tailAttachmentOffsetY={defaultTailAttachmentOffsetY}
+						/>
+					);
+				}}
+			/>
 		</>
 	);
 });

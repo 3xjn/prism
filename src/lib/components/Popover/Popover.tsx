@@ -2,20 +2,16 @@ import React from "@rbxts/react";
 
 import { useTheme } from "@prism/theme";
 
-import {
-	renderCornerDecorator,
-	renderPaddingDecorator,
-	renderSizeConstraintDecorator,
-	renderStrokeDecorator,
-} from "../_shared/foundationDecorators";
-import { Backdrop } from "../Backdrop";
+import { renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
+import { resolveFrameSizeProps } from "../_shared/frameSize";
 import { assignRef, composeEventMaps, isPressInput } from "../_shared/interaction";
-import { LayerPortal, useOverlayLocalPosition, useTriggerOverlayLayout } from "../_shared/layering";
+import { TriggerOverlayLayer } from "../_shared/TriggerOverlayLayer";
+import type { TriggerOverlayLayout } from "../_shared/layering";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
-import { resolveTextFontFace } from "../_shared/textFont";
 import { useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
+import { PopoverOverlayPanel } from "./PopoverOverlayPanel";
 import { resolvePopoverSizeStyles, resolvePopoverVisualStyles } from "./styles";
 import type { PopoverProps } from "./types";
 import { resolvePopoverPanelPlacement } from "./utils";
@@ -46,56 +42,27 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 	} = props;
 	const [uncontrolledOpened, setUncontrolledOpened] = React.useState(defaultOpened);
 	const [rootInstance, setRootInstance] = React.useState<Frame>();
-	const [overlayFrame, setOverlayFrame] = React.useState<Frame>();
 	const [panelInstance, setPanelInstance] = React.useState<TextButton>();
 	const pressArmedRef = React.useRef(false);
 	const hasContent = content !== undefined;
 	const isOpen = !disabled && hasContent && (opened ?? uncontrolledOpened);
 	const sizeStyles = resolvePopoverSizeStyles(theme, props.gap);
 	const visualStyles = resolvePopoverVisualStyles(theme);
-	const {
-		resolvedWidth,
-		resolvedHeight,
-		resolvedSize,
-		resolvedPosition,
-		resolvedAnchor,
-		resolvedConstraint,
-	} = useResolvedStyleProps("popover", props);
+	const { resolvedWidth, resolvedHeight, resolvedSize, resolvedPosition, resolvedAnchor, resolvedConstraint } =
+		useResolvedStyleProps("popover", props);
 	const rootSlotProps = slotProps?.root;
 	const triggerSlotProps = slotProps?.trigger;
 	const overlaySlotProps = slotProps?.overlay;
-	const outsideCaptureSlotProps = slotProps?.outsideCapture;
-	const panelSlotProps = slotProps?.panel;
-	const contentSlotProps = slotProps?.content;
-	const labelSlotProps = slotProps?.label;
 	const primitiveContent = isPrimitivePopoverContent(content) ? content : undefined;
 	const richContent = content !== undefined && !isPrimitivePopoverContent(content) ? content : undefined;
-	const triggerOverlayLayout = useTriggerOverlayLayout(rootInstance, isOpen);
-	const panelPlacement = React.useMemo(() => {
-		if (triggerOverlayLayout === undefined) {
-			return undefined;
-		}
+	const resolvePanelPlacement = React.useCallback(
+		(layout: TriggerOverlayLayout) => {
+			return resolvePopoverPanelPlacement(layout.bounds, placement, align, sizeStyles.gap, props.offset);
+		},
+		[align, placement, props.offset, sizeStyles.gap],
+	);
 
-		return resolvePopoverPanelPlacement(triggerOverlayLayout.bounds, placement, align, sizeStyles.gap, props.offset);
-	}, [align, placement, props.offset, sizeStyles.gap, triggerOverlayLayout]);
-	const localPanelPosition = useOverlayLocalPosition(overlayFrame, panelPlacement?.anchorPosition);
-
-	let computedSize: UDim2 | undefined;
-	let computedAutoSize: Enum.AutomaticSize | undefined;
-	if (resolvedSize !== undefined) {
-		computedSize = resolvedSize;
-	} else if (resolvedWidth !== undefined && resolvedHeight !== undefined) {
-		computedSize = new UDim2(resolvedWidth, resolvedHeight);
-	} else if (resolvedWidth !== undefined) {
-		computedSize = new UDim2(resolvedWidth, new UDim(0, 0));
-		computedAutoSize = Enum.AutomaticSize.Y;
-	} else if (resolvedHeight !== undefined) {
-		computedSize = new UDim2(new UDim(0, 0), resolvedHeight);
-		computedAutoSize = Enum.AutomaticSize.X;
-	} else {
-		computedSize = UDim2.fromOffset(0, 0);
-		computedAutoSize = Enum.AutomaticSize.XY;
-	}
+	const rootSizeProps = resolveFrameSizeProps(resolvedSize, resolvedWidth, resolvedHeight);
 
 	const setOpened = React.useCallback(
 		(nextOpened: boolean) => {
@@ -128,13 +95,12 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 
 	const resolvedRootZIndex = rootSlotProps?.ZIndex ?? props.zIndex;
 	const resolvedTriggerZIndex = triggerSlotProps?.ZIndex ?? incrementZIndex(resolvedRootZIndex, 1);
-	const resolvedOverlayZIndex = overlaySlotProps?.ZIndex ?? incrementZIndex(resolvedRootZIndex ?? triggerOverlayLayout?.zIndexBase, 1);
-	const resolvedOutsideCaptureZIndex = outsideCaptureSlotProps?.ZIndex ?? resolvedOverlayZIndex;
-	const resolvedPanelZIndex = panelSlotProps?.ZIndex ?? incrementZIndex(resolvedOutsideCaptureZIndex, 1);
-	const resolvedContentZIndex = contentSlotProps?.ZIndex ?? incrementZIndex(resolvedPanelZIndex, 1);
-	const resolvedLabelZIndex = labelSlotProps?.ZIndex ?? incrementZIndex(resolvedContentZIndex, 1);
-	const resolvedLabelFont = labelSlotProps?.Font ?? theme.fontFamily;
-	const resolvedLabelFontFace = resolveTextFontFace(labelSlotProps?.Font, labelSlotProps?.FontFace, theme.fontFamily);
+	const resolveOverlayZIndex = React.useCallback(
+		(layout: TriggerOverlayLayout) => {
+			return incrementZIndex(resolvedRootZIndex ?? layout.zIndexBase, 1);
+		},
+		[resolvedRootZIndex],
+	);
 	const shouldRenderOutsideCapture = closeOnOutsidePress && triggerMode !== "hover";
 
 	const internalTriggerEvent: TriggerEventMap = {
@@ -170,7 +136,7 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 	};
 	const triggerEvent = useRootCursorEvent(
 		composeEventMaps(internalTriggerEvent, Event),
-		triggerSlotProps?.Event === undefined ? props.cursor ?? "pointer" : undefined,
+		triggerSlotProps?.Event === undefined ? (props.cursor ?? "pointer") : undefined,
 		disabled || triggerMode === "manual" || !hasContent,
 	);
 	const rootRef = React.useCallback(
@@ -193,8 +159,8 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 				BackgroundTransparency={1}
 				BackgroundColor3={theme.colors.background.default}
 				BorderSizePixel={0}
-				Size={computedSize}
-				AutomaticSize={computedAutoSize}
+				Size={rootSizeProps.size}
+				AutomaticSize={rootSizeProps.automaticSize}
 				Position={computedPosition}
 				AnchorPoint={resolvedAnchor}
 				ClipsDescendants={props.clip}
@@ -222,105 +188,32 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 					{...triggerSlotProps}
 				/>
 			</frame>
-			{isOpen && triggerOverlayLayout !== undefined && panelPlacement !== undefined ? (
-				<LayerPortal target={triggerOverlayLayout.portalTarget}>
-					<frame
-						ref={setOverlayFrame}
-						BackgroundTransparency={1}
-						BorderSizePixel={0}
-						Size={UDim2.fromScale(1, 1)}
-						Active={false}
-						Selectable={false}
-						ZIndex={resolvedOverlayZIndex}
-						{...overlaySlotProps}
-					>
-						{shouldRenderOutsideCapture ? (
-							<Backdrop
-								visible
-								opacity={0}
-								active
-								zIndex={resolvedOutsideCaptureZIndex}
-								excludeInstance={panelInstance}
-								onPress={() => setOpened(false)}
-								slotProps={{ root: outsideCaptureSlotProps }}
-							/>
-						) : undefined}
-						{localPanelPosition !== undefined ? (
-							<textbutton
-								AutoButtonColor={false}
-								Active={panelSlotProps?.Active ?? true}
-								Selectable={false}
-								BackgroundColor3={panelSlotProps?.BackgroundColor3 ?? visualStyles.backgroundColor}
-								BackgroundTransparency={panelSlotProps?.BackgroundTransparency ?? 0}
-								BorderSizePixel={0}
-								Text=""
-								TextTransparency={1}
-								TextStrokeTransparency={1}
-								Position={new UDim2(0, localPanelPosition.X, 0, localPanelPosition.Y)}
-								AnchorPoint={panelSlotProps?.AnchorPoint ?? panelPlacement.anchorPoint}
-								Size={panelSlotProps?.Size ?? UDim2.fromOffset(0, 0)}
-								AutomaticSize={panelSlotProps?.AutomaticSize ?? Enum.AutomaticSize.XY}
-								ClipsDescendants={panelSlotProps?.ClipsDescendants ?? false}
-								ZIndex={resolvedPanelZIndex}
-								{...panelSlotProps}
-								ref={panelRef}
-							>
-								{renderCornerDecorator({ radius: sizeStyles.radius, slotProps: slotProps?.panelCorner })}
-								{renderStrokeDecorator({
-									enabled: true,
-									color: visualStyles.strokeColor,
-									transparency: visualStyles.strokeTransparency,
-									thickness: visualStyles.strokeThickness,
-									slotProps: slotProps?.panelStroke,
-								})}
-								{renderPaddingDecorator({
-									enabled: true,
-									paddingTop: new UDim(0, sizeStyles.paddingY),
-									paddingRight: new UDim(0, sizeStyles.paddingX),
-									paddingBottom: new UDim(0, sizeStyles.paddingY),
-									paddingLeft: new UDim(0, sizeStyles.paddingX),
-									slotProps: slotProps?.panelPadding,
-								})}
-								<frame
-									BackgroundTransparency={1}
-									BorderSizePixel={0}
-									Size={UDim2.fromOffset(0, 0)}
-									AutomaticSize={Enum.AutomaticSize.XY}
-									Active={false}
-									Selectable={false}
-									ZIndex={resolvedContentZIndex}
-									{...contentSlotProps}
-								>
-					{richContent ?? (
-						<textlabel
-							AutomaticSize={Enum.AutomaticSize.XY}
-							BackgroundTransparency={1}
-							BorderSizePixel={0}
-							Size={UDim2.fromOffset(0, 0)}
-							Text={labelSlotProps?.Text ?? tostring(primitiveContent)}
-							TextColor3={labelSlotProps?.TextColor3 ?? visualStyles.textColor}
-							TextTransparency={labelSlotProps?.TextTransparency ?? 0}
-							TextStrokeTransparency={labelSlotProps?.TextStrokeTransparency ?? 1}
-							TextSize={labelSlotProps?.TextSize ?? sizeStyles.fontSize}
-							Font={resolvedLabelFont}
-							FontFace={resolvedLabelFontFace}
-							LineHeight={labelSlotProps?.LineHeight ?? sizeStyles.lineHeight}
-							TextWrapped={labelSlotProps?.TextWrapped ?? false}
-							TextTruncate={labelSlotProps?.TextTruncate ?? Enum.TextTruncate.None}
-							TextXAlignment={labelSlotProps?.TextXAlignment ?? Enum.TextXAlignment.Left}
-							TextYAlignment={labelSlotProps?.TextYAlignment ?? Enum.TextYAlignment.Center}
-							TextScaled={labelSlotProps?.TextScaled ?? false}
-							RichText={labelSlotProps?.RichText ?? false}
-							ZIndex={resolvedLabelZIndex}
-							{...labelSlotProps}
+			<TriggerOverlayLayer
+				trigger={rootInstance}
+				enabled={isOpen}
+				resolvePlacement={resolvePanelPlacement}
+				resolveZIndex={resolveOverlayZIndex}
+				slotProps={overlaySlotProps}
+				render={({ placement: panelPlacement, localAnchorPosition, overlayZIndex }) => {
+					return (
+						<PopoverOverlayPanel
+							localAnchorPosition={localAnchorPosition}
+							panelPlacement={panelPlacement}
+							overlayZIndex={overlayZIndex}
+							panelInstance={panelInstance}
+							primitiveContent={primitiveContent}
+							richContent={richContent}
+							shouldRenderOutsideCapture={shouldRenderOutsideCapture}
+							sizeStyles={sizeStyles}
+							visualStyles={visualStyles}
+							slotProps={slotProps}
+							themeFontFamily={theme.fontFamily}
+							onOutsidePress={() => setOpened(false)}
+							setPanelInstance={panelRef}
 						/>
-					)}
-				</frame>
-							</textbutton>
-						) : undefined}
-					</frame>
-				</LayerPortal>
-			) : undefined}
+					);
+				}}
+			/>
 		</>
 	);
 });
