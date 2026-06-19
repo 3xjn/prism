@@ -17,6 +17,7 @@ export * from "./components/CircularProgress";
 export * from "./components/WorldPortal";
 export * from "./components/Switch";
 export * from "./components/SegmentedControl";
+export * from "./components/Tabs";
 export * from "./components/StepperInput";
 export * from "./components/Popover";
 export * from "./components/Menu";

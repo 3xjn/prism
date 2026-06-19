@@ -17,6 +17,7 @@ import "./CircularProgress.story";
 import "./WorldPortal.story";
 import "./Switch.story";
 import "./SegmentedControl.story";
+import "./Tabs.story";
 import "./StepperInput.story";
 import "./Popover.story";
 import "./Menu.story";

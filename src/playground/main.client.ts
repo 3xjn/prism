@@ -1,10 +1,10 @@
 import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 
-import { KeybindInputPlayground } from "./KeybindInputPlayground";
+import { TabsSmokeTest } from "./TabsSmokeTest";
 
 const Players = game.GetService("Players");
-const SCREEN_GUI_NAME = "PrismKeybindInputPlayground";
+const SCREEN_GUI_NAME = "PrismTabsSmokeTest";
 
 const playerGui = Players.LocalPlayer.WaitForChild("PlayerGui") as PlayerGui;
 const existingGui = playerGui.FindFirstChild(SCREEN_GUI_NAME);
@@ -22,7 +22,7 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
 screenGui.Parent = playerGui;
 
 const root = ReactRoblox.createRoot(screenGui);
-root.render(React.createElement(KeybindInputPlayground));
+root.render(React.createElement(TabsSmokeTest));
 
 let cleanedUp = false;
 let ancestryConnection: RBXScriptConnection | undefined;
