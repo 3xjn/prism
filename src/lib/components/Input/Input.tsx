@@ -2,7 +2,7 @@ import React from "@rbxts/react";
 
 import { useMotion } from "@prism/motion";
 import { useTheme } from "@prism/theme";
-import type { Theme, ThemeSize, Variant } from "@prism/theme";
+import type { Theme, ThemeSize } from "@prism/theme";
 
 import {
 	pushDecorator,
@@ -20,14 +20,14 @@ import {
 	useResolvedStyleProps,
 } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
-import { mixColor } from "../_shared/visual";
 
+import { resolveInputMotionTransition, resolveInputVisualStyles } from "./styles";
+import type { InputInteractionState } from "./styles";
 import type { InputColor, InputProps, InputSize } from "./types";
 
 type TextBoxEventMap = React.InstanceProps<TextBox>["Event"];
 type TextBoxChangeMap = React.InstanceProps<TextBox>["Change"];
 type FrameEventMap = React.InstanceProps<Frame>["Event"];
-type InputInteractionState = "idle" | "hovered" | "focused" | "disabled";
 
 interface InputSizeStyles {
 	readonly paddingX: ThemeSize;
@@ -37,15 +37,6 @@ interface InputSizeStyles {
 	readonly radius: UDim;
 	readonly minHeight: number;
 	readonly defaultWidth: number;
-}
-
-interface InputVisualStyles {
-	readonly backgroundColor: Color3;
-	readonly strokeColor: Color3;
-	readonly strokeTransparency: number;
-	readonly strokeThickness: number;
-	readonly textColor: Color3;
-	readonly placeholderColor: Color3;
 }
 
 function resolveInputRadius(theme: Theme, size: InputSize): UDim {
@@ -118,133 +109,6 @@ function resolveInputSizeStyles(theme: Theme, size: InputSize): InputSizeStyles 
 	}
 }
 
-function resolveInputVisualStyles(
-	theme: Theme,
-	variant: Variant,
-	color: InputColor,
-	state: InputInteractionState,
-	readOnly: boolean,
-): InputVisualStyles {
-	const intentColors = theme.colors[color];
-	const idleTextColor = readOnly ? mixColor(theme.colors.text.primary, theme.colors.text.secondary, 0.35) : theme.colors.text.primary;
-	const placeholderBase = readOnly ? mixColor(theme.colors.text.secondary, theme.colors.border.default, 0.3) : theme.colors.text.secondary;
-	const hoverPlaceholder = mixColor(placeholderBase, intentColors.main, 0.12);
-	const focusPlaceholder = mixColor(placeholderBase, intentColors.main, 0.34);
-	const outlineIdleSurface = readOnly
-		? mixColor(theme.colors.background.surface, theme.colors.background.default, 0.45)
-		: theme.colors.background.surface;
-	const outlineHoverSurface = readOnly
-		? mixColor(outlineIdleSurface, theme.colors.action.hover, 0.35)
-		: mixColor(theme.colors.background.surface, theme.colors.action.hover, 0.55);
-	const outlineFocusSurface = mixColor(theme.colors.background.surface, intentColors.light, readOnly ? 0.14 : 0.22);
-	const subtleIdleSurface = mixColor(theme.colors.background.default, intentColors.light, readOnly ? 0.08 : 0.16);
-	const subtleHoverSurface = mixColor(subtleIdleSurface, theme.colors.background.surface, 0.45);
-	const subtleFocusSurface = mixColor(subtleIdleSurface, intentColors.light, 0.2);
-	const lightIdleSurface = mixColor(theme.colors.background.surface, intentColors.light, readOnly ? 0.18 : 0.3);
-	const lightHoverSurface = mixColor(lightIdleSurface, theme.colors.background.surface, 0.12);
-	const lightFocusSurface = mixColor(lightIdleSurface, intentColors.main, 0.1);
-	const filledIdleSurface = mixColor(theme.colors.background.surface, intentColors.light, readOnly ? 0.22 : 0.34);
-	const filledHoverSurface = mixColor(filledIdleSurface, intentColors.light, 0.1);
-	const filledFocusSurface = mixColor(filledIdleSurface, intentColors.main, 0.14);
-
-	if (state === "disabled") {
-		return {
-			backgroundColor: theme.colors.action.disabledBackground,
-			strokeColor: theme.colors.border.subtle,
-			strokeTransparency: 0.1,
-			strokeThickness: 1,
-			textColor: theme.colors.text.disabled,
-			placeholderColor: theme.colors.text.disabled,
-		};
-	}
-
-	switch (variant) {
-		case "subtle":
-			return {
-				backgroundColor: state === "focused" ? subtleFocusSurface : state === "hovered" ? subtleHoverSurface : subtleIdleSurface,
-				strokeColor: state === "focused" ? intentColors.main : state === "hovered" ? theme.colors.border.default : theme.colors.border.subtle,
-				strokeTransparency: state === "focused" ? 0.04 : state === "hovered" ? 0.14 : 0.28,
-				strokeThickness: state === "focused" ? 1.5 : 1,
-				textColor: idleTextColor,
-				placeholderColor: state === "focused" ? focusPlaceholder : state === "hovered" ? hoverPlaceholder : placeholderBase,
-			};
-		case "light":
-			return {
-				backgroundColor: state === "focused" ? lightFocusSurface : state === "hovered" ? lightHoverSurface : lightIdleSurface,
-				strokeColor: state === "focused" ? intentColors.main : state === "hovered" ? intentColors.dark : intentColors.light,
-				strokeTransparency: state === "focused" ? 0.02 : state === "hovered" ? 0.08 : 0.14,
-				strokeThickness: state === "focused" ? 1.5 : 1,
-				textColor: idleTextColor,
-				placeholderColor: state === "focused" ? focusPlaceholder : state === "hovered" ? hoverPlaceholder : placeholderBase,
-			};
-		case "filled":
-			return {
-				backgroundColor: state === "focused" ? filledFocusSurface : state === "hovered" ? filledHoverSurface : filledIdleSurface,
-				strokeColor: state === "focused" ? intentColors.dark : state === "hovered" ? intentColors.main : mixColor(intentColors.main, theme.colors.border.default, 0.5),
-				strokeTransparency: state === "focused" ? 0.02 : state === "hovered" ? 0.08 : 0.16,
-				strokeThickness: state === "focused" ? 1.5 : 1,
-				textColor: idleTextColor,
-				placeholderColor: state === "focused" ? focusPlaceholder : state === "hovered" ? hoverPlaceholder : placeholderBase,
-			};
-		case "outline":
-		default:
-			return {
-				backgroundColor:
-					state === "focused" ? outlineFocusSurface : state === "hovered" ? outlineHoverSurface : outlineIdleSurface,
-				strokeColor:
-					state === "focused" ? intentColors.main : state === "hovered" ? theme.colors.border.strong : theme.colors.border.default,
-				strokeTransparency: state === "focused" ? 0 : state === "hovered" ? 0.06 : 0.12,
-				strokeThickness: state === "focused" ? 1.5 : 1,
-				textColor: idleTextColor,
-				placeholderColor: state === "focused" ? focusPlaceholder : state === "hovered" ? hoverPlaceholder : placeholderBase,
-			};
-	}
-}
-
-function resolveInputMotionTransition(state: InputInteractionState) {
-	if (state === "disabled") {
-		return {
-			backgroundColor: { duration: "instant", easing: "standard" },
-			strokeColor: { duration: "instant", easing: "standard" },
-			strokeTransparency: { duration: "instant", easing: "standard" },
-			strokeThickness: { duration: "instant", easing: "standard" },
-			textColor: { duration: "instant", easing: "standard" },
-			placeholderColor: { duration: "instant", easing: "standard" },
-		} as const;
-	}
-
-	if (state === "focused") {
-		return {
-			backgroundColor: { duration: 0.12, easing: "standard" },
-			strokeColor: { duration: 0.12, easing: "standard" },
-			strokeTransparency: { duration: 0.12, easing: "standard" },
-			strokeThickness: { duration: 0.12, easing: "out" },
-			textColor: { duration: 0.12, easing: "standard" },
-			placeholderColor: { duration: 0.12, easing: "standard" },
-		} as const;
-	}
-
-	if (state === "hovered") {
-		return {
-			backgroundColor: { duration: 0.14, easing: "standard" },
-			strokeColor: { duration: 0.14, easing: "standard" },
-			strokeTransparency: { duration: 0.14, easing: "standard" },
-			strokeThickness: { duration: 0.14, easing: "standard" },
-			textColor: { duration: 0.14, easing: "standard" },
-			placeholderColor: { duration: 0.14, easing: "standard" },
-		} as const;
-	}
-
-	return {
-		backgroundColor: { duration: 0.16, easing: "standard" },
-		strokeColor: { duration: 0.16, easing: "standard" },
-		strokeTransparency: { duration: 0.16, easing: "standard" },
-		strokeThickness: { duration: 0.16, easing: "standard" },
-		textColor: { duration: 0.16, easing: "standard" },
-		placeholderColor: { duration: 0.16, easing: "standard" },
-	} as const;
-}
-
 type InputComponent = ((props: InputProps) => React.ReactElement) & React.ForwardRefExoticComponent<InputProps>;
 
 const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
@@ -304,23 +168,31 @@ const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
 		setFocused(false);
 	}, [disabled]);
 
-	const computedWidth = fullWidth ? resolveUDimSafe("input", "100%", "width") : resolvedWidth ?? new UDim(0, sizeStyles.defaultWidth);
+	const computedWidth = fullWidth
+		? resolveUDimSafe("input", "100%", "width")
+		: (resolvedWidth ?? new UDim(0, sizeStyles.defaultWidth));
 	const computedHeight = resolvedHeight ?? new UDim(0, sizeStyles.minHeight);
 	const computedSize = resolvedSize ?? new UDim2(computedWidth, computedHeight);
 	const computedConstraint =
 		resolvedConstraint === undefined
 			? {
-				min: new Vector2(0, sizeStyles.minHeight),
-				max: undefined,
-			  }
+					min: new Vector2(0, sizeStyles.minHeight),
+					max: undefined,
+				}
 			: {
-				min:
-					resolvedConstraint.min === undefined
-						? new Vector2(0, sizeStyles.minHeight)
-						: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, sizeStyles.minHeight)),
-				max: resolvedConstraint.max,
-			  };
-	const interactionState: InputInteractionState = disabled ? "disabled" : focused ? "focused" : hovered ? "hovered" : "idle";
+					min:
+						resolvedConstraint.min === undefined
+							? new Vector2(0, sizeStyles.minHeight)
+							: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, sizeStyles.minHeight)),
+					max: resolvedConstraint.max,
+				};
+	const interactionState: InputInteractionState = disabled
+		? "disabled"
+		: focused
+			? "focused"
+			: hovered
+				? "hovered"
+				: "idle";
 	const resolvedVisualStyles = resolveInputVisualStyles(theme, variant, color, interactionState, readOnly);
 	const motionTransition = resolveInputMotionTransition(interactionState);
 	const animated = useMotion({
@@ -340,7 +212,7 @@ const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
 	const resolvedFontFace = resolveTextFontFace(textboxSlotProps?.Font, textboxSlotProps?.FontFace, theme.fontFamily);
 	const resolvedTextSize = textboxSlotProps?.TextSize ?? sizeStyles.fontSize;
 	const resolvedLineHeight = textboxSlotProps?.LineHeight ?? sizeStyles.lineHeight;
-	const resolvedTextValue = textboxSlotProps?.Text ?? (value ?? uncontrolledValue);
+	const resolvedTextValue = textboxSlotProps?.Text ?? value ?? uncontrolledValue;
 	const resolvedTextXAlignment = textboxSlotProps?.TextXAlignment ?? Enum.TextXAlignment.Left;
 	const resolvedTextYAlignment = textboxSlotProps?.TextYAlignment ?? Enum.TextYAlignment.Center;
 	const resolvedTextTruncate = textboxSlotProps?.TextTruncate ?? Enum.TextTruncate.AtEnd;
@@ -404,7 +276,10 @@ const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
 			slotProps: slotProps?.padding,
 		}),
 	);
-	pushDecorator(decoratorChildren, renderSizeConstraintDecorator({ constraint: computedConstraint, slotProps: slotProps?.sizeConstraint }));
+	pushDecorator(
+		decoratorChildren,
+		renderSizeConstraintDecorator({ constraint: computedConstraint, slotProps: slotProps?.sizeConstraint }),
+	);
 
 	const computedPosition = resolvedPosition ?? (props.center ? UDim2.fromScale(0.5, 0.5) : undefined);
 	const rootInstanceProps: Partial<React.InstanceProps<Frame>> = {
