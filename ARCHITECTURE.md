@@ -145,18 +145,18 @@ Shipped today in this repo:
 - theme tokens, default theme values, strict theme types, `ThemeProvider`, `useTheme`, `resolveColor`, and `resolveSize` under `@prism/theme`
 - theme motion tokens plus `useMotion` under `@prism/motion`
 - unit conversion helpers under `src/lib/utils`
-- reusable primitives from the top-level `@prism` entrypoint, including `Box`, `Text`, `Stack`, `Button`, `Pressable`, and `Draggable`
-- playground stories for the public primitive surface under `src/playground/stories`
+- reusable components from the top-level `@prism` entrypoint, including layout primitives, form controls, overlays, navigation controls, feedback, and media primitives
+- playground stories for the public component surface under `src/playground/stories`
 
 The current ui-labs integration is file-discovery based. `index.storybook.ts` exports the `Storybook` config and points `storyRoots` at the stories folder, while `src/playground/stories/index.ts` imports each story module so they are emitted and discoverable. `src/playground/main.client.ts` is intentionally empty because this repo is not mounting a separate PlayerGui storybook app at runtime.
 
 Planned within the current foundation plan:
 
-- tighter refinement of the shipped primitives and story coverage as later plans require
+- tighter refinement of the shipped components and story coverage as later plans require
 
 Planned after the foundation plan, one follow-up plan at a time:
 
-- more primitives and components as real needs appear
+- app-level patterns and higher-level component compositions as real needs appear
 
 ### Non-goals for this phase
 

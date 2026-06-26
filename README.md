@@ -15,12 +15,12 @@ What is present in this repo today:
 - shipped `ThemeProvider`, `useTheme`, `resolveColor`, and `resolveSize` exports under `@prism/theme`
 - shipped theme motion tokens plus `useMotion` under `@prism/motion` for custom smooth components
 - shipped unit helpers `toUDim`, `toUDim2`, and `toUDimAxis` under `@prism/utils`
-- shipped primitive components from `@prism`, including `Box`, `Text`, `Stack`, `Button`, `Pressable`, `Draggable`, form controls, overlays, and media primitives
-- shipped ui-labs stories for the public primitive set under `src/playground/stories`
+- shipped components from `@prism`, including layout primitives, text and media primitives, form controls, feedback components, navigation controls, and overlays
+- shipped ui-labs stories for the public component set under `src/playground/stories`
 
 What is not shipped yet:
 
-- higher-level components such as inputs, cards, and app-level patterns
+- app-level patterns and application shells built from the component set
 
 ## Install and setup
 
@@ -65,7 +65,7 @@ There is also extra typing support in `devDependencies` because this toolchain e
 
 ## Quick start
 
-The current public surface is split across the top-level component exports plus the theme, motion, and utility modules. Primitive components such as `Box`, `Text`, `Stack`, `Button`, `Pressable`, and `Draggable` come from `@prism`, theme tokens and resolvers stay under `@prism/theme`, and custom animated values come from `@prism/motion`.
+The current public surface is split across the top-level component exports plus the theme, motion, and utility modules. Components such as `Box`, `Text`, `Stack`, `Button`, `Input`, `Select`, `Modal`, `Tooltip`, and `Draggable` come from `@prism`, theme tokens and resolvers stay under `@prism/theme`, and custom animated values come from `@prism/motion`.
 
 ```tsx
 import React from "@rbxts/react";
@@ -116,9 +116,9 @@ The sizing rules behind that API are:
 └─ package.json
 ```
 
-Right now `src/lib` contains shipped `theme/`, `utils/`, `motion/`, `bridge/`, and `components/` modules. `src/lib/index.ts` re-exports the public primitive component surface, including `Pressable` and `Draggable`, while theme helpers stay under `@prism/theme`. The playable part of the repo is the ui-labs wiring under `src/playground`.
+Right now `src/lib` contains shipped `theme/`, `utils/`, `motion/`, `bridge/`, and `components/` modules. `src/lib/index.ts` re-exports the public component surface, including layout, form, feedback, navigation, overlay, and media components, while theme helpers stay under `@prism/theme`. The playable part of the repo is the ui-labs wiring under `src/playground`.
 
-Each primitive also exposes raw `slotProps` for Roblox instance-level escape hatches. Those values are spread last onto the backing instances and decorators, so they are last-write-wins when they overlap with Prism props.
+Each component also exposes raw `slotProps` for Roblox instance-level escape hatches. Those values are spread last onto the backing instances and decorators, so they are last-write-wins when they overlap with Prism props.
 
 ## Motion foundation
 
@@ -192,7 +192,8 @@ Prism is being built from the bottom up.
 - first, the scaffold and playground loop
 - next, shipped tokens, theme context, token resolvers, and unit helpers
 - then shipped reusable primitives such as `Box`, `Text`, `Stack`, `Button`, `Pressable`, and `Draggable`
-- after that, one component plan at a time
+- then added focused component families such as form controls, overlays, navigation controls, feedback, and media primitives
+- after that, one higher-level pattern plan at a time
 
 That keeps the early architecture small enough to test in Studio before more components depend on it.
 
