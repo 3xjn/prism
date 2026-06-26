@@ -11,6 +11,7 @@ import {
 	renderSizeConstraintDecorator,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
+import { resolveMinimumHeightConstraint } from "../_shared/frameSize";
 import { composeEventMaps } from "../_shared/interaction";
 import { resolveTextFontFace } from "../_shared/textFont";
 import {
@@ -173,19 +174,7 @@ const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
 		: (resolvedWidth ?? new UDim(0, sizeStyles.defaultWidth));
 	const computedHeight = resolvedHeight ?? new UDim(0, sizeStyles.minHeight);
 	const computedSize = resolvedSize ?? new UDim2(computedWidth, computedHeight);
-	const computedConstraint =
-		resolvedConstraint === undefined
-			? {
-					min: new Vector2(0, sizeStyles.minHeight),
-					max: undefined,
-				}
-			: {
-					min:
-						resolvedConstraint.min === undefined
-							? new Vector2(0, sizeStyles.minHeight)
-							: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, sizeStyles.minHeight)),
-					max: resolvedConstraint.max,
-				};
+	const computedConstraint = resolveMinimumHeightConstraint(resolvedConstraint, sizeStyles.minHeight);
 	const interactionState: InputInteractionState = disabled
 		? "disabled"
 		: focused
