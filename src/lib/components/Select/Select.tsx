@@ -11,12 +11,9 @@ import {
 	renderSizeConstraintDecorator,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
+import { resolveMinimumHeightConstraint } from "../_shared/frameSize";
 import { useTriggerOverlayLayout } from "../_shared/layering";
-import {
-	mergeSharedStyleProps,
-	resolveUDimSafe,
-	useResolvedStyleProps,
-} from "../_shared/useResolvedStyleProps";
+import { mergeSharedStyleProps, resolveUDimSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
 import { SelectDropdown } from "./SelectDropdown";
@@ -89,7 +86,7 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 	const currentValue = controlledValue ?? uncontrolledValue;
 	const selectedOption = findSelectedOption(options, currentValue);
 	const hasSelection = selectedOption !== undefined;
-	const triggerText = hasSelection ? selectedOption.label : placeholder ?? "";
+	const triggerText = hasSelection ? selectedOption.label : (placeholder ?? "");
 	const rootSlotProps = slotProps?.root;
 	const triggerSlotProps = slotProps?.trigger;
 	const triggerTextSlotProps = slotProps?.triggerText;
@@ -120,27 +117,25 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 		setOpen(false);
 	}, [options]);
 
-	const computedWidth = fullWidth ? resolveUDimSafe("select", "100%", "width") : resolvedSize?.X ?? resolvedWidth ?? new UDim(0, sizeStyles.defaultWidth);
+	const computedWidth = fullWidth
+		? resolveUDimSafe("select", "100%", "width")
+		: (resolvedSize?.X ?? resolvedWidth ?? new UDim(0, sizeStyles.defaultWidth));
 	const triggerHeight = resolvedSize?.Y ?? resolvedHeight ?? new UDim(0, sizeStyles.minHeight);
 	const minimumTriggerHeight = math.max(sizeStyles.minHeight, triggerHeight.Offset);
 	const overlayLayout = React.useMemo<SelectOverlayLayout | undefined>(
 		() => resolveSelectOverlayLayout(triggerOverlayLayout, sizeStyles.listGap, minimumTriggerHeight),
 		[minimumTriggerHeight, sizeStyles.listGap, triggerOverlayLayout],
 	);
-	const computedConstraint =
-		resolvedConstraint === undefined
-			? {
-					min: new Vector2(0, sizeStyles.minHeight),
-					max: undefined,
-			  }
-			: {
-					min:
-						resolvedConstraint.min === undefined
-							? new Vector2(0, sizeStyles.minHeight)
-							: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, sizeStyles.minHeight)),
-					max: resolvedConstraint.max,
-			  };
-	const triggerState: SelectTriggerState = disabled ? "disabled" : pressed ? "pressed" : open ? "open" : hovered ? "hovered" : "idle";
+	const computedConstraint = resolveMinimumHeightConstraint(resolvedConstraint, sizeStyles.minHeight);
+	const triggerState: SelectTriggerState = disabled
+		? "disabled"
+		: pressed
+			? "pressed"
+			: open
+				? "open"
+				: hovered
+					? "hovered"
+					: "idle";
 	const triggerVisualStyles = resolveSelectTriggerVisualStyles(theme, variant, color, triggerState, hasSelection);
 	const triggerAnimated = useMotion({
 		values: {
@@ -156,7 +151,11 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 		transition: resolveSelectTriggerMotionTransition(triggerState),
 	});
 	const resolvedTriggerFont = triggerTextSlotProps?.Font ?? theme.fontFamily;
-	const resolvedTriggerFontFace = resolveTextFontFace(triggerTextSlotProps?.Font, triggerTextSlotProps?.FontFace, theme.fontFamily);
+	const resolvedTriggerFontFace = resolveTextFontFace(
+		triggerTextSlotProps?.Font,
+		triggerTextSlotProps?.FontFace,
+		theme.fontFamily,
+	);
 	const resolvedTriggerTextSize = triggerTextSlotProps?.TextSize ?? sizeStyles.fontSize;
 	const resolvedTriggerLineHeight = triggerTextSlotProps?.LineHeight ?? sizeStyles.lineHeight;
 	const resolvedRootZIndex = rootSlotProps?.ZIndex ?? props.zIndex;
@@ -283,7 +282,13 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 						thickness: triggerAnimated.strokeThickness,
 						slotProps: slotProps?.triggerStroke,
 					})}
-					<frame BackgroundTransparency={1} BorderSizePixel={0} Size={UDim2.fromScale(1, 1)} Active={false} Selectable={false}>
+					<frame
+						BackgroundTransparency={1}
+						BorderSizePixel={0}
+						Size={UDim2.fromScale(1, 1)}
+						Active={false}
+						Selectable={false}
+					>
 						{renderPaddingDecorator({
 							enabled: true,
 							paddingTop,
@@ -297,7 +302,10 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 							BorderSizePixel={0}
 							Size={new UDim2(1, -(sizeStyles.indicatorSize + sizeStyles.indicatorGap), 1, 0)}
 							Text={triggerTextSlotProps?.Text ?? triggerText}
-							TextColor3={triggerTextSlotProps?.TextColor3 ?? (hasSelection ? triggerAnimated.textColor : triggerAnimated.placeholderColor)}
+							TextColor3={
+								triggerTextSlotProps?.TextColor3 ??
+								(hasSelection ? triggerAnimated.textColor : triggerAnimated.placeholderColor)
+							}
 							TextTransparency={triggerTextSlotProps?.TextTransparency ?? 0}
 							TextStrokeTransparency={triggerTextSlotProps?.TextStrokeTransparency ?? 1}
 							TextSize={resolvedTriggerTextSize}

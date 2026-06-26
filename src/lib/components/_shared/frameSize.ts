@@ -1,6 +1,28 @@
+import type { SharedSizeConstraint } from "./useResolvedStyleProps";
+
 export interface ResolvedFrameSizeProps {
 	readonly size: UDim2;
 	readonly automaticSize?: Enum.AutomaticSize;
+}
+
+export function resolveMinimumHeightConstraint(
+	resolvedConstraint: SharedSizeConstraint | undefined,
+	minimumHeight: number,
+): SharedSizeConstraint {
+	if (resolvedConstraint === undefined) {
+		return {
+			min: new Vector2(0, minimumHeight),
+			max: undefined,
+		};
+	}
+
+	return {
+		min:
+			resolvedConstraint.min === undefined
+				? new Vector2(0, minimumHeight)
+				: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, minimumHeight)),
+		max: resolvedConstraint.max,
+	};
 }
 
 export function resolveFrameSizeProps(
