@@ -137,10 +137,48 @@ function loadUnitsModule() {
 	return module.exports;
 }
 
+function loadProgressRangeModule() {
+	const filePath = path.join(process.cwd(), "src/lib/components/Progress/Progress.tsx");
+	const source = fs.readFileSync(filePath, "utf8");
+	const helpersStart = source.indexOf("function isFiniteNumber");
+	const helpersEnd = source.indexOf("function formatDefaultProgressValue");
+
+	if (helpersStart < 0 || helpersEnd < 0) {
+		throw new Error("Progress range helpers could not be found.");
+	}
+
+	const sourceSlice = `${source.slice(helpersStart, helpersEnd)}\nexport { resolveProgressRange, resolveProgressValue, resolveProgressPercent };`;
+	const compiled = ts.transpileModule(sourceSlice, {
+		compilerOptions: {
+			module: ts.ModuleKind.CommonJS,
+			target: ts.ScriptTarget.ES2019,
+		},
+		fileName: filePath,
+	}).outputText;
+
+	const module = { exports: {} };
+	const context = vm.createContext({
+		module,
+		exports: module.exports,
+		require,
+		math: {
+			clamp: mathClamp,
+			huge: Infinity,
+		},
+	});
+
+	vm.runInContext(compiled, context, { filename: filePath });
+	return module.exports;
+}
+
 function assertCondition(condition, message) {
 	if (!condition) {
 		throw new Error(message);
 	}
+}
+
+function assertFiniteNumber(value, label) {
+	assertCondition(Number.isFinite(value), `${label}: expected finite number, got ${value}`);
 }
 
 function assertUDim(actual, expected, label) {
@@ -167,6 +205,7 @@ function expectThrows(callback, messagePart, label) {
 
 function run() {
 	const { toUDim, toUDim2, toUDimAxis } = loadUnitsModule();
+	const { resolveProgressRange, resolveProgressValue, resolveProgressPercent } = loadProgressRangeModule();
 	const passthrough1D = new UDim(0.3, 5);
 	const passthrough2D = new UDim2(0.25, 8, 0.75, 16);
 
@@ -192,6 +231,19 @@ function run() {
 	expectThrows(() => toUDim2("10px"), "Invalid SizeValue2D", "toUDim2 rejects unsupported strings");
 
 	console.log("units: PASS");
+
+	const extremeProgressRange = resolveProgressRange(Number.MAX_VALUE, Number.MAX_VALUE);
+	const extremeProgressValue = resolveProgressValue(Number.MAX_VALUE, extremeProgressRange);
+	const extremeProgressPercent = resolveProgressPercent(extremeProgressValue, extremeProgressRange);
+
+	assertFiniteNumber(extremeProgressRange.min, "Progress extreme fallback min");
+	assertFiniteNumber(extremeProgressRange.max, "Progress extreme fallback max");
+	assertFiniteNumber(extremeProgressRange.max - extremeProgressRange.min, "Progress extreme fallback denominator");
+	assertCondition(extremeProgressRange.max > extremeProgressRange.min, "Progress extreme fallback keeps a strict range");
+	assertFiniteNumber(extremeProgressPercent, "Progress extreme fallback percent");
+	assertCondition(extremeProgressPercent >= 0 && extremeProgressPercent <= 1, "Progress extreme fallback percent stays clamped");
+
+	console.log("progress: PASS");
 }
 
 run();

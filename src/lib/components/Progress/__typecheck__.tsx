@@ -9,6 +9,7 @@ type ExportedProgressProps = React.ComponentProps<typeof Progress>;
 const validProgressProps: ProgressProps[] = [
 	{},
 	{ value: 42 },
+	{ value: math.huge, min: -math.huge, max: 0 / 0 },
 	{ value: 64, min: 10, max: 90 },
 	{ value: 0.35, min: 0, max: 1, formatValue: (value) => `${math.floor(value * 100)}%` },
 	{ label: "XP", showValue: true, value: 72 },
