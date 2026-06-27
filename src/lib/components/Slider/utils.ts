@@ -34,20 +34,26 @@ export function resolveSliderRange(min: number | undefined, max: number | undefi
 				span: requestedSpan,
 			};
 		}
+
+		const fallbackMax = resolvedMin + 1;
+		const fallbackSpan = fallbackMax - resolvedMin;
+
+		if (isFiniteNumber(fallbackSpan) && fallbackSpan > 0) {
+			return {
+				min: resolvedMin,
+				max: fallbackMax,
+				span: fallbackSpan,
+			};
+		}
+
+		return SAFE_SLIDER_RANGE;
 	}
 
-	const fallbackMax = resolvedMin + 1;
-	const fallbackSpan = fallbackMax - resolvedMin;
-
-	if (isFiniteNumber(fallbackSpan) && fallbackSpan > 0) {
-		return {
-			min: resolvedMin,
-			max: fallbackMax,
-			span: fallbackSpan,
-		};
-	}
-
-	return SAFE_SLIDER_RANGE;
+	return {
+		min: resolvedMin,
+		max: resolvedMin,
+		span: 0,
+	};
 }
 
 export function resolveValidStep(step: number | undefined): number | undefined {
