@@ -52,6 +52,11 @@ function resolveFiniteNumber(value: number | undefined, fallback: number): numbe
 	return isFiniteNumber(value) ? value : fallback;
 }
 
+const SAFE_PROGRESS_RANGE: ProgressRange = {
+	min: 0,
+	max: 1,
+};
+
 function resolveProgressSizeStyles(theme: Theme, size: ProgressSize): ProgressSizeStyles {
 	switch (size) {
 		case "xs":
@@ -117,12 +122,24 @@ function resolveProgressRadius(theme: Theme, size: ProgressSize, radius: Progres
 function resolveProgressRange(min: number | undefined, max: number | undefined): ProgressRange {
 	const resolvedMin = resolveFiniteNumber(min, 0);
 	const requestedMax = resolveFiniteNumber(max, 100);
-	const resolvedMax = requestedMax > resolvedMin ? requestedMax : resolvedMin + 1;
 
-	return {
-		min: resolvedMin,
-		max: resolvedMax,
-	};
+	if (requestedMax > resolvedMin) {
+		return {
+			min: resolvedMin,
+			max: requestedMax,
+		};
+	}
+
+	const fallbackMax = resolvedMin + 1;
+
+	if (isFiniteNumber(fallbackMax) && fallbackMax > resolvedMin) {
+		return {
+			min: resolvedMin,
+			max: fallbackMax,
+		};
+	}
+
+	return SAFE_PROGRESS_RANGE;
 }
 
 function resolveProgressValue(value: number | undefined, range: ProgressRange): number {
