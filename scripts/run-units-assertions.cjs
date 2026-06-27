@@ -282,6 +282,7 @@ function run() {
 	console.log("progress: PASS");
 
 	const extremeSliderRange = resolveSliderRange(-Number.MAX_VALUE, Number.MAX_VALUE);
+	const equalExtremeSliderRange = resolveSliderRange(Number.MAX_VALUE, Number.MAX_VALUE);
 	const invertedFiniteSliderRange = resolveSliderRange(10, 0);
 	const equalFiniteSliderRange = resolveSliderRange(10, 10);
 	const extremeSliderValue = normalizeSliderValue(Number.MAX_VALUE, extremeSliderRange, undefined);
@@ -296,6 +297,8 @@ function run() {
 	assertFiniteNumber(extremeSliderRange.max, "Slider extreme fallback max");
 	assertFiniteNumber(extremeSliderRange.span, "Slider extreme fallback span");
 	assertCondition(extremeSliderRange.max > extremeSliderRange.min, "Slider extreme fallback keeps a strict range");
+	assertFiniteNumber(equalExtremeSliderRange.span, "Slider equal extreme fallback span");
+	assertCondition(equalExtremeSliderRange.max > equalExtremeSliderRange.min, "Slider equal extreme fallback keeps a strict range");
 	assertCondition(invertedFiniteSliderRange.min === 10, "Slider inverted finite range keeps supplied min");
 	assertCondition(invertedFiniteSliderRange.max === 10, "Slider inverted finite range clamps max to min");
 	assertCondition(invertedFiniteSliderRange.span === 0, "Slider inverted finite range stays non-interactive");

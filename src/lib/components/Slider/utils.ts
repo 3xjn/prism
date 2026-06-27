@@ -49,6 +49,14 @@ export function resolveSliderRange(min: number | undefined, max: number | undefi
 		return SAFE_SLIDER_RANGE;
 	}
 
+	if (requestedMax === resolvedMin) {
+		const fallbackMax = resolvedMin + 1;
+
+		if (!isFiniteNumber(fallbackMax) || fallbackMax <= resolvedMin) {
+			return SAFE_SLIDER_RANGE;
+		}
+	}
+
 	return {
 		min: resolvedMin,
 		max: resolvedMin,
