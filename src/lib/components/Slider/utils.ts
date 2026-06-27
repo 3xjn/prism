@@ -14,23 +14,40 @@ function resolveFiniteNumber(value: number | undefined, fallback: number): numbe
 	return isFiniteNumber(value) ? value : fallback;
 }
 
+const SAFE_SLIDER_RANGE: SliderRange = {
+	min: 0,
+	max: 1,
+	span: 1,
+};
+
 export function resolveSliderRange(min: number | undefined, max: number | undefined): SliderRange {
 	const resolvedMin = resolveFiniteNumber(min, 0);
-	const resolvedMax = resolveFiniteNumber(max, 100);
+	const requestedMax = resolveFiniteNumber(max, 100);
 
-	if (resolvedMax <= resolvedMin) {
+	if (requestedMax > resolvedMin) {
+		const requestedSpan = requestedMax - resolvedMin;
+
+		if (isFiniteNumber(requestedSpan) && requestedSpan > 0) {
+			return {
+				min: resolvedMin,
+				max: requestedMax,
+				span: requestedSpan,
+			};
+		}
+	}
+
+	const fallbackMax = resolvedMin + 1;
+	const fallbackSpan = fallbackMax - resolvedMin;
+
+	if (isFiniteNumber(fallbackSpan) && fallbackSpan > 0) {
 		return {
 			min: resolvedMin,
-			max: resolvedMin,
-			span: 0,
+			max: fallbackMax,
+			span: fallbackSpan,
 		};
 	}
 
-	return {
-		min: resolvedMin,
-		max: resolvedMax,
-		span: resolvedMax - resolvedMin,
-	};
+	return SAFE_SLIDER_RANGE;
 }
 
 export function resolveValidStep(step: number | undefined): number | undefined {
@@ -77,15 +94,15 @@ export function normalizeSliderValue(value: number | undefined, range: SliderRan
 }
 
 export function valueToAlpha(value: number, range: SliderRange): number {
-	if (range.span <= 0) {
+	if (!isFiniteNumber(range.span) || range.span <= 0) {
 		return 0;
 	}
 
-	return math.clamp((value - range.min) / range.span, 0, 1);
+	return math.clamp(resolveFiniteNumber((value - range.min) / range.span, 0), 0, 1);
 }
 
 export function alphaToValue(alpha: number, range: SliderRange, step: number | undefined): number {
-	if (range.span <= 0) {
+	if (!isFiniteNumber(range.span) || range.span <= 0) {
 		return range.min;
 	}
 

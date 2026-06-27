@@ -171,6 +171,41 @@ function loadProgressRangeModule() {
 	return module.exports;
 }
 
+function loadSliderRangeModule() {
+	const filePath = path.join(process.cwd(), "src/lib/components/Slider/utils.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	const helpersStart = source.indexOf("export interface SliderRange");
+
+	if (helpersStart < 0) {
+		throw new Error("Slider range helpers could not be found.");
+	}
+
+	const compiled = ts.transpileModule(source.slice(helpersStart), {
+		compilerOptions: {
+			module: ts.ModuleKind.CommonJS,
+			target: ts.ScriptTarget.ES2019,
+		},
+		fileName: filePath,
+	}).outputText;
+
+	const module = { exports: {} };
+	const context = vm.createContext({
+		module,
+		exports: module.exports,
+		require,
+		math: {
+			abs: Math.abs,
+			clamp: mathClamp,
+			huge: Infinity,
+			pow: Math.pow,
+			round: Math.round,
+		},
+	});
+
+	vm.runInContext(compiled, context, { filename: filePath });
+	return module.exports;
+}
+
 function assertCondition(condition, message) {
 	if (!condition) {
 		throw new Error(message);
@@ -206,6 +241,7 @@ function expectThrows(callback, messagePart, label) {
 function run() {
 	const { toUDim, toUDim2, toUDimAxis } = loadUnitsModule();
 	const { resolveProgressRange, resolveProgressValue, resolveProgressPercent } = loadProgressRangeModule();
+	const { alphaToValue, normalizeSliderValue, resolveSliderRange, valueToAlpha } = loadSliderRangeModule();
 	const passthrough1D = new UDim(0.3, 5);
 	const passthrough2D = new UDim2(0.25, 8, 0.75, 16);
 
@@ -244,6 +280,31 @@ function run() {
 	assertCondition(extremeProgressPercent >= 0 && extremeProgressPercent <= 1, "Progress extreme fallback percent stays clamped");
 
 	console.log("progress: PASS");
+
+	const extremeSliderRange = resolveSliderRange(-Number.MAX_VALUE, Number.MAX_VALUE);
+	const equalExtremeSliderRange = resolveSliderRange(Number.MAX_VALUE, Number.MAX_VALUE);
+	const extremeSliderValue = normalizeSliderValue(Number.MAX_VALUE, extremeSliderRange, undefined);
+	const extremeSliderAlpha = valueToAlpha(extremeSliderValue, extremeSliderRange);
+	const extremeSliderAlphaValue = alphaToValue(0.5, extremeSliderRange, undefined);
+	const unusableSliderAlpha = valueToAlpha(0, { min: 0, max: Number.MAX_VALUE, span: Infinity });
+	const unusableSliderValue = alphaToValue(0.5, { min: 0, max: Number.MAX_VALUE, span: Infinity }, undefined);
+
+	assertFiniteNumber(extremeSliderRange.min, "Slider extreme fallback min");
+	assertFiniteNumber(extremeSliderRange.max, "Slider extreme fallback max");
+	assertFiniteNumber(extremeSliderRange.span, "Slider extreme fallback span");
+	assertCondition(extremeSliderRange.max > extremeSliderRange.min, "Slider extreme fallback keeps a strict range");
+	assertFiniteNumber(equalExtremeSliderRange.span, "Slider equal extreme fallback span");
+	assertCondition(equalExtremeSliderRange.max > equalExtremeSliderRange.min, "Slider equal extreme fallback keeps a strict range");
+	assertFiniteNumber(extremeSliderValue, "Slider extreme fallback normalized value");
+	assertCondition(extremeSliderValue >= extremeSliderRange.min && extremeSliderValue <= extremeSliderRange.max, "Slider extreme fallback normalized value stays clamped");
+	assertFiniteNumber(extremeSliderAlpha, "Slider extreme fallback display alpha");
+	assertCondition(extremeSliderAlpha >= 0 && extremeSliderAlpha <= 1, "Slider extreme fallback display alpha stays clamped");
+	assertFiniteNumber(extremeSliderAlphaValue, "Slider extreme fallback alpha-to-value result");
+	assertCondition(extremeSliderAlphaValue >= extremeSliderRange.min && extremeSliderAlphaValue <= extremeSliderRange.max, "Slider extreme fallback alpha-to-value result stays clamped");
+	assertFiniteNumber(unusableSliderAlpha, "Slider unusable range alpha fallback");
+	assertFiniteNumber(unusableSliderValue, "Slider unusable range value fallback");
+
+	console.log("slider: PASS");
 }
 
 run();
