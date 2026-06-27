@@ -96,6 +96,10 @@ function typeIs(value, kind) {
 	}
 }
 
+function rawget(value, key) {
+	return value[key];
+}
+
 function loadUnitsModule() {
 	const filePath = path.join(process.cwd(), "src/lib/utils/units.ts");
 	const source = fs.readFileSync(filePath, "utf8");
@@ -116,6 +120,7 @@ function loadUnitsModule() {
 		String,
 		UDim,
 		UDim2,
+		rawget,
 		typeIs,
 		tonumber,
 		tostring: String,

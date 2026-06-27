@@ -3,6 +3,7 @@
 	"private": true,
 	"version": "0.0.0",
 	"scripts": {
+		"test": "node scripts/run-units-assertions.cjs",
 		"build": "rbxtsc",
 		"fallow": "fallow --format human",
 		"fallow:json": "fallow --format json --quiet",
