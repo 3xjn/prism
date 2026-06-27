@@ -44,6 +44,14 @@ interface ProgressVisualStyles {
 	readonly valueLabelColor: Color3;
 }
 
+function isFiniteNumber(value: number | undefined): value is number {
+	return value !== undefined && value === value && value > -math.huge && value < math.huge;
+}
+
+function resolveFiniteNumber(value: number | undefined, fallback: number): number {
+	return isFiniteNumber(value) ? value : fallback;
+}
+
 function resolveProgressSizeStyles(theme: Theme, size: ProgressSize): ProgressSizeStyles {
 	switch (size) {
 		case "xs":
@@ -107,8 +115,8 @@ function resolveProgressRadius(theme: Theme, size: ProgressSize, radius: Progres
 }
 
 function resolveProgressRange(min: number | undefined, max: number | undefined): ProgressRange {
-	const resolvedMin = min ?? 0;
-	const requestedMax = max ?? 100;
+	const resolvedMin = resolveFiniteNumber(min, 0);
+	const requestedMax = resolveFiniteNumber(max, 100);
 	const resolvedMax = requestedMax > resolvedMin ? requestedMax : resolvedMin + 1;
 
 	return {
@@ -118,7 +126,7 @@ function resolveProgressRange(min: number | undefined, max: number | undefined):
 }
 
 function resolveProgressValue(value: number | undefined, range: ProgressRange): number {
-	return math.clamp(value ?? range.min, range.min, range.max);
+	return math.clamp(resolveFiniteNumber(value, range.min), range.min, range.max);
 }
 
 function resolveProgressPercent(value: number, range: ProgressRange): number {
