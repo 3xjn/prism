@@ -1,6 +1,6 @@
 import type React from "@rbxts/react";
 
-import type { ColorToken, ThemeSize } from "@prism/theme";
+import type { ConcreteColorValue, ThemeSize } from "@prism/theme";
 import type { SizeValue, SizeValue2D } from "@prism/utils";
 
 import type { RawSlotProps } from "../_shared/slotProps";
@@ -23,7 +23,7 @@ export type BoxSpacingValue = SharedSpacingValue;
 export type BoxRadiusValue = ThemeSize | number | UDim;
 
 export interface BoxStrokeProps {
-	readonly color?: ColorToken | Color3;
+	readonly color?: ConcreteColorValue;
 	readonly thickness?: number;
 	readonly transparency?: number;
 	readonly mode?: Enum.ApplyStrokeMode;
@@ -41,7 +41,7 @@ export interface BoxSizeConstraint extends SharedSizeConstraint {}
 
 export interface BoxStyleProps extends SharedStyleProps {
 	readonly border?: number;
-	readonly borderColor?: ColorToken | Color3;
+	readonly borderColor?: ConcreteColorValue;
 	readonly radius?: BoxRadiusValue;
 	readonly stroke?: BoxStrokeProps;
 	readonly gradient?: BoxGradientProps;

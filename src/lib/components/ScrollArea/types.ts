@@ -1,13 +1,13 @@
 import type React from "@rbxts/react";
 
-import type { ColorToken } from "@prism/theme";
+import type { ConcreteColorValue } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
 export type ScrollAreaDirection = "vertical" | "horizontal" | "both";
 
-export type ScrollAreaScrollbarColorValue = ColorToken | Color3;
+export type ScrollAreaScrollbarColorValue = ConcreteColorValue;
 
 export interface ScrollAreaSlots {
 	readonly root: ScrollingFrame;

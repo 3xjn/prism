@@ -1,13 +1,13 @@
 import type React from "@rbxts/react";
 
-import type { ColorToken, ThemeSize } from "@prism/theme";
+import type { ConcreteColorValue, ThemeSize } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
 import type { SharedCursorValue } from "../_shared/useResolvedStyleProps";
 
 export type DividerOrientation = "horizontal" | "vertical";
 
-export type DividerColorValue = ColorToken | Color3;
+export type DividerColorValue = ConcreteColorValue;
 
 export type DividerSizeValue = ThemeSize | number;
 

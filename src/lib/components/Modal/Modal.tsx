@@ -1,7 +1,7 @@
 import React from "@rbxts/react";
 
 import { useMotion } from "@prism/motion";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import type { Theme } from "@prism/theme";
 
 import { getLucideIconAsset } from "../../icons/lucide";
@@ -158,7 +158,7 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 	const sizeStyles = resolveModalSizeStyles(theme, size);
 	const mergedStyleProps = mergeSharedStyleProps(
 		{
-			bg: "background.surface",
+			bg: themeRefs.background.surface,
 			clip: true,
 			center: true,
 			p: "lg",

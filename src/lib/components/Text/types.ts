@@ -1,7 +1,7 @@
 import type React from "@rbxts/react";
 
 import type { BoxStyleProps } from "../Box";
-import type { ColorToken, ThemeSize } from "@prism/theme";
+import type { ConcreteColorValue, ThemeSize } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
 
@@ -23,7 +23,7 @@ export type TextTruncate = "none" | "atend" | "splitword";
 export interface TextStyleProps extends Omit<BoxStyleProps, "border" | "borderColor" | "radius" | "stroke" | "gradient" | "aspectRatio"> {
 	readonly size?: ThemeSize | number;
 	readonly weight?: number;
-	readonly color?: ColorToken | Color3;
+	readonly color?: ConcreteColorValue;
 	readonly font?: Enum.Font;
 	readonly align?: TextAlign;
 	readonly valign?: TextVerticalAlign;
