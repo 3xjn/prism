@@ -1,15 +1,22 @@
 import React from "@rbxts/react";
 
 import { resolveColor, useTheme } from "@prism/theme";
-import type { Theme, ThemeMotion, ThemeMotionEasing } from "@prism/theme";
+import type { Theme, ThemeMotionEasing } from "@prism/theme";
+
+import {
+	createMotionTransitionsSignature,
+	createMotionValuesSignature,
+	createThemeMotionSignature,
+} from "./signatures";
+import {
+	areResolvedMotionTransitionMapsEqual,
+	resolveMotionTransitions,
+} from "./transitions";
+import type { ResolvedMotionTransition, ResolvedMotionTransitionMap } from "./transitions";
 
 import type {
-	MotionDuration,
-	MotionEasing,
 	MotionInputValue,
 	MotionInputValues,
-	MotionTransition,
-	MotionTransitionMap,
 	MotionValue,
 	MotionValues,
 	ResolvedMotionValues,
@@ -22,13 +29,6 @@ const TweenService = game.GetService("TweenService");
 type MotionKey<T extends MotionInputValues> = Extract<keyof T, string>;
 type MutableMotionValues = Record<string, MotionValue>;
 
-interface ResolvedMotionTransition {
-	readonly duration: number;
-	readonly easing: ThemeMotionEasing;
-}
-
-type ResolvedMotionTransitionMap<T extends MotionInputValues> = Readonly<Record<MotionKey<T>, ResolvedMotionTransition>>;
-
 interface ActiveMotion<Key extends string> {
 	readonly key: Key;
 	readonly from: MotionValue;
@@ -37,63 +37,12 @@ interface ActiveMotion<Key extends string> {
 	readonly easing: ThemeMotionEasing;
 }
 
-function getSortedRecordKeys(values: Readonly<Record<string, unknown>>): string[] {
-	const keys = new Array<string>();
-
-	for (const [key] of pairs(values)) {
-		keys.push(key);
-	}
-
-	table.sort(keys);
-	return keys;
-}
-
-function stringifyMotionValue(value: MotionValue): string {
-	if (typeIs(value, "number")) {
-		return `number:${tostring(value)}`;
-	}
-
-	return `color:${tostring(value.R)},${tostring(value.G)},${tostring(value.B)}`;
-}
-
-function stringifyMotionEasing(easing: ThemeMotionEasing): string {
-	return `${tostring(easing.style)}:${tostring(easing.direction)}`;
-}
-
-function createMotionValuesSignature<T extends MotionValues>(values: T): string {
-	const parts = new Array<string>();
-
-	for (const key of getSortedRecordKeys(values as MotionValues)) {
-		parts.push(`${key}=${stringifyMotionValue((values as MotionValues)[key])}`);
-	}
-
-	return parts.join("|");
-}
-
-function createResolvedTransitionsSignature<T extends MotionInputValues>(transitions: ResolvedMotionTransitionMap<T>): string {
-	const parts = new Array<string>();
-
-	for (const key of getSortedRecordKeys(transitions as Record<string, ResolvedMotionTransition>)) {
-		const transition = (transitions as Record<string, ResolvedMotionTransition>)[key];
-		parts.push(`${key}=${tostring(transition.duration)}@${stringifyMotionEasing(transition.easing)}`);
-	}
-
-	return parts.join("|");
-}
-
-function createThemeMotionSignature(themeMotion: ThemeMotion): string {
-	return [
-		`duration:${tostring(themeMotion.duration.instant)},${tostring(themeMotion.duration.fast)},${tostring(themeMotion.duration.normal)},${tostring(themeMotion.duration.slow)}`,
-		`easing:${stringifyMotionEasing(themeMotion.easing.linear)},${stringifyMotionEasing(themeMotion.easing.standard)},${stringifyMotionEasing(themeMotion.easing.out)},${stringifyMotionEasing(themeMotion.easing.in)},${stringifyMotionEasing(themeMotion.easing.inOut)}`,
-	].join("|");
-}
-
 function resolveMotionValue(theme: Theme, value: MotionInputValue): MotionValue {
-	if (typeIs(value, "string")) {
-		return resolveColor(theme, value);
+	if (typeIs(value, "number")) {
+		return value;
 	}
 
-	return value;
+	return resolveColor(theme, value);
 }
 
 function resolveMotionValues<T extends MotionInputValues>(theme: Theme, values: T): ResolvedMotionValues<T> {
@@ -150,111 +99,12 @@ function areMotionValueSetsEqual<T extends MotionValues>(left: T, right: T): boo
 	return true;
 }
 
-function areMotionEasingsEqual(left: ThemeMotionEasing, right: ThemeMotionEasing): boolean {
-	return left.style === right.style && left.direction === right.direction;
-}
-
-function areResolvedMotionTransitionsEqual(
-	left: ResolvedMotionTransition,
-	right: ResolvedMotionTransition,
-): boolean {
-	return left.duration === right.duration && areMotionEasingsEqual(left.easing, right.easing);
-}
-
-function areResolvedMotionTransitionMapsEqual<T extends MotionInputValues>(
-	left: ResolvedMotionTransitionMap<T> | undefined,
-	right: ResolvedMotionTransitionMap<T>,
-): boolean {
-	if (left === undefined) {
-		return false;
-	}
-
-	for (const [key, transition] of pairs(left as Record<string, ResolvedMotionTransition>)) {
-		const rightTransition = (right as Record<string, ResolvedMotionTransition>)[key];
-
-		if (rightTransition === undefined || !areResolvedMotionTransitionsEqual(transition, rightTransition)) {
-			return false;
-		}
-	}
-
-	for (const [key] of pairs(right as Record<string, ResolvedMotionTransition>)) {
-		if ((left as Record<string, ResolvedMotionTransition>)[key] === undefined) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
 function isCompatibleMotionValue(left: MotionValue | undefined, right: MotionValue): left is MotionValue {
 	if (left === undefined) {
 		return false;
 	}
 
 	return (typeIs(left, "number") && typeIs(right, "number")) || (typeIs(left, "Color3") && typeIs(right, "Color3"));
-}
-
-function isMotionTransition(value: unknown): value is MotionTransition {
-	if (!typeIs(value, "table")) {
-		return false;
-	}
-
-	const transition = value as { readonly duration?: unknown; readonly easing?: unknown };
-
-	if (transition.duration !== undefined && (typeIs(transition.duration, "number") || typeIs(transition.duration, "string"))) {
-		return true;
-	}
-
-	if (transition.easing === undefined) {
-		return false;
-	}
-
-	if (typeIs(transition.easing, "string")) {
-		return true;
-	}
-
-	if (!typeIs(transition.easing, "table")) {
-		return false;
-	}
-
-	const easing = transition.easing as { readonly style?: unknown; readonly direction?: unknown };
-	return easing.style !== undefined || easing.direction !== undefined;
-}
-
-function resolveMotionDuration(themeMotion: ThemeMotion, duration: MotionDuration | undefined): number {
-	if (duration === undefined) {
-		return themeMotion.duration.normal;
-	}
-
-	return math.max(typeIs(duration, "number") ? duration : themeMotion.duration[duration], 0);
-}
-
-function resolveMotionEasing(themeMotion: ThemeMotion, easing: MotionEasing | undefined): ThemeMotionEasing {
-	if (easing === undefined) {
-		return themeMotion.easing.standard;
-	}
-
-	return typeIs(easing, "string") ? themeMotion.easing[easing] : easing;
-}
-
-function resolveMotionTransitions<T extends MotionInputValues>(
-	values: ResolvedMotionValues<T>,
-	transition: UseMotionOptions<T>["transition"],
-	themeMotion: ThemeMotion,
-): ResolvedMotionTransitionMap<T> {
-	const sharedTransition = isMotionTransition(transition) ? transition : undefined;
-	const transitionMap = sharedTransition === undefined ? (transition as MotionTransitionMap<T> | undefined) : undefined;
-	const resolvedTransitions = {} as Record<MotionKey<T>, ResolvedMotionTransition>;
-
-	for (const [key] of pairs(values as MotionValues)) {
-		const keyTransition = transitionMap?.[key as MotionKey<T>] ?? sharedTransition;
-		resolvedTransitions[key as MotionKey<T>] = {
-			duration: resolveMotionDuration(themeMotion, keyTransition?.duration),
-			easing: resolveMotionEasing(themeMotion, keyTransition?.easing),
-		};
-	}
-
-	return resolvedTransitions;
 }
 
 function interpolateMotionValue(from: MotionValue, to: MotionValue, alpha: number): MotionValue {
@@ -274,7 +124,7 @@ export function useMotion<T extends MotionInputValues>({ values, transition }: U
 	const targetValues = resolveMotionValues(theme, values);
 	const resolvedTransitions = resolveMotionTransitions(targetValues, transition, theme.motion);
 	const valuesSignature = createMotionValuesSignature(targetValues);
-	const transitionsSignature = createResolvedTransitionsSignature(resolvedTransitions);
+	const transitionsSignature = createMotionTransitionsSignature(resolvedTransitions);
 	const themeMotionSignature = createThemeMotionSignature(theme.motion);
 	const [animatedValues, setAnimatedValues] = React.useState<ResolvedMotionValues<T>>(() => copyMotionValues(targetValues));
 	const animatedValuesRef = React.useRef<ResolvedMotionValues<T>>(copyMotionValues(targetValues));

@@ -1,5 +1,5 @@
 import type {
-	ColorToken,
+	ConcreteColorValue,
 	MotionDurationToken,
 	MotionEasingToken,
 	ThemeMotion,
@@ -10,7 +10,7 @@ export type MotionDuration = number | MotionDurationToken;
 
 export type MotionEasing = MotionEasingToken | ThemeMotionEasing;
 
-export type MotionInputValue = number | Color3 | ColorToken;
+export type MotionInputValue = number | ConcreteColorValue;
 
 export type MotionValue = number | Color3;
 
@@ -34,4 +34,4 @@ export interface UseMotionOptions<T extends MotionInputValues> {
 	readonly transition?: MotionTransition | MotionTransitionMap<T>;
 }
 
-export type { ColorToken, MotionDurationToken, MotionEasingToken, ThemeMotion, ThemeMotionEasing };
+export type { ConcreteColorValue, MotionDurationToken, MotionEasingToken, ThemeMotion, ThemeMotionEasing };
