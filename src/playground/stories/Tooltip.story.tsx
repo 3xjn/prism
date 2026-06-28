@@ -1,7 +1,7 @@
 import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Icon, Stack, Text, Tooltip } from "@prism";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -51,7 +51,7 @@ function ItemTooltipContent({ footer }: { readonly footer: string }): React.Reac
 			<Stack width="100%" gap="sm">
 				<Stack width="100%" direction="horizontal" align="center" gap="sm">
 					<Box width={58} height={58} bg={ITEM_PANEL_DEEP} radius="sm" border={1} borderColor={ITEM_GOLD} clip>
-						<Box width="100%" height="100%" bg="primary.light" gradient={{ colors: ITEM_PANEL_GRADIENT, rotation: 35 }}>
+						<Box width="100%" height="100%" bg={themeRefs.primary.light} gradient={{ colors: ITEM_PANEL_GRADIENT, rotation: 35 }}>
 							<Stack width="100%" height="100%" align="center" justify="center">
 								<Icon name="zap" size={30} color={ITEM_GOLD} />
 							</Stack>
@@ -134,12 +134,12 @@ function TooltipStoryCanvas({ controls: currentControls }: { readonly controls: 
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Tooltip" size="lg" weight={700} color="text.primary" />
+					<Text text="Tooltip" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Inspect one passive game item surface that portals a rich stat tooltip above its hover target, with rarity color, price, effects, and a real image-based tail."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>

@@ -2,7 +2,7 @@ import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Image, Stack, Text } from "@prism";
 import type { ImageProps } from "@prism";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { CreateReactStory, Datatype, EnumList, Number, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -85,12 +85,12 @@ function ImageStoryCanvas({ controls: currentControls }: { readonly controls: Im
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Image" size="lg" weight={700} color="text.primary" />
+					<Text text="Image" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="A theme-aware ImageLabel primitive for thumbnails, media previews, atlas sprites, and textured UI surfaces."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
@@ -101,8 +101,8 @@ function ImageStoryCanvas({ controls: currentControls }: { readonly controls: Im
 								width={currentControls.width}
 								height={aspectRatio === undefined ? currentControls.height : undefined}
 								aspectRatio={aspectRatio}
-								bg="background.default"
-								borderColor="border.subtle"
+								bg={themeRefs.background.default}
+								borderColor={themeRefs.border.subtle}
 								radius={radius}
 								color={currentControls.color}
 								transparency={currentControls.transparency}
@@ -111,7 +111,7 @@ function ImageStoryCanvas({ controls: currentControls }: { readonly controls: Im
 							/>
 							<Text
 								text="Adjust width, height, and aspect ratio to inspect radius, cropping, and layout behavior at thumbnail sizes."
-								color="text.secondary"
+								color={themeRefs.text.secondary}
 								align="center"
 								wrap
 								width={360}

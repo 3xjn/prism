@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Pressable, Stack, Text } from "@prism";
 import type { PressableRenderState } from "@prism";
@@ -20,16 +21,16 @@ type PressableStoryControls = InferControls<typeof controls>;
 type LayoutPreset = "focus" | "balanced" | "dense";
 
 function StatePreviewSurface({ count, label, state }: { readonly count: number; readonly label: string; readonly state: PressableRenderState }): React.ReactElement {
-	const background = state.disabled ? "action.disabledBackground" : state.pressed ? "action.pressed" : state.hovered ? "action.hover" : "background.surface";
-	const border = state.disabled ? "border.subtle" : state.pressed ? "primary.main" : state.hovered ? "border.strong" : "border.default";
-	const copy = state.disabled ? "text.disabled" : "text.primary";
+	const background = state.disabled ? themeRefs.action.disabledBackground : state.pressed ? themeRefs.action.pressed : state.hovered ? themeRefs.action.hover : themeRefs.background.surface;
+	const border = state.disabled ? themeRefs.border.subtle : state.pressed ? themeRefs.primary.main : state.hovered ? themeRefs.border.strong : themeRefs.border.default;
+	const copy = state.disabled ? themeRefs.text.disabled : themeRefs.text.primary;
 
 	return (
 		<Box width="100%" height="100%" center bg={background} radius="md" borderColor={border} p="md">
 			<Stack width="100%" height="100%" gap="xs" align="center" justify="center">
 				<Text text={label} weight={700} color={copy} align="center" />
-				<Text text={`state: ${state.state}`} size="sm" color="text.secondary" align="center" />
-				<Text text={`Pressed ${count} time${count === 1 ? "" : "s"}`} size="sm" color="text.secondary" align="center" />
+				<Text text={`state: ${state.state}`} size="sm" color={themeRefs.text.secondary} align="center" />
+				<Text text={`Pressed ${count} time${count === 1 ? "" : "s"}`} size="sm" color={themeRefs.text.secondary} align="center" />
 			</Stack>
 		</Box>
 	);
@@ -39,10 +40,10 @@ function PresetPreview({ preset }: { readonly preset: LayoutPreset }): React.Rea
 	if (preset === "dense") {
 		return (
 			<Stack width="100%" gap="xs">
-				<Box width="100%" height={8} bg="border.strong" radius="xs" />
-				<Box width="86%" height={8} bg="border.subtle" radius="xs" />
-				<Box width="94%" height={8} bg="border.subtle" radius="xs" />
-				<Box width="72%" height={8} bg="border.subtle" radius="xs" />
+				<Box width="100%" height={8} bg={themeRefs.border.strong} radius="xs" />
+				<Box width="86%" height={8} bg={themeRefs.border.subtle} radius="xs" />
+				<Box width="94%" height={8} bg={themeRefs.border.subtle} radius="xs" />
+				<Box width="72%" height={8} bg={themeRefs.border.subtle} radius="xs" />
 			</Stack>
 		);
 	}
@@ -51,12 +52,12 @@ function PresetPreview({ preset }: { readonly preset: LayoutPreset }): React.Rea
 		return (
 			<Stack width="100%" gap="xs">
 				<Stack width="100%" direction="horizontal" gap="xs">
-					<Box width="48%" height={22} bg="border.strong" radius="xs" />
-					<Box width="48%" height={22} bg="border.subtle" radius="xs" />
+					<Box width="48%" height={22} bg={themeRefs.border.strong} radius="xs" />
+					<Box width="48%" height={22} bg={themeRefs.border.subtle} radius="xs" />
 				</Stack>
 				<Stack width="100%" direction="horizontal" gap="xs">
-					<Box width="48%" height={22} bg="border.subtle" radius="xs" />
-					<Box width="48%" height={22} bg="border.subtle" radius="xs" />
+					<Box width="48%" height={22} bg={themeRefs.border.subtle} radius="xs" />
+					<Box width="48%" height={22} bg={themeRefs.border.subtle} radius="xs" />
 				</Stack>
 			</Stack>
 		);
@@ -64,10 +65,10 @@ function PresetPreview({ preset }: { readonly preset: LayoutPreset }): React.Rea
 
 	return (
 		<Stack width="100%" gap="xs">
-			<Box width="100%" height={34} bg="border.strong" radius="xs" />
+			<Box width="100%" height={34} bg={themeRefs.border.strong} radius="xs" />
 			<Stack width="100%" direction="horizontal" gap="xs">
-				<Box width="38%" height={14} bg="border.subtle" radius="xs" />
-				<Box width="58%" height={14} bg="border.subtle" radius="xs" />
+				<Box width="38%" height={14} bg={themeRefs.border.subtle} radius="xs" />
+				<Box width="58%" height={14} bg={themeRefs.border.subtle} radius="xs" />
 			</Stack>
 		</Stack>
 	);
@@ -76,19 +77,19 @@ function PresetPreview({ preset }: { readonly preset: LayoutPreset }): React.Rea
 function PresetTile({ preset, selected, state }: { readonly preset: LayoutPreset; readonly selected: boolean; readonly state: PressableRenderState }): React.ReactElement {
 	const title = preset === "focus" ? "Focus" : preset === "balanced" ? "Balanced" : "Dense";
 	const description = preset === "focus" ? "One primary region with supporting context." : preset === "balanced" ? "Equal-weight panels for mixed content." : "Compact rows for scanning lots of items.";
-	const background = state.disabled ? "action.disabledBackground" : selected ? "primary.light" : state.hovered ? "background.surface" : "background.default";
-	const border = selected ? "primary.main" : state.hovered ? "border.strong" : "border.default";
-	const titleColor = state.disabled ? "text.disabled" : "text.primary";
+	const background = state.disabled ? themeRefs.action.disabledBackground : selected ? themeRefs.primary.light : state.hovered ? themeRefs.background.surface : themeRefs.background.default;
+	const border = selected ? themeRefs.primary.main : state.hovered ? themeRefs.border.strong : themeRefs.border.default;
+	const titleColor = state.disabled ? themeRefs.text.disabled : themeRefs.text.primary;
 
 	return (
 		<Box width="100%" height="100%" bg={background} radius="md" borderColor={border} p="md">
 			<Stack width="100%" height="100%" gap="sm">
-				<Box width="100%" height={64} bg="background.surface" radius="sm" borderColor="border.subtle" p="sm">
+				<Box width="100%" height={64} bg={themeRefs.background.surface} radius="sm" borderColor={themeRefs.border.subtle} p="sm">
 					<PresetPreview preset={preset} />
 				</Box>
 				<Stack width="100%" gap="xs">
 					<Text text={title} weight={700} color={titleColor} />
-					<Text text={description} size="sm" color="text.secondary" wrap width="100%" />
+					<Text text={description} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 				</Stack>
 			</Stack>
 		</Box>
@@ -101,16 +102,16 @@ function PressableStoryCanvas({ controls: currentControls }: { readonly controls
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Pressable" size="lg" weight={700} color="text.primary" />
+					<Text text="Pressable" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="A headless TextButton container for custom interactive surfaces. It owns hover, pressed, disabled, cursor, and onPress behavior while your child component owns the visuals."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
-					<Box width="100%" height={220} bg="action.hover" radius="md" p="lg">
+					<Box width="100%" height={220} bg={themeRefs.action.hover} radius="md" p="lg">
 						<Stack width="100%" height="100%" gap="sm" align="center" justify="center">
 							<Pressable
 								width={currentControls.width}
@@ -123,20 +124,20 @@ function PressableStoryCanvas({ controls: currentControls }: { readonly controls
 							<Text
 								text="This first preview is intentionally static: Pressable emits booleans, and the surface maps them directly to visuals."
 								size="sm"
-								color="text.secondary"
+								color={themeRefs.text.secondary}
 								align="center"
 								wrap
 								width="100%"
 							/>
 						</Stack>
 					</Box>
-					<Box width="100%" bg="background.default" radius="md" p="lg">
+					<Box width="100%" bg={themeRefs.background.default} radius="md" p="lg">
 						<Stack width="100%" gap="sm">
-							<Text text="Preset picker example" weight={700} color="text.primary" />
+							<Text text="Preset picker example" weight={700} color={themeRefs.text.primary} />
 							<Text
 								text="Pressable is useful when the clickable thing is a whole composition. These tiles behave like a picker, but the visuals are custom layout previews instead of checkbox controls."
 								size="sm"
-								color="text.secondary"
+								color={themeRefs.text.secondary}
 								wrap
 								width="100%"
 							/>

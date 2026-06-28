@@ -3,7 +3,7 @@ import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Button, Card, Divider, Input, Stack, Text } from "@prism";
 import type { CardVariant } from "@prism";
 import type { ThemeSize } from "@prism/theme";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -55,17 +55,17 @@ function CardStoryCanvas({ controls: currentControls }: { readonly controls: Car
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Card" size="xl" weight={700} color="text.primary" />
+					<Text text="Card" size="xl" weight={700} color={themeRefs.text.primary} />
 					<Box width="100%" bg={theme.colors.action.hover} radius="md" p="lg">
 						<Card variant={resolvedVariant} width={cardWidth} p={resolvedPadding} radius={resolvedRadius}>
 							<Stack width="100%" gap="md">
 								<Stack width="100%" gap="xs">
-									<Text text={currentControls.title} size="lg" weight={700} color="text.primary" />
+									<Text text={currentControls.title} size="lg" weight={700} color={themeRefs.text.primary} />
 									<Text
 										text="Tip: you can only change your name once a week"
-										color="text.secondary"
+										color={themeRefs.text.secondary}
 										align="left"
 										wrap
 									/>

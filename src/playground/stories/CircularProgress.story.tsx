@@ -2,7 +2,7 @@ import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, CircularProgress, Stack, Text } from "@prism";
 import type { CircularProgressCap, CircularProgressColor, CircularProgressMode, CircularProgressSize, CircularProgressVariant } from "@prism";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -86,12 +86,12 @@ function CircularProgressStoryCanvas({ controls: currentControls }: { readonly c
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="CircularProgress" size="lg" weight={700} color="text.primary" />
+					<Text text="CircularProgress" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Inspect a segmented Roblox-native ring. Indeterminate mode rotates while the visible arc grows and catches up, echoing MUI's spinner without SVG stroke paths."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
@@ -110,8 +110,8 @@ function CircularProgressStoryCanvas({ controls: currentControls }: { readonly c
 								size={resolvedSize}
 								cap={resolvedCap}
 							/>
-							<Text text={`Current value: ${normalizedValue}`} size="sm" color="text.primary" wrap width="100%" />
-							<Text text={rangeText} size="sm" color="text.secondary" wrap width="100%" />
+							<Text text={`Current value: ${normalizedValue}`} size="sm" color={themeRefs.text.primary} wrap width="100%" />
+							<Text text={rangeText} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 						</Stack>
 					</Box>
 				</Stack>

@@ -3,7 +3,7 @@ import ReactRoblox from "@rbxts/react-roblox";
 import {Box, Button, Icon, Stack, Text} from "@prism";
 import type { ButtonColor, ButtonSize } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -88,12 +88,12 @@ function ButtonStoryCanvas({ controls: currentControls }: { readonly controls: B
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Button" size="lg" weight={700} color="text.primary" />
+					<Text text="Button" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Hover and press the preview to inspect the built-in motion. Variant and intent controls update the same component API Prism ships publicly."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 					/>
 					<Box width="100%" bg={theme.colors.action.hover} radius="md" p="lg">
@@ -114,12 +114,12 @@ function ButtonStoryCanvas({ controls: currentControls }: { readonly controls: B
 								fullWidth={currentControls.fullWidth}
 								label={currentControls.label}
 							>
-								<Icon name="save" color="primary.contrast" />
+								<Icon name="save" color={themeRefs.primary.contrast} />
 							</Button>
 							<Text
 								text="Use `label` for normal copy. Optional React children render as unscaled adornments before the label, while the press animation stays on the visual body only."
 								size="sm"
-								color="text.secondary"
+								color={themeRefs.text.secondary}
 								align="center"
 								wrap
 								width="100%"

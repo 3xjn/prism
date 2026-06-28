@@ -2,7 +2,7 @@ import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Stack, Text } from "@prism";
 import type { StackAlign, StackDirection, StackGapValue, StackJustify, TextProps } from "@prism";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import type { ThemeSize } from "@prism/theme";
 import { CreateReactStory, Datatype, EnumList, Slider } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
@@ -81,7 +81,7 @@ function Swatch({
 		<Box layoutOrder={layoutOrder} width={width} height={height} bg={color} p="xs">
 			<Text
 				size="xs"
-				color="text.inverse"
+				color={themeRefs.text.inverse}
 				align="center"
 				valign="middle"
 				weight={500}

@@ -2,7 +2,7 @@ import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Slider, Stack, Text } from "@prism";
 import type { SliderColor, SliderSize } from "@prism";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -95,12 +95,12 @@ function SliderStoryCanvas({ controls: currentControls }: { readonly controls: S
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Slider" size="lg" weight={700} color="text.primary" />
+					<Text text="Slider" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Inspect one numeric control built for direct click-and-drag input. The full-width hit target still lets you grab anywhere on the rail, and the optional hover tooltip now surfaces the current value without changing the capture path."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
@@ -118,8 +118,8 @@ function SliderStoryCanvas({ controls: currentControls }: { readonly controls: S
 								color={resolvedColor}
 								size={resolvedSize}
 							/>
-							<Text text={valueText} size="sm" color="text.primary" wrap width="100%" />
-							<Text text={rangeText} size="sm" color="text.secondary" wrap width="100%" />
+							<Text text={valueText} size="sm" color={themeRefs.text.primary} wrap width="100%" />
+							<Text text={rangeText} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 						</Stack>
 					</Box>
 				</Stack>

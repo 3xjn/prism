@@ -4,7 +4,7 @@ import { Boolean, CreateReactStory, EnumList, Number } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { Box, Icon, Menu, Stack, Text } from "@prism";
 import type { MenuAlign, MenuItem, MenuPlacement, MenuSize } from "@prism";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
 
@@ -21,16 +21,16 @@ type MenuStoryControls = InferControls<typeof controls>;
 
 function MenuTrigger(): React.ReactElement {
 	return (
-		<Box width={244} bg="background.surface" radius="md" border={1} borderColor="border.default" p="md">
+		<Box width={244} bg={themeRefs.background.surface} radius="md" border={1} borderColor={themeRefs.border.default} p="md">
 			<Stack width="100%" direction="horizontal" align="center" gap="sm">
-				<Box width={34} height={34} bg="primary.light" radius="sm">
+				<Box width={34} height={34} bg={themeRefs.primary.light} radius="sm">
 					<Stack width="100%" height="100%" align="center" justify="center">
-						<Icon name="settings" size={18} color="primary.main" />
+						<Icon name="settings" size={18} color={themeRefs.primary.main} />
 					</Stack>
 				</Box>
 				<Stack width="100%" gap="xs">
-					<Text text="Squad actions" weight={700} color="text.primary" />
-					<Text text="Click to open menu" size="sm" color="text.secondary" />
+					<Text text="Squad actions" weight={700} color={themeRefs.text.primary} />
+					<Text text="Click to open menu" size="sm" color={themeRefs.text.secondary} />
 				</Stack>
 			</Stack>
 		</Box>
@@ -56,12 +56,12 @@ function MenuStoryCanvas({ controls: currentControls }: { readonly controls: Men
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Menu" size="lg" weight={700} color="text.primary" />
+					<Text text="Menu" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Anchored game-command list built on Popover. Menu owns action rows and disabled/destructive states; Popover owns portal positioning and click-away dismissal."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
@@ -79,7 +79,7 @@ function MenuStoryCanvas({ controls: currentControls }: { readonly controls: Men
 							>
 								<MenuTrigger />
 							</Menu>
-							<Text text={`Last action: ${lastAction}`} size="sm" color="text.secondary" />
+							<Text text={`Last action: ${lastAction}`} size="sm" color={themeRefs.text.secondary} />
 						</Stack>
 					</Box>
 				</Stack>

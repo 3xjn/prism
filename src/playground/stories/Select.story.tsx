@@ -3,7 +3,7 @@ import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Select, Stack, Text } from "@prism";
 import type { SelectColor, SelectOption, SelectSize } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -70,12 +70,12 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Select" size="lg" weight={700} color="text.primary" />
+					<Text text="Select" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Inspect one live dropdown-style choice control. Choose from the dropdown to update the live local selection; use the other controls to adjust its styling and behavior."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
@@ -93,7 +93,7 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 							disabled={currentControls.disabled}
 							fullWidth={currentControls.fullWidth}
 						/>
-							<Text text={currentValueLabel} size="sm" color="text.secondary" wrap width="100%" />
+							<Text text={currentValueLabel} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 						</Stack>
 					</Box>
 				</Stack>

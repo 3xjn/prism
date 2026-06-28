@@ -2,7 +2,7 @@ import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Checkbox, Stack, Text } from "@prism";
 import type { CheckboxColor, CheckboxSize } from "@prism";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -51,12 +51,12 @@ function CheckboxStoryCanvas({ controls: currentControls }: { readonly controls:
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Checkbox" size="lg" weight={700} color="text.primary" />
+					<Text text="Checkbox" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Inspect a compact Prism mark control. It uses a rounded token and animated fill instead of a web-style square, while raw slots can still replace the mark, glyph, label, and layout."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
@@ -71,7 +71,7 @@ function CheckboxStoryCanvas({ controls: currentControls }: { readonly controls:
 								disabled={currentControls.disabled}
 								width="100%"
 							/>
-							<Text text={checkedText} size="sm" color="text.secondary" wrap width="100%" />
+							<Text text={checkedText} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 						</Stack>
 					</Box>
 				</Stack>
