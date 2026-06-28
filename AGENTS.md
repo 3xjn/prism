@@ -38,9 +38,9 @@ Fallow is currently warning-first. Treat findings as architecture/debt review in
 
 ## QA Agent Workflow
 
-- After implementing or changing a public Prism component, smoke test, playground mount, or behavior-heavy UI flow, run normal quality gates first, then launch a read-only QA agent review before calling the work complete.
+- After implementing or changing a public Prism component, playground story, or behavior-heavy UI flow, run normal quality gates first, then launch a read-only QA agent review before calling the work complete.
 - The QA agent should verify the user-facing goal, practical interaction coverage, and workflow wiring. Fix any blocking QA findings, re-run quality gates, and only then close the related bead.
-- For visual/gameplay smoke tests, QA must explicitly check that the active `src/playground/main.client.ts` mount matches the component being validated.
+- For visual/gameplay playground validation, QA must explicitly check that the relevant `src/playground/stories` entry matches the component being validated.
 
 **When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
 
