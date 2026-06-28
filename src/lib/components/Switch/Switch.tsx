@@ -13,7 +13,7 @@ import {
 	renderSizeConstraintDecorator,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
-import { composeEventMaps } from "../_shared/interaction";
+import { composeEventMaps, isPressInput } from "../_shared/interaction";
 import { resolveTextFontFace } from "../_shared/textFont";
 import {
 	mergeSharedStyleProps,
@@ -384,12 +384,12 @@ const SwitchBase = React.forwardRef<TextButton, SwitchProps>((props, ref) => {
 				return;
 			}
 
-			if (input.UserInputType === Enum.UserInputType.MouseButton1 || input.UserInputType === Enum.UserInputType.Touch) {
+			if (isPressInput(input)) {
 				setPressed(true);
 			}
 		},
 		InputEnded: (_button, input) => {
-			if (input.UserInputType === Enum.UserInputType.MouseButton1 || input.UserInputType === Enum.UserInputType.Touch) {
+			if (isPressInput(input)) {
 				setPressed(false);
 			}
 		},
