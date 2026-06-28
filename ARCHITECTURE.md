@@ -11,11 +11,12 @@ Prism uses strict token discipline.
 ### Core rules
 
 1. Tokens are closed enums. If a value is outside the token unions, it must use a typed escape hatch.
-2. Color tokens prefer semantic roles such as `"primary.main"`, `"text.primary"`, `"background.surface"`, and `"border.subtle"`.
+2. Concrete color props prefer exported theme refs such as `theme.text.primary`, `theme.background.surface`, and `theme.border.subtle`.
 3. Size-style tokens use named scale keys such as `"xs"`, `"sm"`, `"md"`, `"lg"`, and `"xl"`.
-4. Escape hatches are explicit. Use raw `Color3`, `UDim`, `UDim2`, or `number` values when token strings are not enough.
-5. There is no magic-string fallthrough. Invalid tokens should throw in development and warn in production.
-6. The theme is immutable after mount. If part of the tree needs a different theme, nest a child `ThemeProvider` instead of mutating the existing theme object.
+4. Component intent props use intent strings such as `"primary"`, `"success"`, and `"warning"`; concrete color props do not accept intent strings.
+5. Escape hatches are explicit. Use raw `Color3`, `UDim`, `UDim2`, or `number` values when tokens are not enough.
+6. There is no magic-string fallthrough. Invalid tokens should throw in development and warn in production.
+7. The theme is immutable after mount. If part of the tree needs a different theme, nest a child `ThemeProvider` instead of mutating the existing theme object.
 
 ### Why Prism is strict here
 
@@ -37,9 +38,10 @@ The foundation plan locks in these token families:
 
 ### Color token tiers
 
-- Semantic tokens are the primary API: `primary.main`, `secondary.dark`, `text.secondary`, `background.default`, `background.surface`, `border.default`, `action.hover`
-- Explicit palette tokens are the low-level API: `palette.primary.5`, `palette.gray.9`, `palette.blue.4`
-- Legacy shade tokens such as `primary.5` and `gray.9` still resolve for compatibility, but they are not the preferred public style
+- Theme refs are the primary API for concrete colors: `theme.text.secondary`, `theme.background.default`, `theme.background.surface`, `theme.border.default`, `theme.action.hover`
+- Intent strings are the component-semantic API: `"primary"`, `"secondary"`, `"success"`, `"warning"`, `"error"`, `"info"`
+- Explicit palette refs are the low-level API: `theme.palette.primary["5"]`, `theme.palette.gray["9"]`, `theme.palette.blue["4"]`
+- Dotted strings such as `"primary.main"`, `"palette.primary.5"`, and legacy shade tokens such as `"primary.5"` are resolver internals only, not public component prop API
 
 ## Slots
 
@@ -124,7 +126,7 @@ Prism now ships a small motion foundation, but it stays deliberately narrow.
 2. `Theme.motion.duration` is a closed token set: `instant`, `fast`, `normal`, and `slow`.
 3. `Theme.motion.easing` is a small semantic token set that maps to Roblox easing enums.
 4. `useMotion({ values, transition })` is for custom component construction only; it accepts target values in and returns animated values out.
-5. v1 motion inputs are limited to `number`, raw `Color3`, and Prism `ColorToken` strings, while returned animated values stay concrete as `number` or `Color3`.
+5. v1 motion inputs are limited to `number` plus concrete color values: raw `Color3`, exported theme refs, and intent strings. Returned animated values stay concrete as `number` or `Color3`.
 6. Prism components keep ownership of their own internals. Future component-level motion belongs in component props and state-style systems, not in external `useMotion` injections.
 7. Raw `slotProps` remain last-write-wins escape hatches, so they can still bypass component-managed motion if they overlap with the same Roblox properties.
 
@@ -148,7 +150,7 @@ Shipped today in this repo:
 - reusable primitives from the top-level `@prism` entrypoint, including `Box`, `Text`, `Stack`, `Button`, `Pressable`, and `Draggable`
 - playground stories for the public primitive surface under `src/playground/stories`
 
-The current ui-labs integration is file-discovery based. `index.storybook.ts` exports the `Storybook` config and points `storyRoots` at the stories folder, while `src/playground/stories/index.ts` imports each story module so they are emitted and discoverable. `src/playground/main.client.ts` is intentionally empty because this repo is not mounting a separate PlayerGui storybook app at runtime.
+The current ui-labs integration is file-discovery based. `index.storybook.ts` exports the `Storybook` config and points `storyRoots` at the stories folder, while `src/playground/stories/index.ts` imports each story module so they are emitted and discoverable. Prism does not mount a separate PlayerGui playground app at runtime.
 
 Planned within the current foundation plan:
 
