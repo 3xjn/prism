@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Draggable, Stack, Text } from "@prism";
 import type { DraggableItem } from "@prism";
@@ -48,10 +49,10 @@ function SortableCard({
 	readonly dragging: boolean;
 	readonly direction: "vertical" | "horizontal";
 }): React.ReactElement {
-	const background = disabled ? "action.disabledBackground" : dragging ? "primary.light" : active ? "action.hover" : "background.surface";
-	const border = disabled ? "border.subtle" : dragging ? "primary.main" : active ? "primary.light" : "border.default";
-	const badgeBackground = dragging ? "primary.main" : active ? "secondary.light" : "background.default";
-	const badgeColor = dragging ? "text.inverse" : active ? "secondary.dark" : "text.secondary";
+	const background = disabled ? themeRefs.action.disabledBackground : dragging ? themeRefs.primary.light : active ? themeRefs.action.hover : themeRefs.background.surface;
+	const border = disabled ? themeRefs.border.subtle : dragging ? themeRefs.primary.main : active ? themeRefs.primary.light : themeRefs.border.default;
+	const badgeBackground = dragging ? themeRefs.primary.main : active ? themeRefs.secondary.light : themeRefs.background.default;
+	const badgeColor = dragging ? themeRefs.text.inverse : active ? themeRefs.secondary.dark : themeRefs.text.secondary;
 
 	return (
 		<Box
@@ -63,14 +64,14 @@ function SortableCard({
 		>
 			<Stack width="100%" gap="sm">
 				<Stack width="100%" direction="horizontal" justify="spaceBetween" align="center">
-					<Text text={item.label} weight={700} color={disabled ? "text.disabled" : "text.primary"} />
+					<Text text={item.label} weight={700} color={disabled ? themeRefs.text.disabled : themeRefs.text.primary} />
 					<Box bg={badgeBackground} radius="xl" px="sm" py="xs">
 						<Text text={dragging ? "Dragging" : active ? "Active" : "Ready"} size="sm" color={badgeColor} />
 					</Box>
 				</Stack>
-				<Text text={item.note} size="sm" color={disabled ? "text.disabled" : "text.secondary"} wrap width="100%" />
-				<Box width="100%" bg="background.default" radius="sm" p="sm">
-					<Text text={`ID: ${item.id}`} size="sm" color="text.secondary" />
+				<Text text={item.note} size="sm" color={disabled ? themeRefs.text.disabled : themeRefs.text.secondary} wrap width="100%" />
+				<Box width="100%" bg={themeRefs.background.default} radius="sm" p="sm">
+					<Text text={`ID: ${item.id}`} size="sm" color={themeRefs.text.secondary} />
 				</Box>
 			</Stack>
 		</Box>
@@ -91,22 +92,22 @@ function DraggableStoryCanvas({ controls: currentControls }: { readonly controls
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Draggable" size="lg" weight={700} color="text.primary" />
+					<Text text="Draggable" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="A headless reorderable Stack primitive. Drag an item through the list and Prism updates the order while your render function owns the actual visuals."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
-					<Box width="100%" bg="background.default" radius="md" p="lg">
+					<Box width="100%" bg={themeRefs.background.default} radius="md" p="lg">
 						<Stack width="100%" gap="sm">
-							<Text text="Sortable workflow" weight={700} color="text.primary" />
+							<Text text="Sortable workflow" weight={700} color={themeRefs.text.primary} />
 							<Text
 								text="This behaves like a Stack with drag-and-drop reordering. It supports controlled order, disabled states, and both vertical and horizontal lists without introducing game-specific visuals."
 								size="sm"
-								color="text.secondary"
+								color={themeRefs.text.secondary}
 								wrap
 								width="100%"
 							/>
@@ -131,7 +132,7 @@ function DraggableStoryCanvas({ controls: currentControls }: { readonly controls
 									/>
 								)}
 							/>
-							<Text text={`Order: ${orderedLabels}`} size="sm" color="text.secondary" wrap width="100%" />
+							<Text text={`Order: ${orderedLabels}`} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 						</Stack>
 					</Box>
 				</Stack>

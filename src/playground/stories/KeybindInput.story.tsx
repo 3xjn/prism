@@ -5,7 +5,7 @@ import type { InferControls } from "@rbxts/ui-labs";
 import { Box, KeybindInput, Stack, Text } from "@prism";
 import type { KeybindCaptureDevice, KeybindInputColor, KeybindInputSize } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
 
@@ -53,19 +53,19 @@ function KeybindInputStoryCanvas({
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="KeybindInput" size="lg" weight={700} color="text.primary" />
+					<Text text="KeybindInput" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Click a control to capture a keyboard or gamepad key. Click it again to keep the current bind; Escape/ButtonSelect cancels capture; Backspace/Delete clears when clearable."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
 					<Box width="100%" bg={theme.colors.action.hover} radius="md" p="lg">
 						<Stack width="100%" gap="md">
 							<Stack width="100%" gap="xs">
-								<Text text="Interact" size="sm" weight={700} color="text.primary" />
+								<Text text="Interact" size="sm" weight={700} color={themeRefs.text.primary} />
 								<KeybindInput
 									value={interactKey}
 									onChange={setInteractKey}
@@ -82,7 +82,7 @@ function KeybindInputStoryCanvas({
 								/>
 							</Stack>
 							<Stack width="100%" gap="xs">
-								<Text text="Ultimate" size="sm" weight={700} color="text.primary" />
+								<Text text="Ultimate" size="sm" weight={700} color={themeRefs.text.primary} />
 								<KeybindInput
 									value={ultimateKey}
 									onChange={setUltimateKey}
@@ -98,7 +98,7 @@ function KeybindInputStoryCanvas({
 							<Text
 								text={`Interact: ${formatKeyCode(interactKey)} | Ultimate: ${formatKeyCode(ultimateKey)} | Capturing: ${capturing ? "yes" : "no"}`}
 								size="sm"
-								color="text.secondary"
+								color={themeRefs.text.secondary}
 								wrap
 								width="100%"
 							/>

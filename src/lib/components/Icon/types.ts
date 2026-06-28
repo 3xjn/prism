@@ -1,6 +1,6 @@
 import type React from "@rbxts/react";
 
-import type { ColorToken, ThemeSize } from "@prism/theme";
+import type { ConcreteColorValue, ThemeSize } from "@prism/theme";
 
 import type { SupportedLucideIconName } from "../../icons/lucide";
 import type { RawSlotProps } from "../_shared/slotProps";
@@ -38,7 +38,7 @@ export type IconName = SupportedLucideIconName;
 
 export interface IconStyleProps extends IconLayoutProps {
 	readonly size?: ThemeSize | number;
-	readonly color?: ColorToken | Color3;
+	readonly color?: ConcreteColorValue;
 }
 
 export interface IconProps extends IconStyleProps {

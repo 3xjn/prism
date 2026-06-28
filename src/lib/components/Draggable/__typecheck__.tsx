@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { Box } from "../Box";
 import { Text } from "../Text";
@@ -28,7 +29,7 @@ const validDraggableProps: DraggableProps<DemoItem>[] = [
 	{
 		items: demoItems,
 		defaultValue: ["two", "one"],
-		renderItem: (state) => <Box key={state.item.id} width={120} height={32} bg={state.dragging ? "primary.light" : "background.surface"} />,
+		renderItem: (state) => <Box key={state.item.id} width={120} height={32} bg={state.dragging ? themeRefs.primary.light : themeRefs.background.surface} />,
 	},
 	{
 		items: demoItems,
@@ -51,7 +52,7 @@ const validDraggableProps: DraggableProps<DemoItem>[] = [
 		width: 320,
 		position: UDim2.fromOffset(20, 24),
 		p: "md",
-		bg: "background.surface",
+		bg: themeRefs.background.surface,
 		bgTransparency: 0.05,
 		clip: true,
 		visible: true,
@@ -95,7 +96,7 @@ const validDraggableExamples = [
 		key="render-state"
 		items={demoItems}
 		defaultValue={["three", "one", "two"]}
-		renderItem={(state) => <Box bg={state.dragging ? "action.pressed" : "background.surface"} width={140} height={40} />}
+		renderItem={(state) => <Box bg={state.dragging ? themeRefs.action.pressed : themeRefs.background.surface} width={140} height={40} />}
 	/>,
 	<Draggable key="ref" ref={draggableRef} items={demoItems} renderItem={(state) => <Text text={state.item.label} />} />,
 ];

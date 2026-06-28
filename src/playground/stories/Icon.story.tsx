@@ -2,7 +2,7 @@ import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Icon, Stack, Text } from "@prism";
 import type { IconName, IconProps } from "@prism";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { CreateReactStory, Datatype, EnumList } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -51,10 +51,10 @@ function IconStoryCanvas({ controls: currentControls }: { readonly controls: Ico
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Icon" size="lg" weight={700} color="text.primary" />
-					<Box width="100%" bg="background.default" radius="md" p="xl" height={previewHeight}>
+					<Text text="Icon" size="lg" weight={700} color={themeRefs.text.primary} />
+					<Box width="100%" bg={themeRefs.background.default} radius="md" p="xl" height={previewHeight}>
 						<Stack width="100%" height="100%" align="center" justify="center">
 							<Icon name={name} size={size} color={color} />
 						</Stack>

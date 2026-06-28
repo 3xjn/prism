@@ -3,7 +3,7 @@ import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Stack, StepperInput, Text } from "@prism";
 import type { StepperInputSize } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -84,19 +84,19 @@ function StepperInputStoryCanvas({ controls: currentControls }: { readonly contr
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="StepperInput" size="lg" weight={700} color="text.primary" />
+					<Text text="StepperInput" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="A compact tactical value rail for game settings. Drag the center control to scrub across the range, or use the side arrows for exact stepped changes."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
 					<Box width="100%" bg={theme.colors.action.hover} radius="md" p="lg">
 						<Stack width="100%" gap="md">
 							<Stack width="100%" gap="xs">
-								<Text text="Squad capacity" size="sm" weight={700} color="text.primary" />
+								<Text text="Squad capacity" size="sm" weight={700} color={themeRefs.text.primary} />
 								<StepperInput
 									value={normalizedValue}
 									onChange={setSquadCap}
@@ -112,7 +112,7 @@ function StepperInputStoryCanvas({ controls: currentControls }: { readonly contr
 								/>
 							</Stack>
 							<Stack width="100%" gap="xs">
-								<Text text="Respawn charges" size="sm" weight={700} color="text.primary" />
+								<Text text="Respawn charges" size="sm" weight={700} color={themeRefs.text.primary} />
 								<StepperInput
 									value={respawns}
 									onChange={setRespawns}
@@ -126,7 +126,7 @@ function StepperInputStoryCanvas({ controls: currentControls }: { readonly contr
 									width="100%"
 								/>
 							</Stack>
-							<Text text={`Squad cap: ${tostring(normalizedValue)} | Respawns: ${tostring(respawns)}`} size="sm" color="text.secondary" wrap width="100%" />
+							<Text text={`Squad cap: ${tostring(normalizedValue)} | Respawns: ${tostring(respawns)}`} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 						</Stack>
 					</Box>
 				</Stack>

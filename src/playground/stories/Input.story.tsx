@@ -3,7 +3,7 @@ import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Input, Stack, Text } from "@prism";
 import type { InputColor, InputSize } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -63,12 +63,12 @@ function InputStoryCanvas({ controls: currentControls }: { readonly controls: In
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Input" size="lg" weight={700} color="text.primary" />
+					<Text text="Input" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Use the controls below to inspect one live Input. The preview stays locally controlled so typing here updates the same value surfaced by ui-labs."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
@@ -88,7 +88,7 @@ function InputStoryCanvas({ controls: currentControls }: { readonly controls: In
 							<Text
 								text={previewValueLabel}
 								size="sm"
-								color="text.secondary"
+								color={themeRefs.text.secondary}
 								wrap
 								width="100%"
 							/>

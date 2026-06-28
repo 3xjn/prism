@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { pushDecorator, renderPaddingDecorator, renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
 import {
@@ -127,7 +128,7 @@ export const Text = React.forwardRef<TextLabel, TextProps>((props, ref) => {
 			: typeIs(props.size, "number")
 				? props.size
 				: resolveThemeSizeSafe(theme, "text", props.size, "fontSizes", theme.fontSizes.md);
-	const resolvedTextColor = resolveColorSafe(theme, "text", props.color ?? "text.primary", theme.colors.text.primary);
+	const resolvedTextColor = resolveColorSafe(theme, "text", props.color ?? themeRefs.text.primary, theme.colors.text.primary);
 	const resolvedFont = props.font ?? theme.fontFamily;
 	const resolvedLineHeight =
 		props.size !== undefined && !typeIs(props.size, "number")

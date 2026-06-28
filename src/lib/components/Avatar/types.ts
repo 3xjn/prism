@@ -1,6 +1,6 @@
 import type React from "@rbxts/react";
 
-import type { ColorToken, SemanticIntent, ThemeSize } from "@prism/theme";
+import type { ConcreteColorValue, SemanticIntent, ThemeSize } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
@@ -24,10 +24,10 @@ export type AvatarColor = SemanticIntent;
 export interface AvatarStyleProps extends SharedStyleProps {
 	readonly size?: AvatarSize;
 	readonly color?: AvatarColor;
-	readonly fallbackColor?: ColorToken | Color3;
+	readonly fallbackColor?: ConcreteColorValue;
 	readonly radius?: ThemeSize | number | UDim;
 	readonly border?: number;
-	readonly borderColor?: ColorToken | Color3;
+	readonly borderColor?: ConcreteColorValue;
 }
 
 export interface AvatarProps extends AvatarStyleProps {

@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { Box } from "../Box";
 import { Text } from "../Text";
@@ -19,7 +20,7 @@ const validModalProps: ModalProps[] = [
 	{ opened: true, onClose: () => undefined, size: "lg" },
 	{ opened: true, onClose: () => undefined, size: "xl", fullWidth: true },
 	{ opened: true, onClose: () => undefined, width: 420, minWidth: 320, maxWidth: 640, maxHeight: 520, zIndex: 12 },
-	{ opened: true, onClose: () => undefined, p: "xl", bg: "background.surface" },
+	{ opened: true, onClose: () => undefined, p: "xl", bg: themeRefs.background.surface },
 	{ opened: true, onClose: () => undefined, slotProps: { overlay: { ZIndex: 8 }, backdrop: { BackgroundTransparency: 0.8 }, contentLayer: { BackgroundTransparency: 1 } } },
 	{ opened: true, onClose: () => undefined, slotProps: { content: { Rotation: 0 }, contentStroke: { Thickness: 2 } } },
 	{ opened: true, onClose: () => undefined, slotProps: { header: { BackgroundTransparency: 1 }, title: { TextColor3: Color3.fromRGB(33, 37, 41) } } },

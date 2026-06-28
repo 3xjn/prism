@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Avatar, Box, Stack, Text } from "@prism";
 import type { AvatarColor, AvatarSize } from "@prism";
@@ -40,10 +41,10 @@ function AvatarStoryCanvas({ controls: currentControls }: { readonly controls: A
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Avatar" size="lg" weight={700} color="text.primary" />
-					<Text text="A small Image-backed identity primitive with a circular fallback state for player HUDs, party lists, chat rows, and world prompts." color="text.secondary" wrap width="100%" />
+					<Text text="Avatar" size="lg" weight={700} color={themeRefs.text.primary} />
+					<Text text="A small Image-backed identity primitive with a circular fallback state for player HUDs, party lists, chat rows, and world prompts." color={themeRefs.text.secondary} wrap width="100%" />
 					<Stack direction="horizontal" gap="md" align="center">
 						<Avatar fallback={currentControls.fallback} color={resolvedColor} size={resolvedSize} />
 						<Avatar fallback="P1" color="success" size="sm" />

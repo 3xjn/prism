@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { Avatar } from "./Avatar";
 import type { AvatarProps } from "./types";
@@ -11,7 +12,7 @@ const validAvatarProps: AvatarProps[] = [
 	{ src: "rbxassetid://0" },
 	{ fallback: "AK" },
 	{ fallback: 12, size: "lg", color: "success" },
-	{ size: 48, radius: 10, border: 2, borderColor: "primary.main" },
+	{ size: 48, radius: 10, border: 2, borderColor: themeRefs.primary.main },
 	{ width: 36, height: 36, position: { x: "50%", y: 0 }, center: true },
 	{ p: "xs", minWidth: 32, minHeight: 32, cursor: "pointer", clip: false },
 	{ slotProps: { root: { BackgroundTransparency: 0.2 }, fallback: { Text: "GM" }, stroke: { Thickness: 0 }, padding: { PaddingLeft: new UDim(0, 2) } } },

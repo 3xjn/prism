@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { Text } from "../Text";
 
@@ -12,11 +13,11 @@ const validImageProps: ImageProps[] = [
 	{ src: "rbxassetid://0" },
 	{ src: "rbxassetid://0", width: 120, height: 80 },
 	{ src: "rbxassetid://0", width: "100%", aspectRatio: 16 / 9 },
-	{ src: "rbxassetid://0", color: "text.secondary", transparency: 0.25 },
+	{ src: "rbxassetid://0", color: themeRefs.text.secondary, transparency: 0.25 },
 	{ src: "rbxassetid://0", scaleType: Enum.ScaleType.Crop, clip: true },
 	{ src: "rbxassetid://0", scaleType: Enum.ScaleType.Slice, sliceCenter: new Rect(8, 8, 24, 24), sliceScale: 1 },
 	{ src: "rbxassetid://0", imageRectOffset: new Vector2(0, 0), imageRectSize: new Vector2(32, 32) },
-	{ src: "rbxassetid://0", bg: "background.surface", radius: "md", borderColor: "border.subtle" },
+	{ src: "rbxassetid://0", bg: themeRefs.background.surface, radius: "md", borderColor: themeRefs.border.subtle },
 	{ src: "rbxassetid://0", stroke: { color: Color3.fromRGB(255, 255, 255), thickness: 2, transparency: 0.2 } },
 	{ src: "rbxassetid://0", p: "sm" },
 	{ src: "rbxassetid://0", slotProps: { root: { ImageTransparency: 0.1 }, corner: { CornerRadius: new UDim(0, 12) } } },
@@ -43,7 +44,7 @@ const acceptsImageProps: ImageProps[] = validImageProps;
 const acceptsExportedImageProps: ExportedImageProps[] = validExportedImageProps;
 
 type ImageSrcRequired = {} extends Pick<ImageProps, "src"> ? true : false;
-type InvalidImageColorAllowed = "primary" extends NonNullable<ImageProps["color"]> ? true : false;
+type InvalidImageColorAllowed = "not-a-color" extends NonNullable<ImageProps["color"]> ? true : false;
 type InvalidScaleTypeAllowed = "fit" extends NonNullable<ImageProps["scaleType"]> ? true : false;
 
 const imageSrcRequired: ImageSrcRequired = false;

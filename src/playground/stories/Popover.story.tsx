@@ -4,7 +4,7 @@ import { Boolean, CreateReactStory, EnumList, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { Box, Icon, Popover, Stack, Text } from "@prism";
 import type { PopoverAlign, PopoverPlacement, PopoverTriggerMode } from "@prism";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
 
@@ -23,21 +23,21 @@ function PopoverPanelContent({ detail }: { readonly detail: string }): React.Rea
 	return (
 		<Stack width={260} gap="sm">
 			<Stack width="100%" direction="horizontal" align="center" gap="sm">
-				<Box width={34} height={34} bg="primary.light" radius="sm">
+				<Box width={34} height={34} bg={themeRefs.primary.light} radius="sm">
 					<Stack width="100%" height="100%" align="center" justify="center">
-						<Icon name="server" size={18} color="primary.main" />
+						<Icon name="server" size={18} color={themeRefs.primary.main} />
 					</Stack>
 				</Box>
 				<Stack width="100%" gap="xs">
-					<Text text="Relay Intel" weight={700} color="text.primary" />
-					<Text text="Context panel" size="sm" color="text.secondary" />
+					<Text text="Relay Intel" weight={700} color={themeRefs.text.primary} />
+					<Text text="Context panel" size="sm" color={themeRefs.text.secondary} />
 				</Stack>
 			</Stack>
-			<Text text={detail} size="sm" color="text.primary" wrap width="100%" />
-			<Box width="100%" height={1} bg="border.subtle" />
+			<Text text={detail} size="sm" color={themeRefs.text.primary} wrap width="100%" />
+			<Box width="100%" height={1} bg={themeRefs.border.subtle} />
 			<Stack width="100%" direction="horizontal" justify="spaceBetween" align="center">
-				<Text text="Ready for Menu seam" size="sm" color="success.main" weight={700} />
-				<Text text="Portal anchored" size="sm" color="text.secondary" />
+				<Text text="Ready for Menu seam" size="sm" color={themeRefs.success.main} weight={700} />
+				<Text text="Portal anchored" size="sm" color={themeRefs.text.secondary} />
 			</Stack>
 		</Stack>
 	);
@@ -45,12 +45,12 @@ function PopoverPanelContent({ detail }: { readonly detail: string }): React.Rea
 
 function PopoverTrigger(): React.ReactElement {
 	return (
-		<Box width={232} bg="background.surface" radius="md" border={1} borderColor="border.default" p="md">
+		<Box width={232} bg={themeRefs.background.surface} radius="md" border={1} borderColor={themeRefs.border.default} p="md">
 			<Stack width="100%" direction="horizontal" align="center" gap="sm">
-				<Icon name="settings" size={22} color="primary.main" />
+				<Icon name="settings" size={22} color={themeRefs.primary.main} />
 				<Stack width="100%" gap="xs">
-					<Text text="Open relay panel" weight={700} color="text.primary" />
-					<Text text="Click or hover from controls" size="sm" color="text.secondary" />
+					<Text text="Open relay panel" weight={700} color={themeRefs.text.primary} />
+					<Text text="Click or hover from controls" size="sm" color={themeRefs.text.secondary} />
 				</Stack>
 			</Stack>
 		</Box>
@@ -65,12 +65,12 @@ function PopoverStoryCanvas({ controls: currentControls }: { readonly controls: 
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Popover" size="lg" weight={700} color="text.primary" />
+					<Text text="Popover" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Inspect the trigger-anchored seam for future Menu and possible Select/Tooltip shell reuse. The panel portals to the active LayerCollector and dismisses through an invisible outside capture layer."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>

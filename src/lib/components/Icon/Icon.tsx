@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { getLucideIconAsset, SUPPORTED_LUCIDE_ICON_NAMES } from "../../icons/lucide";
 
@@ -86,7 +87,7 @@ export const Icon = React.forwardRef<ImageLabel, IconProps>((props, ref) => {
 				? math.max(1, math.abs(props.size))
 				: resolveThemeSizeSafe(theme, "icon", props.size, "fontSizes", theme.fontSizes.md);
 	const resolvedDisplaySize = resolveIconDisplaySize(props.size, themedDisplaySize);
-	const resolvedColor = resolveColorSafe(theme, "icon", props.color ?? "text.primary", theme.colors.text.primary);
+	const resolvedColor = resolveColorSafe(theme, "icon", props.color ?? themeRefs.text.primary, theme.colors.text.primary);
 	const asset = getLucideIconAsset(props.name, resolvedDisplaySize);
 	const fallbackAsset = asset ?? getLucideIconAsset(FALLBACK_ICON_NAME, resolvedDisplaySize);
 

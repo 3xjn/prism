@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { Card } from "./Card";
 import type { CardProps } from "./types";
@@ -18,7 +19,7 @@ const validCardProps: CardProps[] = [
 	{ variant: "subtle", p: "md", radius: "lg", children: <frame /> },
 	{ variant: "surface", cursor: "pointer", children: <frame /> },
 	{ variant: "elevated", shadow: "lg", width: 320, minWidth: 240, maxWidth: 420, children: <frame /> },
-	{ bg: "background.default", borderColor: "border.strong", clip: false, children: <frame /> },
+	{ bg: themeRefs.background.default, borderColor: themeRefs.border.strong, clip: false, children: <frame /> },
 	{ position: { x: "50%", y: 0 }, anchor: new Vector2(0.5, 0), layoutOrder: 3, zIndex: 4, children: <frame /> },
 	{ slotProps: { root: { BackgroundTransparency: 0.02 } }, children: <frame /> },
 	{ slotProps: { content: { BackgroundTransparency: 1 } }, children: <frame /> },

@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { Box } from "../Box";
 
@@ -20,11 +21,11 @@ const validPressableProps: PressableProps[] = [
 	{ cursor: "pointer" },
 	{ cursor: "rbxasset://SystemCursors/PointingHand" },
 	{ width: 200, height: 48, position: { x: "50%", y: 0 }, p: "md", zIndex: 3 },
-	{ bg: "background.surface", bgTransparency: 0.1, clip: true },
+	{ bg: themeRefs.background.surface, bgTransparency: 0.1, clip: true },
 	{ slotProps: { root: { AutoButtonColor: true }, padding: { PaddingLeft: new UDim(0, 18) } } },
 	{ slotProps: { sizeConstraint: { MinSize: new Vector2(120, 36) } } },
 	{ children: <PressableChild key="child" /> },
-	{ render: (state) => <Box key={state.state} bg={state.pressed ? "action.pressed" : "action.hover"} /> },
+	{ render: (state) => <Box key={state.state} bg={state.pressed ? themeRefs.action.pressed : themeRefs.action.hover} /> },
 	{ ref: pressableRef },
 ];
 
@@ -37,7 +38,7 @@ const validExportedPressableProps: ExportedPressableProps[] = [
 const validPressableExamples = [
 	<Pressable key="plain" onPress={() => undefined} />,
 	<Pressable key="child"><PressableChild /></Pressable>,
-	<Pressable key="render-state" render={(state) => <Box bg={state.hovered ? "action.hover" : "background.surface"} />} />,
+	<Pressable key="render-state" render={(state) => <Box bg={state.hovered ? themeRefs.action.hover : themeRefs.background.surface} />} />,
 	<Pressable key="ref" ref={pressableRef} />,
 ];
 

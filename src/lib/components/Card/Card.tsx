@@ -1,6 +1,7 @@
 import React from "@rbxts/react";
 
-import type { ColorToken, Theme, ThemeSize } from "@prism/theme";
+import { theme as themeRefs } from "@prism/theme";
+import type { ConcreteColorValue, Theme, ThemeSize } from "@prism/theme";
 
 import {
 	pushDecorator,
@@ -29,7 +30,7 @@ import type {
 interface CardVariantDefaults {
 	readonly sharedStyleProps: Partial<SharedStyleProps>;
 	readonly radius: CardRadiusValue;
-	readonly strokeColor: ColorToken;
+	readonly strokeColor: ConcreteColorValue;
 	readonly strokeThickness: number;
 	readonly strokeTransparency: number;
 	readonly shadow?: CardShadowValue;
@@ -56,36 +57,36 @@ function resolveCardDefaults(variant: CardVariant): CardVariantDefaults {
 		case "outline":
 			return {
 				sharedStyleProps: {
-					bg: "background.surface",
+					bg: themeRefs.background.surface,
 					clip: true,
 					p: "lg",
 				},
 				radius: "md",
-				strokeColor: "border.strong",
+				strokeColor: themeRefs.border.strong,
 				strokeThickness: 1,
 				strokeTransparency: 0.08,
 			};
 		case "subtle":
 			return {
 				sharedStyleProps: {
-					bg: "background.default",
+					bg: themeRefs.background.default,
 					clip: true,
 					p: "lg",
 				},
 				radius: "md",
-				strokeColor: "border.subtle",
+				strokeColor: themeRefs.border.subtle,
 				strokeThickness: 1,
 				strokeTransparency: 0.12,
 			};
 		case "elevated":
 			return {
 				sharedStyleProps: {
-					bg: "background.surface",
+					bg: themeRefs.background.surface,
 					clip: false,
 					p: "lg",
 				},
 				radius: "lg",
-				strokeColor: "border.subtle",
+				strokeColor: themeRefs.border.subtle,
 				strokeThickness: 1,
 				strokeTransparency: 0.04,
 				shadow: "md",
@@ -94,12 +95,12 @@ function resolveCardDefaults(variant: CardVariant): CardVariantDefaults {
 		default:
 			return {
 				sharedStyleProps: {
-					bg: "background.surface",
+					bg: themeRefs.background.surface,
 					clip: true,
 					p: "lg",
 				},
 				radius: "md",
-				strokeColor: "border.default",
+				strokeColor: themeRefs.border.default,
 				strokeThickness: 1,
 				strokeTransparency: 0.12,
 			};

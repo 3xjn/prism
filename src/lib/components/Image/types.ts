@@ -1,6 +1,6 @@
 import type React from "@rbxts/react";
 
-import type { ColorToken, ThemeSize } from "@prism/theme";
+import type { ConcreteColorValue, ThemeSize } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
 import type { SharedSizeConstraint, SharedStyleProps } from "../_shared/useResolvedStyleProps";
@@ -16,12 +16,12 @@ export interface ImageSlots {
 
 export type ImageSlotProps = RawSlotProps<ImageSlots>;
 
-export type ImageColorValue = ColorToken | Color3;
+export type ImageColorValue = ConcreteColorValue;
 
 export type ImageRadiusValue = ThemeSize | number | UDim;
 
 export interface ImageStrokeProps {
-	readonly color?: ColorToken | Color3;
+	readonly color?: ConcreteColorValue;
 	readonly thickness?: number;
 	readonly transparency?: number;
 	readonly mode?: Enum.ApplyStrokeMode;
@@ -40,7 +40,7 @@ export interface ImageStyleProps extends SharedStyleProps {
 	readonly sliceScale?: number;
 	readonly tileSize?: UDim2;
 	readonly border?: number;
-	readonly borderColor?: ColorToken | Color3;
+	readonly borderColor?: ConcreteColorValue;
 	readonly radius?: ImageRadiusValue;
 	readonly stroke?: ImageStrokeProps;
 	readonly aspectRatio?: number;

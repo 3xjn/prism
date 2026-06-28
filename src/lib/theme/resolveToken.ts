@@ -4,7 +4,7 @@ import type {
 	BorderColorRole,
 	ColorName,
 	ColorShade,
-	ColorToken,
+	ConcreteColorValue,
 	SemanticIntent,
 	SemanticIntentRole,
 	TextColorRole,
@@ -126,9 +126,9 @@ function resolvePaletteColor(theme: Theme, colorName: string, shade: string, tok
 	return theme.colors.palette[colorName][shade];
 }
 
-export function resolveColor(theme: Theme, value: ColorToken | Color3): Color3 {
-	if (typeIs(value, "Color3")) {
-		return value;
+function resolveColorToken(theme: Theme, value: string): Color3 {
+	if (isSemanticIntent(value)) {
+		return theme.colors[value].main;
 	}
 
 	const parts = value.split(".");
@@ -189,6 +189,14 @@ export function resolveColor(theme: Theme, value: ColorToken | Color3): Color3 {
 	}
 
 	return resolvePaletteColor(theme, first, second, value);
+}
+
+export function resolveColor(theme: Theme, value: ConcreteColorValue): Color3 {
+	if (typeIs(value, "Color3")) {
+		return value;
+	}
+
+	return resolveColorToken(theme, value.token);
 }
 
 export function resolveSize(

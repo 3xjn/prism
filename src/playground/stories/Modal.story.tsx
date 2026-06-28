@@ -2,7 +2,7 @@ import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Button, Modal, Stack, Text } from "@prism";
 import type { ModalSize } from "@prism";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -38,12 +38,12 @@ function ModalStoryCanvas({ controls: currentControls }: { readonly controls: Mo
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Modal" size="lg" weight={700} color="text.primary" />
+					<Text text="Modal" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Open one bounded dialog and use the controls to inspect width presets, full-width behavior, and the scrolling body model that keeps the panel centered and on-screen in Studio."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
@@ -66,13 +66,13 @@ function ModalStoryCanvas({ controls: currentControls }: { readonly controls: Mo
 				<Stack width="100%" gap="md">
 					<Text
 						text="Use Prism modal defaults for focused app work without pushing the surrounding layout. This reworked version keeps a bounded shell, a scrolling body for longer content, and a centered panel that stays inside the viewport."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
 					<Text
 						text="Longer content should scroll inside the body instead of forcing the whole panel off-screen. Size presets still control the shell width, and fullWidth expands to the available padded viewport."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>

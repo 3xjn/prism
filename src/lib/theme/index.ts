@@ -1,4 +1,5 @@
 export { DEFAULT_THEME } from "./defaults";
+export { theme } from "./refs";
 export { ThemeProvider, useTheme } from "./ThemeProvider";
 export { resolveColor, resolveSize } from "./resolveToken";
 export type {
@@ -15,6 +16,7 @@ export type {
 	ColorScale,
 	ColorShade,
 	ColorToken,
+	ConcreteColorValue,
 	IntentColorToken,
 	LegacyColorToken,
 	MotionDurationToken,
@@ -52,5 +54,6 @@ export type {
 	TextColorRole,
 	TextColorToken,
 	TextColors,
+	ThemeColorRef,
 	Variant,
 } from "./types";

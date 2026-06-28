@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Boolean, CreateReactStory, EnumList } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
@@ -49,9 +50,9 @@ function MissionPanel({
 }): React.ReactElement {
 	return (
 		<Stack width="100%" gap="xs">
-			<Text text={accent} size="xs" weight={800} color="primary.main" />
-			<Text text={title} size="lg" weight={800} color="text.primary" />
-			<Text text={body} color="text.secondary" wrap width="100%" />
+			<Text text={accent} size="xs" weight={800} color={themeRefs.primary.main} />
+			<Text text={title} size="lg" weight={800} color={themeRefs.text.primary} />
+			<Text text={body} color={themeRefs.text.secondary} wrap width="100%" />
 		</Stack>
 	);
 }
@@ -116,9 +117,9 @@ function TabsStoryCanvas({ controls: currentControls }: { readonly controls: Tab
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="Tabs" size="lg" weight={700} color="text.primary" />
+					<Text text="Tabs" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Tabs
 						tabs={tabs}
 						value={activeTab}
@@ -131,7 +132,7 @@ function TabsStoryCanvas({ controls: currentControls }: { readonly controls: Tab
 						keepMounted={currentControls.keepMounted}
 						width={width}
 					/>
-					<Text text={`Selected: ${activeTab}`} size="sm" color="text.secondary" wrap width="100%" />
+					<Text text={`Selected: ${activeTab}`} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 				</Stack>
 			</Box>
 		</StoryCanvas>

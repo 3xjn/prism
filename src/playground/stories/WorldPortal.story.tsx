@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Avatar, Box, Progress, Stack, Text, WorldPortal } from "@prism";
 import { Boolean, CreateReactStory, EnumList, Number, String } from "@rbxts/ui-labs";
@@ -106,8 +107,8 @@ function MetricRow({ label, value, color }: { readonly label: string; readonly v
 	return (
 		<Stack width="100%" gap="xs">
 			<Stack width="100%" direction="horizontal" justify="spaceBetween" align="center">
-				<Text text={label} size="xs" weight={700} color="text.secondary" />
-				<Text text={`${math.floor(value)}%`} size="xs" weight={700} color="text.primary" />
+				<Text text={label} size="xs" weight={700} color={themeRefs.text.secondary} />
+				<Text text={`${math.floor(value)}%`} size="xs" weight={700} color={themeRefs.text.primary} />
 			</Stack>
 			<Progress value={value} color={color} size="xs" fullWidth />
 		</Stack>
@@ -119,7 +120,7 @@ function PlayerHudCard({ controls: currentControls, compact, contentScale = 1 }:
 	const textColumnWidth = compact ? 190 : 300;
 
 	return (
-		<Box width="100%" height="100%" bg="background.surface" radius="md" border={1} borderColor="border.default" p={compact ? "xs" : "sm"} clip>
+		<Box width="100%" height="100%" bg={themeRefs.background.surface} radius="md" border={1} borderColor={themeRefs.border.default} p={compact ? "xs" : "sm"} clip>
 			<frame BackgroundTransparency={1} BorderSizePixel={0} Size={UDim2.fromScale(1, 1)} Position={UDim2.fromScale(0.5, 0.5)} AnchorPoint={new Vector2(0.5, 0.5)}>
 				<uiscale Scale={contentScale} />
 				<Stack width="100%" height="100%" gap="xs">
@@ -127,10 +128,10 @@ function PlayerHudCard({ controls: currentControls, compact, contentScale = 1 }:
 						<Avatar src={avatarThumbnail(currentControls.userId)} fallback={currentControls.playerName} size={avatarSize} color="info" border={1} />
 						<Stack width={textColumnWidth} gap="xs">
 							<Stack width="100%" direction="horizontal" justify="spaceBetween" align="center">
-								<Text text={currentControls.playerName} size={compact ? "md" : "lg"} weight={700} color="text.primary" truncate="atend" width={compact ? 112 : 188} />
-								<Text text={currentControls.team} size="xs" weight={700} color="info.dark" truncate="atend" width={compact ? 72 : 96} align="right" />
+								<Text text={currentControls.playerName} size={compact ? "md" : "lg"} weight={700} color={themeRefs.text.primary} truncate="atend" width={compact ? 112 : 188} />
+								<Text text={currentControls.team} size="xs" weight={700} color={themeRefs.info.dark} truncate="atend" width={compact ? 72 : 96} align="right" />
 							</Stack>
-							<Text text={currentControls.role} size="xs" color="text.secondary" truncate="atend" width="100%" />
+							<Text text={currentControls.role} size="xs" color={themeRefs.text.secondary} truncate="atend" width="100%" />
 						</Stack>
 					</Stack>
 					<MetricRow label="Health" value={currentControls.health} color="error" />
@@ -149,19 +150,19 @@ function WorldPortalStoryCanvas({ controls: currentControls }: { readonly contro
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="WorldPortal" size="lg" weight={700} color="text.primary" />
+					<Text text="WorldPortal" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="Render one Prism HUD composition from a world target. Billboard mode can use pixel offsets for constant screen size or scale values for true world/stud size; surface mode stays diegetic for terminals and in-world panels."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
-					<Box width="100%" bg="background.default" radius="md" p="md">
+					<Box width="100%" bg={themeRefs.background.default} radius="md" p="md">
 						<Stack width="100%" gap="xs">
-							<Text text="Demo anchor: an anchored part near (0, 4, -12) in Workspace." size="sm" color="text.primary" wrap width="100%" />
-							<Text text={`Rendering as ${currentControls.kind === "surface" ? "SurfaceGui under the Workspace part" : `${billboardSizingText} under the Workspace part`}.`} size="sm" color="text.secondary" wrap width="100%" />
+							<Text text="Demo anchor: an anchored part near (0, 4, -12) in Workspace." size="sm" color={themeRefs.text.primary} wrap width="100%" />
+							<Text text={`Rendering as ${currentControls.kind === "surface" ? "SurfaceGui under the Workspace part" : `${billboardSizingText} under the Workspace part`}.`} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 						</Stack>
 					</Box>
 				</Stack>

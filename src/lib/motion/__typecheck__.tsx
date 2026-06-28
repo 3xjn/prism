@@ -1,7 +1,7 @@
 import React from "@rbxts/react";
 
 import { useMotion } from "@prism/motion";
-import { useTheme } from "@prism/theme";
+import { theme as themeRefs, useTheme } from "@prism/theme";
 import type { AssertFalse, AssertTrue, IsAssignable } from "@prism/testing/typeContracts";
 
 import type { MotionDuration, MotionInputValue, MotionTransition, MotionValue } from "@prism/motion";
@@ -16,7 +16,7 @@ function PerKeyMotionExample() {
 	const animated = useMotion({
 		values: {
 			scale: 1,
-			bg: "primary.main",
+			bg: themeRefs.primary.main,
 		},
 		transition: {
 			scale: { duration: "fast", easing: "out" },
@@ -39,7 +39,7 @@ function SharedMotionExample() {
 	const animated = useMotion({
 		values: {
 			opacity: 0.15,
-			accent: "text.inverse",
+			accent: themeRefs.text.inverse,
 		},
 		transition: defaultTransition,
 	});
@@ -76,11 +76,13 @@ const validMotionExamples: React.ReactNode = [
 ];
 
 type InvalidDurationAllowed = AssertFalse<IsAssignable<"snappy", MotionDuration>>;
-type ColorTokenAccepted = AssertTrue<IsAssignable<"primary.main", MotionInputValue>>;
+type ColorTokenAccepted = AssertFalse<IsAssignable<"primary.main", MotionInputValue>>;
+type ThemeColorRefAccepted = AssertTrue<IsAssignable<typeof themeRefs.text.secondary, MotionInputValue>>;
 type InvalidMotionValueAllowed = AssertFalse<IsAssignable<string, MotionValue>>;
 
-const colorTokenAccepted: ColorTokenAccepted = true;
+const colorTokenAccepted: ColorTokenAccepted = false;
+const themeColorRefAccepted: ThemeColorRefAccepted = true;
 const invalidDuration: InvalidDurationAllowed = false;
 const invalidMotionValue: InvalidMotionValueAllowed = false;
 
-export { colorTokenAccepted, invalidDuration, invalidMotionValue, validMotionExamples };
+export { colorTokenAccepted, invalidDuration, invalidMotionValue, themeColorRefAccepted, validMotionExamples };

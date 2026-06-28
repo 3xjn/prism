@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { Box } from "../Box";
 import { Text } from "../Text";
@@ -9,7 +10,7 @@ import type { PopoverProps } from "./types";
 const popoverRef = React.createRef<Frame>();
 type ExportedPopoverProps = React.ComponentProps<typeof Popover>;
 
-const trigger = <Box width={160} height={36} bg="background.surface" radius="sm" />;
+const trigger = <Box width={160} height={36} bg={themeRefs.background.surface} radius="sm" />;
 const content = <Text text="Inspect loadout details" />;
 
 const validPopoverProps: PopoverProps[] = [

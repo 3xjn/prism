@@ -1,11 +1,11 @@
 import type React from "@rbxts/react";
 
-import type { ColorToken } from "@prism/theme";
+import type { ConcreteColorValue } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
 import type { SharedCursorValue } from "../_shared/useResolvedStyleProps";
 
-export type BackdropColorValue = ColorToken | Color3;
+export type BackdropColorValue = ConcreteColorValue;
 
 export interface BackdropExcludeRect {
 	readonly position: UDim2;

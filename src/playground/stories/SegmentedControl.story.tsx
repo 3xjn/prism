@@ -3,7 +3,7 @@ import ReactRoblox from "@rbxts/react-roblox";
 import { Box, SegmentedControl, Stack, Text } from "@prism";
 import type { SegmentedControlColor, SegmentedControlOption, SegmentedControlSize } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme } from "@prism/theme";
+import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -69,19 +69,19 @@ function SegmentedControlStoryCanvas({ controls: currentControls }: { readonly c
 
 	return (
 		<StoryCanvas>
-			<Box width="100%" bg="background.surface" radius="md" p="lg">
+			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
-					<Text text="SegmentedControl" size="lg" weight={700} color="text.primary" />
+					<Text text="SegmentedControl" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
 						text="A direct option picker for game settings and queue choices. It keeps every choice visible, with a compact rail and selected segment that reads as a control instead of website tabs."
-						color="text.secondary"
+						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
 					<Box width="100%" bg={theme.colors.action.hover} radius="md" p="lg">
 						<Stack width="100%" gap="md">
 							<Stack width="100%" gap="xs">
-								<Text text="Party size" size="sm" weight={700} color="text.primary" />
+								<Text text="Party size" size="sm" weight={700} color={themeRefs.text.primary} />
 								<SegmentedControl
 									options={modeOptions}
 									value={mode}
@@ -95,7 +95,7 @@ function SegmentedControlStoryCanvas({ controls: currentControls }: { readonly c
 								/>
 							</Stack>
 							<Stack width="100%" gap="xs">
-								<Text text="Match pace" size="sm" weight={700} color="text.primary" />
+								<Text text="Match pace" size="sm" weight={700} color={themeRefs.text.primary} />
 								<SegmentedControl
 									options={pacingOptions}
 									value={pacing}
@@ -107,7 +107,7 @@ function SegmentedControlStoryCanvas({ controls: currentControls }: { readonly c
 									width="100%"
 								/>
 							</Stack>
-							<Text text={`Selected: ${mode} | ${pacing}`} size="sm" color="text.secondary" wrap width="100%" />
+							<Text text={`Selected: ${mode} | ${pacing}`} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 						</Stack>
 					</Box>
 				</Stack>
