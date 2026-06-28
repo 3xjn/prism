@@ -28,6 +28,7 @@ export interface InputStyleProps extends Omit<SharedStyleProps, "bg" | "bgTransp
 	readonly readOnly?: boolean;
 	readonly fullWidth?: boolean;
 	readonly placeholder?: string;
+	readonly maxLength?: number;
 }
 
 export interface InputProps extends InputStyleProps {

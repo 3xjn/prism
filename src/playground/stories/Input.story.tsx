@@ -4,7 +4,7 @@ import { Box, Input, Stack, Text } from "@prism";
 import type { InputColor, InputSize } from "@prism";
 import type { Variant } from "@prism/theme";
 import { useTheme , theme as themeRefs } from "@prism/theme";
-import { Boolean, CreateReactStory, EnumList, String } from "@rbxts/ui-labs";
+import { Boolean, CreateReactStory, EnumList, Number, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
 
@@ -12,6 +12,7 @@ const controls = {
 	theme: storyThemeControl,
 	value: String(""),
 	placeholder: String("Search commands, settings, or players"),
+	maxLength: Number(24, 0, 64, 1),
 	variant: EnumList(
 		{
 			outline: "outline",
@@ -49,17 +50,24 @@ const controls = {
 
 type InputStoryControls = InferControls<typeof controls>;
 
+function clampStoryInputValue(value: string, maxLength: number): string {
+	const resolvedMaxLength = math.max(0, math.floor(maxLength));
+	return value.size() > resolvedMaxLength ? string.sub(value, 1, resolvedMaxLength) : value;
+}
+
 function InputStoryCanvas({ controls: currentControls }: { readonly controls: InputStoryControls }): React.ReactElement {
 	const theme = useTheme();
-	const [previewValue, setPreviewValue] = React.useState(currentControls.value);
+	const controlledValue = clampStoryInputValue(currentControls.value, currentControls.maxLength);
+	const [previewValue, setPreviewValue] = React.useState(controlledValue);
 	const resolvedVariant = currentControls.variant as Variant;
 	const resolvedColor = currentControls.color as InputColor;
 	const resolvedSize = currentControls.size as InputSize;
 	const previewValueLabel = previewValue.size() > 0 ? `Current value: ${previewValue}` : "Current value: (empty)";
+	const maxLengthLabel = `Limit: ${previewValue.size()}/${math.max(0, math.floor(currentControls.maxLength))} characters`;
 
 	React.useEffect(() => {
-		setPreviewValue(currentControls.value);
-	}, [currentControls.value]);
+		setPreviewValue(controlledValue);
+	}, [controlledValue]);
 
 	return (
 		<StoryCanvas>
@@ -78,6 +86,7 @@ function InputStoryCanvas({ controls: currentControls }: { readonly controls: In
 								value={previewValue}
 								onChange={setPreviewValue}
 								placeholder={currentControls.placeholder}
+								maxLength={currentControls.maxLength}
 								variant={resolvedVariant}
 								color={resolvedColor}
 								size={resolvedSize}
@@ -92,6 +101,7 @@ function InputStoryCanvas({ controls: currentControls }: { readonly controls: In
 								wrap
 								width="100%"
 							/>
+							<Text text={maxLengthLabel} size="xs" color={themeRefs.text.secondary} wrap width="100%" />
 						</Stack>
 					</Box>
 				</Stack>
