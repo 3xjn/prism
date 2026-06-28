@@ -73,6 +73,13 @@ export type ColorToken =
 	| PaletteColorToken
 	| LegacyColorToken;
 
+export interface ThemeColorRef<Token extends ColorToken = ColorToken> {
+	readonly kind: "themeColor";
+	readonly token: Token;
+}
+
+export type ConcreteColorValue = Color3 | ThemeColorRef;
+
 export interface ThemeShadow {
 	readonly color: Color3;
 	readonly thickness: number;
