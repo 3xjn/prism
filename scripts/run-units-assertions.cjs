@@ -283,9 +283,13 @@ function run() {
 
 	const extremeSliderRange = resolveSliderRange(-Number.MAX_VALUE, Number.MAX_VALUE);
 	const equalExtremeSliderRange = resolveSliderRange(Number.MAX_VALUE, Number.MAX_VALUE);
+	const invertedFiniteSliderRange = resolveSliderRange(10, 0);
+	const equalFiniteSliderRange = resolveSliderRange(10, 10);
 	const extremeSliderValue = normalizeSliderValue(Number.MAX_VALUE, extremeSliderRange, undefined);
 	const extremeSliderAlpha = valueToAlpha(extremeSliderValue, extremeSliderRange);
 	const extremeSliderAlphaValue = alphaToValue(0.5, extremeSliderRange, undefined);
+	const invertedFiniteSliderValue = alphaToValue(1, invertedFiniteSliderRange, undefined);
+	const equalFiniteSliderValue = alphaToValue(1, equalFiniteSliderRange, undefined);
 	const unusableSliderAlpha = valueToAlpha(0, { min: 0, max: Number.MAX_VALUE, span: Infinity });
 	const unusableSliderValue = alphaToValue(0.5, { min: 0, max: Number.MAX_VALUE, span: Infinity }, undefined);
 
@@ -295,6 +299,14 @@ function run() {
 	assertCondition(extremeSliderRange.max > extremeSliderRange.min, "Slider extreme fallback keeps a strict range");
 	assertFiniteNumber(equalExtremeSliderRange.span, "Slider equal extreme fallback span");
 	assertCondition(equalExtremeSliderRange.max > equalExtremeSliderRange.min, "Slider equal extreme fallback keeps a strict range");
+	assertCondition(invertedFiniteSliderRange.min === 10, "Slider inverted finite range keeps supplied min");
+	assertCondition(invertedFiniteSliderRange.max === 10, "Slider inverted finite range clamps max to min");
+	assertCondition(invertedFiniteSliderRange.span === 0, "Slider inverted finite range stays non-interactive");
+	assertCondition(invertedFiniteSliderValue === 10, "Slider inverted finite range alpha-to-value stays clamped at min");
+	assertCondition(equalFiniteSliderRange.min === 10, "Slider equal finite range keeps supplied min");
+	assertCondition(equalFiniteSliderRange.max === 10, "Slider equal finite range keeps supplied max");
+	assertCondition(equalFiniteSliderRange.span === 0, "Slider equal finite range stays non-interactive");
+	assertCondition(equalFiniteSliderValue === 10, "Slider equal finite range alpha-to-value stays clamped at min");
 	assertFiniteNumber(extremeSliderValue, "Slider extreme fallback normalized value");
 	assertCondition(extremeSliderValue >= extremeSliderRange.min && extremeSliderValue <= extremeSliderRange.max, "Slider extreme fallback normalized value stays clamped");
 	assertFiniteNumber(extremeSliderAlpha, "Slider extreme fallback display alpha");
