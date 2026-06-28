@@ -1,141 +1,138 @@
 # Prism
 
-Prism is an in-progress UI library for rbxts-react on Roblox. The goal is a clean component workflow that feels familiar if you like Mantine or MUI, while still matching Roblox rules around instances, sizing, and composition.
+Prism is a Roblox UI kit for `rbxts-react`.
 
-## Status
+It is still early, but the shape is already clear: small React components, strict theme tokens, Roblox-native sizing, and escape hatches when you need the raw instance underneath.
 
-Prism is in foundation alpha.
+If you like Mantine or MUI, Prism should feel familiar. If you have shipped Roblox UI before, it should still feel honest about Roblox constraints.
 
-What is present in this repo today:
+## What is here
 
-- project scaffolding for roblox-ts, rbxts-react, Rojo, and ui-labs
-- a Rojo layout that maps the library and playground output
-- a ui-labs discovery setup for Studio work
-- shipped theme tokens, default theme values, and typed token definitions
-- shipped `ThemeProvider`, `useTheme`, `resolveColor`, and `resolveSize` exports under `@prism/theme`
-- shipped theme motion tokens plus `useMotion` under `@prism/motion` for custom smooth components
-- shipped unit helpers `toUDim`, `toUDim2`, and `toUDimAxis` under `@prism/utils`
-- shipped primitive components from `@prism`, including `Box`, `Text`, `Stack`, `Button`, `Pressable`, `Draggable`, form controls, overlays, and media primitives
-- shipped ui-labs stories for the public primitive set under `src/playground/stories`
+Prism currently includes:
 
-What is not shipped yet:
+- theme tokens, defaults, `ThemeProvider`, `useTheme`, `resolveColor`, and `resolveSize`
+- motion tokens plus `useMotion` for custom animated components
+- unit helpers: `toUDim`, `toUDim2`, and `toUDimAxis`
+- public components exported from `@prism`
+- ui-labs stories for the component set under `src/playground/stories`
+- Rojo wiring that separates library output from playground output
 
-- higher-level components such as inputs, cards, and app-level patterns
+The component set includes layout, text, media, forms, feedback, navigation, overlays, and a small Luau bridge layer. This is not an npm package yet. Treat the repo as a local development workspace.
 
-## Install and setup
-
-This repo is meant for local development right now. It is not set up for npm publishing yet.
-
-### 1. Install dependencies
+## Install
 
 ```bash
 npm install
 ```
 
-### 2. Confirm the TypeScript setup
+## Build
 
-`tsconfig.json` is already wired for rbxts-react with these important pieces:
+```bash
+npm run build
+```
 
-- `jsx: "react"`
-- `jsxFactory: "React.createElement"`
-- `jsxFragmentFactory: "React.Fragment"`
-- `baseUrl: "src"`
-- path alias `@prism/* -> src/lib/*`
+That runs `rbxtsc` and writes compiled output to `out/`.
 
-### 3. Confirm the Rojo mapping
-
-`default.project.json` currently maps compiled output like this:
-
-- `ReplicatedStorage.Prism -> out/lib`
-- `StarterPlayer.StarterPlayerScripts.Playground -> out/playground`
-- `ReplicatedStorage.rbxts_include.node_modules.@rbxts -> node_modules/@rbxts`
-
-That layout keeps library code and playground code separate while still making both available in Studio.
-
-### 4. Note the current peer and toolchain packages
-
-The scaffold already includes:
-
-- `@rbxts/react`
-- `@rbxts/react-roblox`
-- `@rbxts/ui-labs`
-- `roblox-ts`
-
-There is also extra typing support in `devDependencies` because this toolchain expects a few Roblox packages to be present during compilation.
-
-## Quick start
-
-The current public surface is split across the top-level component exports plus the theme, motion, and utility modules. Primitive components such as `Box`, `Text`, `Stack`, `Button`, `Pressable`, and `Draggable` come from `@prism`, theme tokens and resolvers stay under `@prism/theme`, and custom animated values come from `@prism/motion`.
+## Use a component
 
 ```tsx
 import React from "@rbxts/react";
-import { Box, Button, Divider, Stack, Text } from "@prism";
+import { Button, Divider, Stack, Text } from "@prism";
 import { ThemeProvider } from "@prism/theme";
 
 export function Example() {
 	return (
 		<ThemeProvider>
 			<Stack width={280} bg="primary.main" radius="md" p="md" gap="sm">
-				<Text size="lg" color="text.inverse" children="Hello from Prism" />
+				<Text size="lg" color="text.inverse" children="Server controls" />
 				<Divider color="border.subtle" />
-				<Box height={24} bg="background.surface" radius="sm" />
-				<Button variant="light" color="secondary" children="Save" />
+				<Button variant="light" color="secondary" label="Save changes" />
 			</Stack>
 		</ThemeProvider>
 	);
 }
 ```
 
-In this repo's current `@rbxts/react` toolchain, examples pass primitive text through the `children` prop for `Text` and `Button` because direct JSX text children on `forwardRef` components are not type-supported.
+A small quirk of the current `@rbxts/react` setup: examples pass text through props like `children`, `text`, or `label`. Direct JSX text children on `forwardRef` components are not type-supported in this toolchain.
 
-Use semantic tokens like `primary.main`, `text.primary`, `background.surface`, and `border.subtle` for normal UI work. Low-level shade access is still available through explicit palette tokens such as `palette.primary.5`, and legacy shade tokens like `primary.5` or `gray.9` continue to resolve as compatibility behavior.
+## Controlled input
 
-The sizing rules behind that API are:
+```tsx
+import React from "@rbxts/react";
+import { Input, Stack, Text } from "@prism";
 
-- numbers mean pixel offsets, so `width={280}` means 280 pixels
-- percentage strings mean scale, so values like `"50%"` map to scale
-- raw `UDim` and `UDim2` values stay as-is when you need a direct escape hatch
+export function SearchBox() {
+	const [query, setQuery] = React.useState("");
 
-## Project structure
-
-```text
-.
-├─ src/
-│  ├─ lib/
-│  │  └─ index.ts
-│  └─ playground/
-│     ├─ main.client.ts
-│     └─ stories/
-│        ├─ index.storybook.ts
-│        └─ index.ts
-├─ out/
-│  ├─ lib/
-│  └─ playground/
-├─ default.project.json
-├─ tsconfig.json
-└─ package.json
+	return (
+		<Stack width={320} gap="sm">
+			<Input
+				value={query}
+				onChange={setQuery}
+				placeholder="Search commands, settings, or players"
+				variant="outline"
+				fullWidth
+			/>
+			<Text size="sm" color="text.secondary" text={query.size() > 0 ? `Searching for ${query}` : "Type to search"} />
+		</Stack>
+	);
+}
 ```
 
-Right now `src/lib` contains shipped `theme/`, `utils/`, `motion/`, `bridge/`, and `components/` modules. `src/lib/index.ts` re-exports the public primitive component surface, including `Pressable` and `Draggable`, while theme helpers stay under `@prism/theme`. The playable part of the repo is the ui-labs wiring under `src/playground`.
+## Tokens and units
 
-Each primitive also exposes raw `slotProps` for Roblox instance-level escape hatches. Those values are spread last onto the backing instances and decorators, so they are last-write-wins when they overlap with Prism props.
+Prism keeps styling strict on purpose.
 
-## Motion foundation
+Use semantic color tokens for normal UI:
 
-Prism now ships a small reusable motion layer for custom components.
+```tsx
+<Button color="success" variant="filled" label="Publish" />
+<Text color="text.secondary" text="Autosaved just now" />
+<Stack bg="background.surface" radius="lg" p="md" />
+```
 
-- `Theme.motion.duration` uses seconds and defaults to `instant`, `fast`, `normal`, and `slow`
-- `Theme.motion.easing` exposes a small semantic easing set mapped to Roblox easing enums
-- `useMotion({ values, transition })` animates target values in and returns animated values out
-- v1 accepts `number`, `Color3`, and Prism `ColorToken` inputs, while returning concrete renderable values
-- duration can be a token like `"fast"` or a raw number like `0.2`
+Raw Roblox values are still allowed where they make sense:
+
+```tsx
+<Stack width={280} />        // 280 px
+<Stack width="50%" />       // 0.5 scale
+<Stack width={new UDim(0, 280)} />
+```
+
+A few rules make the API predictable:
+
+- numbers are pixel offsets
+- percentage strings are scale values
+- `UDim` and `UDim2` pass through unchanged
+- theme sizes use `"xs"`, `"sm"`, `"md"`, `"lg"`, or `"xl"`
+- invalid tokens should fail loudly during development
+
+## Slot props
+
+Most components expose `slotProps` for the Roblox instances they own. Prism applies slot props last, so they are the escape hatch when the component API is too narrow.
+
+```tsx
+<Button
+	label="Danger"
+	color="error"
+	slotProps={{
+		root: { LayoutOrder: 10 },
+		stroke: { Thickness: 2 },
+	}}
+/>
+```
+
+Prefer normal Prism props first. Reach for `slotProps` when you need a specific Roblox property.
+
+## Motion
+
+`useMotion` is for building custom components on top of Prism tokens.
 
 ```tsx
 import React from "@rbxts/react";
 import { useMotion } from "@prism/motion";
-import { ThemeProvider } from "@prism/theme";
 
-function MotionExample() {
+export function MotionExample() {
 	const animated = useMotion({
 		values: {
 			scale: 1,
@@ -153,49 +150,75 @@ function MotionExample() {
 		</frame>
 	);
 }
-
-export function Example() {
-	return (
-		<ThemeProvider>
-			<MotionExample />
-		</ThemeProvider>
-	);
-}
 ```
 
-`useMotion` is intentionally for building custom components. Existing and future Prism components keep ownership of their own motion behavior, and raw `slotProps` still remain last-write-wins escape hatches that can bypass component-managed values. v1 does not animate `UDim` or `UDim2`, but semantic color tokens like `"primary.main"` work directly and still resolve to concrete `Color3` outputs.
+Prism components own their internal motion. `slotProps` can still override raw properties, but that also means you can bypass component-managed animation if you write over the same property.
 
-## Playground workflow
+## Playground
 
-The preferred inner loop is Rojo serve plus Studio.
-
-### Start the compiler
+The fastest loop is still Studio plus Rojo.
 
 ```bash
 npm run build
-```
-
-### Start Rojo
-
-```bash
 rojo serve default.project.json
 ```
 
-Then open the place file in Studio and connect to the running Rojo server. The repo also includes `playground.rbxlx` and `test.rbxlx`, which can help during local checks.
+Open the place file in Studio and connect to the Rojo server.
 
-The playground integration is discovery-driven. `src/playground/stories/index.storybook.ts` exports the ui-labs `Storybook` object and points `storyRoots` at the stories folder, then `src/playground/stories/index.ts` imports each component story so those modules are included in the compiled output. `src/playground/main.client.ts` stays intentionally inert in this setup because discovery happens through the `*.storybook.ts` file, not through a separately mounted runtime storybook app.
+The ui-labs setup is discovery based:
 
-## Current foundation approach
+- `src/playground/stories/index.storybook.ts` exports the storybook config
+- `src/playground/stories/index.ts` imports each story so it is emitted
+- `src/playground/main.client.ts` stays intentionally quiet
 
-Prism is being built from the bottom up.
+## Project layout
 
-- first, the scaffold and playground loop
-- next, shipped tokens, theme context, token resolvers, and unit helpers
-- then shipped reusable primitives such as `Box`, `Text`, `Stack`, `Button`, `Pressable`, and `Draggable`
-- after that, one component plan at a time
+```text
+.
+├─ src/
+│  ├─ lib/
+│  │  ├─ components/
+│  │  ├─ motion/
+│  │  ├─ theme/
+│  │  ├─ utils/
+│  │  └─ index.ts
+│  └─ playground/
+│     ├─ main.client.ts
+│     └─ stories/
+├─ out/
+├─ default.project.json
+├─ package.json
+└─ tsconfig.json
+```
 
-That keeps the early architecture small enough to test in Studio before more components depend on it.
+`src/lib/index.ts` is the public `@prism` surface. Theme helpers stay under `@prism/theme`; motion helpers stay under `@prism/motion`; unit helpers stay under `@prism/utils`.
 
-## Architecture and roadmap
+## Scripts
 
-Read [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the rules that shape the library, especially token discipline, slot conventions, motion ownership, unit handling, composition rules, and the roadmap.
+```bash
+npm run typecheck   # TypeScript only
+npm run lint        # ESLint over src
+npm run build       # roblox-ts compile
+npm run format      # Prettier check
+```
+
+## Roadmap
+
+Prism is foundation-first.
+
+Done or underway:
+
+- project scaffolding for roblox-ts, rbxts-react, Rojo, and ui-labs
+- strict theme tokens and resolvers
+- motion and unit helpers
+- reusable components with ui-labs stories
+
+Not the focus yet:
+
+- npm publishing
+- Wally support
+- polymorphic `as` props
+- big app shell patterns
+- timeline, keyframe, or stagger animation systems
+
+For the design rules behind those choices, read [`ARCHITECTURE.md`](./ARCHITECTURE.md).
