@@ -25,8 +25,8 @@ import { StepperInput } from "../components/StepperInput";
 import { Switch } from "../components/Switch";
 import { Text } from "../components/Text";
 import { Tooltip } from "../components/Tooltip";
-import { ThemeProvider } from "@prism/theme";
-import type { ColorToken, SemanticIntent, ThemeSize, Variant } from "@prism/theme";
+import { ThemeProvider, theme as themeRefs } from "@prism/theme";
+import type { ConcreteColorValue, SemanticIntent, ThemeSize, Variant } from "@prism/theme";
 import type { SizeValue, SizeValue2D } from "@prism/utils";
 import type { SharedCursorValue } from "../components/_shared/useResolvedStyleProps";
 import type { SegmentedControlOption } from "../components/SegmentedControl";
@@ -35,7 +35,7 @@ import type { SelectOption } from "../components/Select";
 declare const __DEV__: boolean;
 
 type LuauProps = Record<string, unknown>;
-type BridgeColorValue = ColorToken | Color3;
+type BridgeColorValue = ConcreteColorValue;
 type BridgeSizeValue = SizeValue;
 type BridgeSizeValue2D = SizeValue2D;
 type BridgeCursorValue = SharedCursorValue;
@@ -380,8 +380,8 @@ function readSizeValue2D(props: LuauProps, key: string): BridgeSizeValue2D | und
 
 function readColor(props: LuauProps, key: string, fallback?: BridgeColorValue): BridgeColorValue | undefined {
 	const value = props[key];
-	if (typeIs(value, "string") || typeIs(value, "Color3")) {
-		return value as BridgeColorValue;
+	if (typeIs(value, "Color3")) {
+		return value;
 	}
 
 	return fallback;
@@ -705,8 +705,14 @@ function renderNode(node: PrismLuauNode, key = "root"): React.ReactElement {
 					defaultValue={readStringArray(props, "defaultValue")}
 					onReorder={readStringArrayCallback(props, "onReorder")}
 					renderItem={(state) => (
-						<Box width={state.item.label.size() > 14 ? 180 : 144} bg={state.disabled ? "action.disabledBackground" : state.dragging ? "primary.light" : "background.surface"} radius="md" borderColor={state.dragging ? "primary.main" : "border.default"} p="sm">
-							<Text text={state.item.label} color={state.disabled ? "text.disabled" : "text.primary"} wrap width="100%" />
+						<Box
+							width={state.item.label.size() > 14 ? 180 : 144}
+							bg={state.disabled ? themeRefs.action.disabledBackground : state.dragging ? themeRefs.primary.light : themeRefs.background.surface}
+							radius="md"
+							borderColor={state.dragging ? themeRefs.primary.main : themeRefs.border.default}
+							p="sm"
+						>
+							<Text text={state.item.label} color={state.disabled ? themeRefs.text.disabled : themeRefs.text.primary} wrap width="100%" />
 						</Box>
 					)}
 				/>
@@ -720,7 +726,7 @@ function renderNode(node: PrismLuauNode, key = "root"): React.ReactElement {
 					key={key}
 					name={readIconName(props)}
 					size={readStringOrNumber(props, "size") as ThemeSize | number | undefined}
-					color={readColor(props, "color", "text.inverse")}
+						color={readColor(props, "color", themeRefs.text.inverse)}
 					width={readSizeValue(props, "width")}
 					height={readSizeValue(props, "height")}
 					position={readSizeValue2D(props, "position")}
