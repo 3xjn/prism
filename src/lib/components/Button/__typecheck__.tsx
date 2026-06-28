@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme } from "@prism/theme";
 
 import { Button } from "./Button";
 import type { ButtonProps } from "./types";
@@ -68,6 +69,8 @@ const acceptsButtonProps: ButtonProps[] = validButtonProps;
 const acceptsExportedButtonProps: ExportedButtonProps[] = validExportedButtonProps;
 
 type InvalidButtonColorAllowed = "palette.orange.5" extends NonNullable<ButtonProps["color"]> ? true : false;
+type ButtonRawColorAllowed = Color3 extends NonNullable<ButtonProps["color"]> ? true : false;
+type ButtonThemeRefAllowed = typeof theme.text.secondary extends NonNullable<ButtonProps["color"]> ? true : false;
 type InvalidButtonVariantAllowed = "ghost" extends NonNullable<ButtonProps["variant"]> ? true : false;
 type InvalidButtonCursorAllowed = "resize-horizontal" extends NonNullable<ButtonProps["cursor"]> ? true : false;
 type ReactElementButtonChildAllowed = React.ReactElement extends NonNullable<ButtonProps["children"]> ? true : false;
@@ -78,6 +81,8 @@ type ExportedButtonLabelStringAllowed = "Save" extends NonNullable<ExportedButto
 type ReactAttributesStringChildAllowed = "Save" extends NonNullable<React.Attributes["children"]> ? true : false;
 
 const invalidButtonColor: InvalidButtonColorAllowed = false;
+const buttonRawColorAllowed: ButtonRawColorAllowed = false;
+const buttonThemeRefAllowed: ButtonThemeRefAllowed = false;
 const invalidButtonVariant: InvalidButtonVariantAllowed = false;
 const invalidButtonCursor: InvalidButtonCursorAllowed = false;
 const reactElementButtonChild: ReactElementButtonChildAllowed = true;
@@ -91,6 +96,8 @@ export {
 	acceptsButtonChildren,
 	acceptsButtonProps,
 	acceptsExportedButtonProps,
+	buttonRawColorAllowed,
+	buttonThemeRefAllowed,
 	buttonLabelNumber,
 	exportedButtonNumberChild,
 	exportedButtonLabelString,

@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { Box } from "../Box";
 import { Text } from "../Text";
@@ -9,7 +10,7 @@ import type { MenuItem, MenuProps } from "./types";
 const menuRef = React.createRef<Frame>();
 type ExportedMenuProps = React.ComponentProps<typeof Menu>;
 
-const trigger = <Box width={160} height={36} bg="background.surface" radius="sm" />;
+const trigger = <Box width={160} height={36} bg={themeRefs.background.surface} radius="sm" />;
 const items: readonly MenuItem[] = [
 	{ type: "label", label: "Actions" },
 	{ value: "equip", label: "Equip" },

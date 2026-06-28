@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { Button } from "../Button";
 import { Box } from "../Box";
@@ -9,13 +10,13 @@ import type { TooltipProps } from "./types";
 const tooltipRef = React.createRef<Frame>();
 type ExportedTooltipProps = React.ComponentProps<typeof Tooltip>;
 
-const infoTarget = <Box width={140} height={44} bg="background.surface" radius="md" border={1} borderColor="border.default" />;
+const infoTarget = <Box width={140} height={44} bg={themeRefs.background.surface} radius="md" border={1} borderColor={themeRefs.border.default} />;
 const buttonChild = <Button label="Action with info" variant="outline" />;
 
 const validTooltipProps: TooltipProps[] = [
 	{ content: "System status", children: infoTarget },
-	{ content: <Box width={220} height={120} bg="background.surface" radius="md" />, children: infoTarget },
-	{ label: "Queued", children: <Box width={96} height={32} bg="background.surface" radius="sm" /> },
+	{ content: <Box width={220} height={120} bg={themeRefs.background.surface} radius="md" />, children: infoTarget },
+	{ label: "Queued", children: <Box width={96} height={32} bg={themeRefs.background.surface} radius="sm" /> },
 	{ content: 42, children: <Box width={42} height={24} /> },
 	{ content: "Disabled tooltip", disabled: true, children: <Box width={120} height={32} /> },
 	{ content: "Pinned tooltip", opened: true, children: <Box width={120} height={32} /> },
@@ -46,7 +47,7 @@ const validExportedTooltipProps: ExportedTooltipProps[] = [
 
 const validTooltipExamples = [
 	<Tooltip key="basic" content="Status bubble">{infoTarget}</Tooltip>,
-	<Tooltip key="rich" content={<Box width={180} height={80} bg="background.surface" radius="md" />}>{infoTarget}</Tooltip>,
+	<Tooltip key="rich" content={<Box width={180} height={80} bg={themeRefs.background.surface} radius="md" />}>{infoTarget}</Tooltip>,
 	<Tooltip key="number" content={7}><Box width={24} height={24} /></Tooltip>,
 	<Tooltip key="opened" content="Pinned" opened><Box width={120} height={32} /></Tooltip>,
 	<Tooltip

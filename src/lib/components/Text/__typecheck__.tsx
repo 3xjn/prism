@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { Text } from "./Text";
 import type { TextProps } from "./types";
@@ -13,7 +14,9 @@ const validTextProps: TextProps[] = [
 	{ children: 42 },
 	{ children: "X", size: "lg" },
 	{ children: "X", size: 32 },
-	{ children: "X", color: "primary.main" },
+	{ children: "X", color: themeRefs.primary.main },
+	{ children: "Theme ref", color: themeRefs.text.secondary },
+	{ children: "Raw", color: Color3.fromRGB(255, 255, 255) },
 	{ children: "X", align: "center", valign: "middle" },
 	{ children: "long text", wrap: true },
 	{ children: "Auto-sized label", p: "sm" },
@@ -34,7 +37,8 @@ const validTextExamples = [
 	<Text key="text" text="Hello" />,
 	<Text key="text-number" text={42} />,
 	<Text key="layout" width={240} position={{ x: "50%", y: 0 }} p="md" />,
-	<Text key="appearance" size="lg" color="primary.main" align="center" wrap />,
+	<Text key="appearance" size="lg" color={themeRefs.primary.main} align="center" wrap />,
+	<Text key="appearance-ref" size="lg" color={themeRefs.text.secondary} align="center" wrap />,
 	<Text key="cursor" text="Pointer" cursor="pointer" />,
 	<Text key="constraints" maxFontSize={24} minFontSize={12} truncate="atend" />,
 	<Text key="font" font={Enum.Font.Gotham} weight={700} />,
@@ -56,13 +60,26 @@ const acceptsTextChildren: React.ReactNode = validTextExamples;
 const acceptsTextProps: TextProps[] = validTextProps;
 
 type InvalidTextColorAllowed = "invalid.token" extends NonNullable<TextProps["color"]> ? true : false;
+type ThemeTextRefAllowed = typeof themeRefs.text.secondary extends NonNullable<TextProps["color"]> ? true : false;
+type TextIntentStringAllowed = "success" extends NonNullable<TextProps["color"]> ? true : false;
 type InvalidTextTruncateAllowed = "clip" extends NonNullable<TextProps["truncate"]> ? true : false;
 type InvalidTextChildAllowed = React.ReactElement extends NonNullable<TextProps["children"]> ? true : false;
 type InvalidTextPropAllowed = React.ReactElement extends NonNullable<TextProps["text"]> ? true : false;
 
 const invalidTextColor: InvalidTextColorAllowed = false;
+const themeTextRefAllowed: ThemeTextRefAllowed = true;
+const textIntentStringAllowed: TextIntentStringAllowed = false;
 const invalidTextTruncate: InvalidTextTruncateAllowed = false;
 const invalidTextChild: InvalidTextChildAllowed = false;
 const invalidTextProp: InvalidTextPropAllowed = false;
 
-export { acceptsTextChildren, acceptsTextProps, invalidTextChild, invalidTextColor, invalidTextProp, invalidTextTruncate };
+export {
+	acceptsTextChildren,
+	acceptsTextProps,
+	invalidTextChild,
+	invalidTextColor,
+	invalidTextProp,
+	invalidTextTruncate,
+	themeTextRefAllowed,
+	textIntentStringAllowed,
+};

@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import type { AssertFalse, AssertTrue, IsAssignable } from "@prism/testing/typeContracts";
 
@@ -13,7 +14,7 @@ const validBackdropProps: BackdropProps[] = [
 	{ visible: true },
 	{ visible: false },
 	{ opacity: 0.5 },
-	{ color: "background.default" },
+	{ color: themeRefs.background.default },
 	{ color: Color3.fromRGB(12, 16, 24) },
 	{ onPress: () => undefined },
 	{ active: false, cursor: "default" },
@@ -26,7 +27,7 @@ const validBackdropProps: BackdropProps[] = [
 const validExportedBackdropProps: ExportedBackdropProps[] = [
 	{},
 	{ opacity: 0.42, onPress: () => undefined },
-	{ color: "text.primary", visible: true },
+	{ color: themeRefs.text.primary, visible: true },
 ];
 
 const validBackdropExamples = [

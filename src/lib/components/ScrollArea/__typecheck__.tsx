@@ -1,4 +1,5 @@
 import React from "@rbxts/react";
+import { theme as themeRefs } from "@prism/theme";
 
 import { Text } from "../Text";
 
@@ -14,10 +15,10 @@ const validScrollAreaProps: ScrollAreaProps[] = [
 	{ direction: "vertical", automaticCanvasSize: Enum.AutomaticSize.Y },
 	{ direction: "horizontal", canvasSize: UDim2.fromOffset(640, 0) },
 	{ direction: "both", canvasPosition: new Vector2(12, 20) },
-	{ scrollbarSize: 8, scrollbarTransparency: 0.1, scrollbarColor: "text.secondary" },
+	{ scrollbarSize: 8, scrollbarTransparency: 0.1, scrollbarColor: themeRefs.text.secondary },
 	{ scrollingEnabled: false },
 	{ onCanvasPositionChange: () => undefined },
-	{ p: "sm", bg: "background.surface" },
+	{ p: "sm", bg: themeRefs.background.surface },
 	{ slotProps: { root: { ScrollBarThickness: 12 }, content: { BackgroundTransparency: 1 }, padding: { PaddingLeft: new UDim(0, 12) } } },
 	{ ref: scrollAreaRef },
 ];
