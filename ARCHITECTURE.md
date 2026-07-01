@@ -22,6 +22,16 @@ Prism uses strict token discipline.
 
 Loose token systems feel easy at first, then drift fast. Closed token unions keep autocomplete useful, make mistakes obvious, and stop random string values from becoming permanent API baggage.
 
+### Dev mode
+
+"Throw in development and warn in production" is decided by `isDevMode()` in `@prism/utils`:
+
+- Dev mode defaults to `RunService:IsStudio()`, so Studio sessions (including the ui-labs playground) fail loudly on invalid tokens.
+- Setting `_G.__DEV__` to a boolean before Prism first loads overrides the default in either direction.
+- In production (live servers), token failures warn to the console and resolve to a safe fallback so a bad prop degrades one component instead of unmounting the tree.
+
+Component code reaches this behavior through the safe resolver wrappers in `components/_shared/useResolvedStyleProps.ts` (`resolveColorSafe`, `resolveThemeSizeSafe`, `resolveUDimSafe`). Do not call the raw throwing `resolveColor`/`resolveSize` from component render paths.
+
 ### Planned token shape
 
 The foundation plan locks in these token families:
@@ -50,20 +60,22 @@ Slots are Prism's way to expose controlled customization without opening every c
 ### Slot rules
 
 1. Every component declares its slots in a `Slots` interface.
-2. Shipped slots match the raw Roblox instances each component owns. `Box`, `Text`, `Stack`, `Button`, and `Draggable` expose their root plus relevant decorator or layout slots, while `Divider` exposes `root`.
+2. Shipped slots match the raw Roblox instances each component owns: every component exposes at least `root`, plus its decorator and layout instances where relevant.
 3. New slots are added intentionally, component by component.
 4. Slot override order is fixed: defaults, then direct Prism props, then raw `slotProps`, with `slotProps` spread last as the final escape hatch.
 
 ### Current slot intent
 
+Every shipped component declares its `Slots` interface in its `types.ts`, mapping slot names to the raw Roblox instances the component owns. Representative examples:
+
 - `BoxSlots` is `{ root: Frame, corner: UICorner, stroke: UIStroke, padding: UIPadding, gradient: UIGradient, aspectRatio: UIAspectRatioConstraint, sizeConstraint: UISizeConstraint }`
 - `TextSlots` is `{ root: TextLabel, padding: UIPadding, sizeConstraint: UISizeConstraint, textSizeConstraint: UITextSizeConstraint }`
-- `StackSlots` is `{ root: Frame, padding: UIPadding, sizeConstraint: UISizeConstraint, listLayout: UIListLayout }`
 - `DividerSlots` is `{ root: Frame }`
 - `ButtonSlots` is `{ root: TextButton, corner: UICorner, stroke: UIStroke, padding: UIPadding, scale: UIScale, sizeConstraint: UISizeConstraint }`
-- `DraggableSlots` is `{ root: Frame, padding: UIPadding, sizeConstraint: UISizeConstraint, listLayout: UIListLayout, item: TextButton }`
 
 These are raw Roblox instance escape hatches. They exist so consumers can reach backing instances like decorators, list layouts, and text constraints without Prism inventing a separate prop for every host property.
+
+Because `slotProps` spreads last, a component must not re-assert host properties after the spread. If a component needs to force a host property (for example `Pressable` blanking its backing `TextButton` text), the forced value belongs in the pre-spread instance props so a consumer override still wins.
 
 ## Units
 
@@ -101,6 +113,18 @@ Prism favors a small set of composition rules over highly dynamic polymorphism.
 - every public component sets `displayName`
 - decorator children such as `UICorner`, `UIStroke`, `UIPadding`, and other `UI*` helpers render before user children
 - raw `slotProps` are spread last, so overlapping values are last-write-wins by design
+
+### Shared component plumbing
+
+Recurring mechanics live in `components/_shared` and new components must use them instead of re-implementing:
+
+- `usePressInteraction` owns the hover/press state machine (`"idle" | "hovered" | "pressed" | "disabled"`) and returns the root `Event` handlers; compose extras with `composeEventMaps`
+- `useControllableState` owns controlled/uncontrolled value plumbing for `value`/`defaultValue`/`onChange`-shaped props
+- `frameSize.ts` derives `Size`/`AutomaticSize` and minimum-height constraints from resolved style props
+- `useResolvedStyleProps` resolves shared style props and is the sole gateway to token resolution failures
+- `foundationDecorators`, `layering`/`TriggerOverlayLayer`, `usePresence`, `useRootCursor`, `textFont`, and `visual` cover decorators, overlay portals, presence transitions, cursor claims, fonts, and color mixing
+
+Components whose semantics genuinely differ (for example per-item hover maps keyed by value in `Tabs` and `SegmentedControl`, or conditional `onChange` firing) may keep local logic, but the divergence should be deliberate, not copy-paste drift.
 
 ### rbxts-react rules that matter here
 
@@ -146,19 +170,25 @@ Shipped today in this repo:
 - a ui-labs story discovery setup driven by `src/playground/stories/index.storybook.ts`
 - theme tokens, default theme values, strict theme types, `ThemeProvider`, `useTheme`, `resolveColor`, and `resolveSize` under `@prism/theme`
 - theme motion tokens plus `useMotion` under `@prism/motion`
-- unit conversion helpers under `src/lib/utils`
-- reusable primitives from the top-level `@prism` entrypoint, including `Box`, `Text`, `Stack`, `Button`, `Pressable`, and `Draggable`
-- playground stories for the public primitive surface under `src/playground/stories`
+- unit conversion helpers and `isDevMode` under `@prism/utils`
+- the Lucide icon atlas under `@prism/icons`
+- shared component plumbing under `components/_shared` (interaction hooks, style resolution, decorators, overlay layering, presence, cursor claims)
+- roughly thirty components from the top-level `@prism` entrypoint: layout primitives (`Box`, `Text`, `Stack`, `Divider`, `Card`, `ScrollArea`), interaction primitives (`Pressable`, `Button`, `Draggable`), form controls (`Checkbox`, `Switch`, `Input`, `Select`, `Slider`, `StepperInput`, `SegmentedControl`, `KeybindInput`, `Tabs`), overlays (`Modal`, `Menu`, `Popover`, `Tooltip`, `Backdrop`), display (`Avatar`, `Icon`, `Image`, `Progress`, `CircularProgress`), and world integration (`WorldPortal`)
+- a Luau interop bridge (`mountPrism` under `@prism`'s `bridge`) that renders a plain data tree of Prism components for non-TypeScript callers
+- playground stories for the public component surface under `src/playground/stories`
+- compile-time prop contracts via per-component `__typecheck__.tsx` files, plus a Node-based assertion runner (`npm test`) for unit conversion and Progress/Slider range math
 
 The current ui-labs integration is file-discovery based. `index.storybook.ts` exports the `Storybook` config and points `storyRoots` at the stories folder, while `src/playground/stories/index.ts` imports each story module so they are emitted and discoverable. Prism does not mount a separate PlayerGui playground app at runtime.
 
-Planned within the current foundation plan:
+### Known debts and follow-ups
 
-- tighter refinement of the shipped primitives and story coverage as later plans require
+Deliberate next steps, roughly in priority order:
 
-Planned after the foundation plan, one follow-up plan at a time:
-
-- more primitives and components as real needs appear
+- unify `Select`'s dropdown on the shared `TriggerOverlayLayer`/`Popover` machinery used by Popover, Tooltip, and Menu instead of its bespoke bottom-only overlay
+- extract a shared intent-surface color resolver so per-component `styles.ts` files stop hand-tuning the same `mixColor` hover/pressed blends
+- split the outsized files: `KeybindInput.tsx` (~1,100 lines), `Draggable.tsx` (~1,000 lines), and `LuauBridge.tsx` (~1,100 lines, with heavy internal duplication across its per-prop validators)
+- converge `Tabs` and `SegmentedControl` per-item hover tracking with the shared interaction hook where their keyed-map semantics allow
+- add runtime coverage for the theme resolvers, `mergeTheme`, motion interpolation, and the bridge (only unit conversion and Progress/Slider math run under `npm test` today)
 
 ### Non-goals for this phase
 
