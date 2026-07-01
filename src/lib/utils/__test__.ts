@@ -31,7 +31,7 @@ function runUnitAssertions(): void {
 	assertUDim(toUDim(200), new UDim(0, 200), "toUDim converts numbers to pixels");
 	assertUDim(toUDim("50%"), new UDim(0.5, 0), "toUDim converts percent strings to scale");
 	assertUDim(toUDim("150%"), new UDim(1.5, 0), "toUDim supports percentages above 100%");
-	assertUDim(toUDim("10px"), new UDim(0, 10), "toUDim converts px strings to offset");
+	expectThrows(() => toUDim("10px"), "Invalid SizeValue", "toUDim rejects px strings like toUDim2");
 	assertUDim(toUDim(-8), new UDim(0, -8), "toUDim allows negative numbers");
 	assertUDim(toUDimAxis("-25%", "y"), new UDim(-0.25, 0), "toUDimAxis follows toUDim rules");
 	assertCondition(toUDim(passthrough1D) === passthrough1D, "toUDim passes UDim through unchanged");

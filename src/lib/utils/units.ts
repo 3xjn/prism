@@ -2,20 +2,6 @@ export type SizeValue = number | string | UDim;
 
 export type SizeValue2D = number | string | UDim2 | { x: SizeValue; y: SizeValue };
 
-function parsePixelString(value: string): number | undefined {
-	if (string.sub(value, -2) !== "px") {
-		return undefined;
-	}
-
-	const numeric = string.sub(value, 1, -3);
-
-	if (!isSignedIntegerString(numeric)) {
-		return undefined;
-	}
-
-	return tonumber(numeric)!;
-}
-
 function parsePercentString(value: string): number | undefined {
 	if (string.sub(value, -1) !== "%") {
 		return undefined;
@@ -101,7 +87,6 @@ function isSizeValue2DObject(value: SizeValue2D): value is { x: SizeValue; y: Si
  * ```ts
  * toUDim(200); // new UDim(0, 200)
  * toUDim("50%"); // new UDim(0.5, 0)
- * toUDim("10px"); // new UDim(0, 10)
  * toUDim(new UDim(0.25, 8)); // passthrough
  * ```
  *
@@ -121,12 +106,6 @@ export function toUDim(value: SizeValue): UDim {
 
 		if (percent !== undefined) {
 			return new UDim(percent, 0);
-		}
-
-		const pixels = parsePixelString(value);
-
-		if (pixels !== undefined) {
-			return new UDim(0, pixels);
 		}
 
 		throw `Invalid SizeValue: ${value}`;

@@ -16,6 +16,7 @@ import type { IconName, IconProps } from "./types";
 
 const FALLBACK_ICON_NAME: IconName = "alert-circle";
 const warnedInvalidIconNames: Record<string, true> = {};
+let warnedInvalidIconSize = false;
 
 function warnInvalidIconName(name: string): void {
 	if (!isDevMode() || warnedInvalidIconNames[name] === true) {
@@ -34,7 +35,16 @@ function resolveIconDisplaySize(size: IconProps["size"], fallback: number): numb
 	}
 
 	if (typeIs(size, "number")) {
-		return math.max(1, math.abs(size));
+		if (size > 0) {
+			return size;
+		}
+
+		if (isDevMode() && !warnedInvalidIconSize) {
+			warnedInvalidIconSize = true;
+			warn(`[prism/icon] Icon size must be a positive number, got ${size}. Falling back to ${fallback}.`);
+		}
+
+		return fallback;
 	}
 
 	return fallback;

@@ -2,8 +2,7 @@ import React from "@rbxts/react";
 
 import { useTheme } from "@prism/theme";
 import type { Theme } from "@prism/theme";
-import { resolveSize } from "@prism/theme";
-import { resolveColorSafe } from "../_shared/useResolvedStyleProps";
+import { resolveColorSafe, resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
 import type { DividerColorValue, DividerOrientation, DividerProps, DividerSizeValue } from "./types";
@@ -17,7 +16,7 @@ function resolveDividerThickness(theme: Theme, value: DividerSizeValue | undefin
 		return value;
 	}
 
-	return resolveSize(theme, value, "spacing");
+	return resolveThemeSizeSafe(theme, "divider", value, "spacing", 1);
 }
 
 function resolveDividerColor(theme: Theme, value: DividerColorValue | undefined): Color3 {
