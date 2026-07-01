@@ -197,7 +197,7 @@ Deliberate next steps, roughly in priority order:
 - add a tooltip `openDelay` (tooltips currently open instantly on hover)
 - styled gamepad focus (`SelectionImageObject`) so controller selection matches the design language instead of the stock Roblox box
 - Menu reserves 34% of panel width for `rightSection`, truncating labels even when the section is narrow; measure the section instead
-- consider upgrading `elevation.tsx` internals to a pre-blurred 9-slice shadow image asset for true gaussian falloff (single choke point; all shadowed components inherit)
+- optional: swap `elevation.tsx` internals for a 9-slice shadow image (`assets/drop-shadow-128.png`, uploaded as `rbxassetid://110725881404654`). The current 10-ring gaussian stack is visually smooth; the image route needs a punched-out center (a child ImageLabel draws over its parent surface) and measured pixel sizing everywhere (an ImageLabel larger than an AutomaticSize surface inflates it — rotation does not exempt it), so it only pays off if stroke rendering ever becomes a bottleneck
 
 ### Non-goals for this phase
 

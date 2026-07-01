@@ -27,15 +27,29 @@ export interface ElevationShadowProps {
 	};
 }
 
-function resolveShadowRings(shadow: ThemeShadow): ShadowRing[] {
-	const spread = math.max(shadow.thickness, 1);
-	const base = shadow.transparency;
+const SHADOW_RING_COUNT = 10;
 
-	return [
-		{ thickness: spread + 1, transparency: math.min(base + 0.05, 0.98) },
-		{ thickness: spread * 3 + 2, transparency: math.min(base + 0.12, 0.985) },
-		{ thickness: spread * 5 + 5, transparency: math.min(base + 0.165, 0.99) },
-	];
+function resolveShadowRings(shadow: ThemeShadow): ShadowRing[] {
+	// Stacked strokes: ring i covers 0..t_i outward, so the cumulative
+	// alpha at distance d is the sum of every ring reaching past d.
+	// Setting each ring's alpha to the gaussian *difference* between its
+	// inner and outer shell makes the stack reproduce a smooth gaussian
+	// falloff with no visible banding.
+	const spread = math.max(shadow.thickness, 1) * 12;
+	const sigma = spread / 1.7;
+	const peak = math.min((1 - shadow.transparency) * 1.45, 0.4);
+	const rings: ShadowRing[] = [];
+
+	const gauss = (d: number) => math.exp(-(d * d) / (2 * sigma * sigma));
+
+	for (let index = 1; index <= SHADOW_RING_COUNT; index++) {
+		const inner = (spread * (index - 1)) / SHADOW_RING_COUNT;
+		const outer = (spread * index) / SHADOW_RING_COUNT;
+		const alpha = peak * (gauss(inner) - gauss(outer));
+		rings.push({ thickness: outer, transparency: math.clamp(1 - alpha, 0, 1) });
+	}
+
+	return rings;
 }
 
 /**
