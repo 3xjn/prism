@@ -1,9 +1,7 @@
 import { resolveColor, resolveSize, useTheme } from "@prism/theme";
 import type { ConcreteColorValue, Theme, ThemeSize } from "@prism/theme";
-import { toUDim, toUDim2 } from "@prism/utils";
+import { isDevMode, toUDim, toUDim2 } from "@prism/utils";
 import type { SizeValue, SizeValue2D } from "@prism/utils";
-
-declare const __DEV__: boolean;
 
 export { mergeSharedStyleProps } from "./mergeSharedStyleProps";
 
@@ -89,7 +87,7 @@ function isThemeSize(value: unknown): value is ThemeSize {
 }
 
 function reportResolutionFailure(message: string): void {
-	if (__DEV__) {
+	if (isDevMode()) {
 		error(message);
 		return;
 	}

@@ -1,5 +1,6 @@
 import React from "@rbxts/react";
 import { theme as themeRefs } from "@prism/theme";
+import { isDevMode } from "@prism/utils";
 
 import { getLucideIconAsset, SUPPORTED_LUCIDE_ICON_NAMES } from "../../icons/lucide";
 
@@ -13,13 +14,11 @@ import { useRootCursorEvent } from "../_shared/useRootCursor";
 
 import type { IconName, IconProps } from "./types";
 
-declare const __DEV__: boolean;
-
 const FALLBACK_ICON_NAME: IconName = "alert-circle";
 const warnedInvalidIconNames: Record<string, true> = {};
 
 function warnInvalidIconName(name: string): void {
-	if (!__DEV__ || warnedInvalidIconNames[name] === true) {
+	if (!isDevMode() || warnedInvalidIconNames[name] === true) {
 		return;
 	}
 
