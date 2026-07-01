@@ -9,6 +9,13 @@ export type PressInteractionEventMap = React.InstanceProps<GuiButton>["Event"];
 export interface PressInteractionOptions {
 	/** When false, hover/press state resets and input is ignored. */
 	readonly interactive: boolean;
+	/**
+	 * Drives the "disabled" interaction state. Defaults to !interactive;
+	 * pass explicitly when a component can be non-interactive without
+	 * being disabled (for example Pressable's `active` prop), so the
+	 * state reads "idle" instead of "disabled".
+	 */
+	readonly disabled?: boolean;
 	/** Called on Activated while interactive. */
 	readonly onActivated?: () => void;
 }
@@ -21,7 +28,7 @@ export interface PressInteraction {
 	readonly eventMap: PressInteractionEventMap;
 }
 
-export function resolveInteractionState(disabled: boolean, hovered: boolean, pressed: boolean): InteractionState {
+function resolveInteractionState(disabled: boolean, hovered: boolean, pressed: boolean): InteractionState {
 	if (disabled) {
 		return "disabled";
 	}
@@ -43,7 +50,7 @@ export function resolveInteractionState(disabled: boolean, hovered: boolean, pre
  * returns the Event handlers that drive them.
  */
 export function usePressInteraction(options: PressInteractionOptions): PressInteraction {
-	const { interactive, onActivated } = options;
+	const { interactive, disabled = !interactive, onActivated } = options;
 	const [hovered, setHovered] = React.useState(false);
 	const [pressed, setPressed] = React.useState(false);
 
@@ -97,7 +104,7 @@ export function usePressInteraction(options: PressInteractionOptions): PressInte
 	return {
 		hovered: effectiveHovered,
 		pressed: effectivePressed,
-		state: resolveInteractionState(!interactive, effectiveHovered, effectivePressed),
+		state: resolveInteractionState(disabled, effectiveHovered, effectivePressed),
 		eventMap,
 	};
 }

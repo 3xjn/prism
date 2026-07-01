@@ -28,8 +28,6 @@ import { mixColor } from "../_shared/visual";
 
 import type { SwitchColor, SwitchIcons, SwitchProps, SwitchSize } from "./types";
 
-type SwitchInteractionState = InteractionState;
-
 interface SwitchSizeStyles {
 	readonly trackWidth: number;
 	readonly trackHeight: number;
@@ -140,7 +138,7 @@ function resolveSwitchIconName(icons: SwitchIcons | undefined, checked: boolean,
 function resolveSwitchVisualStyles(
 	theme: Theme,
 	color: SwitchColor,
-	state: SwitchInteractionState,
+	state: InteractionState,
 	checked: boolean,
 	sizeStyles: SwitchSizeStyles,
 ): SwitchVisualStyles {
@@ -202,7 +200,7 @@ function resolveSwitchVisualStyles(
 	};
 }
 
-function resolveSwitchMotionTransition(state: SwitchInteractionState) {
+function resolveSwitchMotionTransition(state: InteractionState) {
 	if (state === "disabled") {
 		return {
 			trackColor: { duration: "instant", easing: "standard" },
@@ -273,7 +271,7 @@ const SwitchBase = React.forwardRef<TextButton, SwitchProps>((props, ref) => {
 	} = props;
 	const [checkedState, setCheckedState] = useControllableState({
 		controlled: checked,
-		defaultValue: checked ?? defaultChecked ?? false,
+		defaultValue: defaultChecked ?? false,
 		onChange,
 	});
 	const mergedStyleProps = mergeSharedStyleProps({ cursor: "pointer" }, props);
@@ -305,7 +303,7 @@ const SwitchBase = React.forwardRef<TextButton, SwitchProps>((props, ref) => {
 	};
 
 	const press = usePressInteraction({ interactive: !disabled, onActivated: toggle });
-	const interactionState: SwitchInteractionState = press.state;
+	const interactionState: InteractionState = press.state;
 	const hoverActive = press.hovered;
 	const resolvedIconName = resolveSwitchIconName(icons, checkedState, hoverActive);
 	const resolvedIconAsset = resolvedIconName === undefined ? undefined : getLucideIconAsset(resolvedIconName, sizeStyles.iconSize);

@@ -1,4 +1,4 @@
-export { assignRef, composeEventMaps, isPressInput } from "../_shared/interaction";
+export { assignRef, composeEventMaps } from "../_shared/interaction";
 export { incrementZIndex, type GuiZIndex } from "../_shared/overlayLayerPolicy";
 export { resolveTextFontFace } from "../_shared/textFont";
 import type { TriggerOverlayLayout } from "../_shared/layering";

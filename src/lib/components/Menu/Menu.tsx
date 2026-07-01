@@ -2,7 +2,6 @@ import React from "@rbxts/react";
 
 import { useMotion } from "@prism/motion";
 import { useTheme } from "@prism/theme";
-import { toUDim } from "@prism/utils";
 
 import { Popover } from "../Popover";
 import type { PopoverSlotProps } from "../Popover";
@@ -11,7 +10,7 @@ import { assignRef, composeEventMaps } from "../_shared/interaction";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
 import { resolveTextFontFace } from "../_shared/textFont";
 import { usePressInteraction } from "../_shared/usePressInteraction";
-import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
+import { resolveThemeSizeSafe, resolveUDimSafe } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
 import {
@@ -59,7 +58,9 @@ function resolveVisibleListHeight(items: readonly MenuItem[], maxVisibleItems: n
 }
 
 function resolveMenuPanelWidth(props: MenuProps, sizeStyles: MenuSizeStyles): UDim {
-	return props.panelWidth !== undefined ? toUDim(props.panelWidth) : new UDim(0, sizeStyles.panelWidth);
+	return props.panelWidth !== undefined
+		? resolveUDimSafe("menu", props.panelWidth, "panelWidth", new UDim(0, sizeStyles.panelWidth))
+		: new UDim(0, sizeStyles.panelWidth);
 }
 
 function resolveRightSectionWidth(panelWidth: UDim): UDim {

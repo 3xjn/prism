@@ -1,8 +1,8 @@
-declare const __DEV__: boolean | undefined;
-
 const RunService = game.GetService("RunService");
 
-let cachedDevMode: boolean | undefined;
+const devOverride = (_G as { __DEV__?: unknown }).__DEV__;
+
+const devMode = devOverride === undefined ? RunService.IsStudio() : devOverride === true;
 
 /**
  * Whether Prism should run in strict development mode.
@@ -14,9 +14,5 @@ let cachedDevMode: boolean | undefined;
  * the default in either direction.
  */
 export function isDevMode(): boolean {
-	if (cachedDevMode === undefined) {
-		cachedDevMode = __DEV__ === undefined ? RunService.IsStudio() : __DEV__ === true;
-	}
-
-	return cachedDevMode;
+	return devMode;
 }

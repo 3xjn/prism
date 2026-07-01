@@ -2,7 +2,7 @@ import React from "@rbxts/react";
 
 import { pushDecorator, renderPaddingDecorator, renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
 import { composeEventMaps } from "../_shared/interaction";
-import { resolveInteractionState, usePressInteraction } from "../_shared/usePressInteraction";
+import { usePressInteraction } from "../_shared/usePressInteraction";
 import { mergeSharedStyleProps, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
@@ -15,7 +15,7 @@ export const Pressable = React.forwardRef<TextButton, PressableProps>((props, re
 	const active = props.active ?? true;
 	const interactive = active && !disabled;
 	const mergedStyleProps = mergeSharedStyleProps({ cursor: "pointer" }, props);
-	const press = usePressInteraction({ interactive, onActivated: onPress });
+	const press = usePressInteraction({ interactive, disabled, onActivated: onPress });
 
 	const {
 		resolvedWidth,
@@ -45,7 +45,7 @@ export const Pressable = React.forwardRef<TextButton, PressableProps>((props, re
 	}
 
 	const renderState: PressableRenderState = {
-		state: resolveInteractionState(disabled, press.hovered, press.pressed),
+		state: press.state,
 		hovered: press.hovered,
 		pressed: press.pressed,
 		disabled,

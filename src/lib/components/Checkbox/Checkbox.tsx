@@ -28,8 +28,6 @@ import { mixColor } from "../_shared/visual";
 
 import type { CheckboxColor, CheckboxProps, CheckboxSize } from "./types";
 
-type CheckboxInteractionState = InteractionState;
-
 interface CheckboxSizeStyles {
 	readonly markWidth: number;
 	readonly markHeight: number;
@@ -110,7 +108,7 @@ function resolveCheckboxSizeStyles(theme: Theme, size: CheckboxSize): CheckboxSi
 function resolveCheckboxVisualStyles(
 	theme: Theme,
 	color: CheckboxColor,
-	state: CheckboxInteractionState,
+	state: InteractionState,
 	checked: boolean,
 ): CheckboxVisualStyles {
 	const intentColors = theme.colors[color];
@@ -155,7 +153,7 @@ function resolveCheckboxVisualStyles(
 	};
 }
 
-function resolveCheckboxMotionTransition(state: CheckboxInteractionState) {
+function resolveCheckboxMotionTransition(state: InteractionState) {
 	if (state === "disabled") {
 		return {
 			markColor: { duration: "instant", easing: "standard" },
@@ -212,7 +210,7 @@ const CheckboxBase = React.forwardRef<TextButton, CheckboxProps>((props, ref) =>
 	} = props;
 	const [checkedState, setCheckedState] = useControllableState({
 		controlled: checked,
-		defaultValue: checked ?? defaultChecked ?? false,
+		defaultValue: defaultChecked ?? false,
 		onChange,
 	});
 	const mergedStyleProps = mergeSharedStyleProps({ cursor: "pointer" }, props);
@@ -244,7 +242,7 @@ const CheckboxBase = React.forwardRef<TextButton, CheckboxProps>((props, ref) =>
 	};
 
 	const press = usePressInteraction({ interactive: !disabled, onActivated: toggle });
-	const interactionState: CheckboxInteractionState = press.state;
+	const interactionState: InteractionState = press.state;
 	const visualStyles = resolveCheckboxVisualStyles(theme, color, interactionState, checkedState);
 	const animated = useMotion({
 		values: {

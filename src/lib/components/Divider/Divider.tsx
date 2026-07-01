@@ -7,16 +7,18 @@ import { useRootCursorEvent } from "../_shared/useRootCursor";
 
 import type { DividerColorValue, DividerOrientation, DividerProps, DividerSizeValue } from "./types";
 
+const DEFAULT_DIVIDER_THICKNESS = 1;
+
 function resolveDividerThickness(theme: Theme, value: DividerSizeValue | undefined): number {
 	if (value === undefined) {
-		return 1;
+		return DEFAULT_DIVIDER_THICKNESS;
 	}
 
 	if (typeIs(value, "number")) {
 		return value;
 	}
 
-	return resolveThemeSizeSafe(theme, "divider", value, "spacing", 1);
+	return resolveThemeSizeSafe(theme, "divider", value, "spacing", DEFAULT_DIVIDER_THICKNESS);
 }
 
 function resolveDividerColor(theme: Theme, value: DividerColorValue | undefined): Color3 {

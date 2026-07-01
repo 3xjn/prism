@@ -27,7 +27,6 @@ import { mixColor } from "../_shared/visual";
 import type { ButtonColor, ButtonProps, ButtonSize } from "./types";
 
 const TextService = game.GetService("TextService");
-type ButtonInteractionState = InteractionState;
 
 interface ButtonSizeStyles {
 	readonly paddingX: ThemeSize;
@@ -136,7 +135,7 @@ function resolveButtonVisualStyles(
 	theme: Theme,
 	variant: Variant,
 	color: ButtonColor,
-	state: ButtonInteractionState,
+	state: InteractionState,
 ): ButtonVisualStyles {
 	const intentColors = theme.colors[color];
 	const hoverSurface = mixColor(theme.colors.background.surface, theme.colors.action.hover, 0.45);
@@ -206,7 +205,7 @@ function resolveButtonVisualStyles(
 	}
 }
 
-function resolveButtonMotionTransition(state: ButtonInteractionState) {
+function resolveButtonMotionTransition(state: InteractionState) {
 	if (state === "disabled") {
 		return {
 			backgroundColor: { duration: "instant", easing: "standard" },
@@ -323,7 +322,7 @@ const ButtonBase = React.forwardRef<TextButton, ButtonProps>((props, ref) => {
 		hasPadding,
 	} = useResolvedStyleProps("button", mergedStyleProps);
 	const computedWidth = fullWidth ? resolveUDimSafe("button", "100%", "width") : resolvedWidth;
-	const visualState: ButtonInteractionState = press.state;
+	const visualState: InteractionState = press.state;
 	const resolvedVisualStyles = resolveButtonVisualStyles(theme, variant, color, visualState);
 	const motionTransition = resolveButtonMotionTransition(visualState);
 	const animated = useMotion({

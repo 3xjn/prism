@@ -1,11 +1,12 @@
 import React from "@rbxts/react";
 import { theme as themeRefs } from "@prism/theme";
-import { isDevMode } from "@prism/utils";
+import type { Theme } from "@prism/theme";
 
-import { getLucideIconAsset, SUPPORTED_LUCIDE_ICON_NAMES } from "../../icons/lucide";
+import { getLucideIconAsset } from "../../icons/lucide";
 
 import { renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
 import {
+	reportComponentFailure,
 	resolveColorSafe,
 	resolveThemeSizeSafe,
 	useResolvedStyleProps,
@@ -15,39 +16,22 @@ import { useRootCursorEvent } from "../_shared/useRootCursor";
 import type { IconName, IconProps } from "./types";
 
 const FALLBACK_ICON_NAME: IconName = "alert-circle";
-const warnedInvalidIconNames: Record<string, true> = {};
-let warnedInvalidIconSize = false;
 
-function warnInvalidIconName(name: string): void {
-	if (!isDevMode() || warnedInvalidIconNames[name] === true) {
-		return;
-	}
-
-	warnedInvalidIconNames[name] = true;
-	warn(
-		`[prism/icon] Unsupported icon name "${name}". Falling back to "${FALLBACK_ICON_NAME}". Supported names: ${SUPPORTED_LUCIDE_ICON_NAMES.join(", ")}.`,
-	);
-}
-
-function resolveIconDisplaySize(size: IconProps["size"], fallback: number): number {
+function resolveIconDisplaySize(theme: Theme, size: IconProps["size"]): number {
 	if (size === undefined) {
-		return fallback;
+		return theme.fontSizes.md;
 	}
 
 	if (typeIs(size, "number")) {
-		if (size > 0) {
+		if (size >= 0) {
 			return size;
 		}
 
-		if (isDevMode() && !warnedInvalidIconSize) {
-			warnedInvalidIconSize = true;
-			warn(`[prism/icon] Icon size must be a positive number, got ${size}. Falling back to ${fallback}.`);
-		}
-
-		return fallback;
+		reportComponentFailure("icon", `Icon size must be a non-negative number, got ${size}.`);
+		return theme.fontSizes.md;
 	}
 
-	return fallback;
+	return resolveThemeSizeSafe(theme, "icon", size, "fontSizes", theme.fontSizes.md);
 }
 
 function resolveIconSize(
@@ -89,19 +73,16 @@ export const Icon = React.forwardRef<ImageLabel, IconProps>((props, ref) => {
 		resolvedConstraint,
 	} = useResolvedStyleProps("icon", props);
 
-	const themedDisplaySize =
-		props.size === undefined
-			? theme.fontSizes.md
-			: typeIs(props.size, "number")
-				? math.max(1, math.abs(props.size))
-				: resolveThemeSizeSafe(theme, "icon", props.size, "fontSizes", theme.fontSizes.md);
-	const resolvedDisplaySize = resolveIconDisplaySize(props.size, themedDisplaySize);
+	const resolvedDisplaySize = resolveIconDisplaySize(theme, props.size);
 	const resolvedColor = resolveColorSafe(theme, "icon", props.color ?? themeRefs.text.primary, theme.colors.text.primary);
 	const asset = getLucideIconAsset(props.name, resolvedDisplaySize);
 	const fallbackAsset = asset ?? getLucideIconAsset(FALLBACK_ICON_NAME, resolvedDisplaySize);
 
 	if (asset === undefined) {
-		warnInvalidIconName(tostring(props.name));
+		reportComponentFailure(
+			"icon",
+			`Unsupported icon name "${tostring(props.name)}". Falling back to "${FALLBACK_ICON_NAME}".`,
+		);
 	}
 
 	const computedPosition = resolvedPosition ?? (props.center ? UDim2.fromScale(0.5, 0.5) : undefined);
