@@ -1,7 +1,7 @@
 import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Button, Card, Divider, Input, Stack, Text } from "@prism";
-import type { CardVariant } from "@prism";
+import type { CardShadowValue, CardVariant } from "@prism";
 import type { ThemeSize } from "@prism/theme";
 import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, String } from "@rbxts/ui-labs";
@@ -38,6 +38,17 @@ const controls = {
 		},
 		"md",
 	),
+	shadow: EnumList(
+		{
+			variantDefault: "variantDefault",
+			none: "none",
+			sm: "sm",
+			md: "md",
+			lg: "lg",
+			xl: "xl",
+		},
+		"variantDefault",
+	),
 	fullWidth: Boolean(false),
 	showInput: Boolean(true),
 	showActions: Boolean(true),
@@ -51,6 +62,12 @@ function CardStoryCanvas({ controls: currentControls }: { readonly controls: Car
 	const resolvedVariant = currentControls.variant as CardVariant;
 	const resolvedPadding = currentControls.padding as ThemeSize;
 	const resolvedRadius = currentControls.radius as ThemeSize;
+	const resolvedShadow: CardShadowValue | undefined =
+		currentControls.shadow === "variantDefault"
+			? undefined
+			: currentControls.shadow === "none"
+				? false
+				: (currentControls.shadow as ThemeSize);
 	const cardWidth = currentControls.fullWidth ? "100%" : 380;
 
 	return (
@@ -59,7 +76,13 @@ function CardStoryCanvas({ controls: currentControls }: { readonly controls: Car
 				<Stack width="100%" gap="md">
 					<Text text="Card" size="xl" weight={700} color={themeRefs.text.primary} />
 					<Box width="100%" bg={theme.colors.action.hover} radius="md" p="lg">
-						<Card variant={resolvedVariant} width={cardWidth} p={resolvedPadding} radius={resolvedRadius}>
+						<Card
+							variant={resolvedVariant}
+							width={cardWidth}
+							p={resolvedPadding}
+							radius={resolvedRadius}
+							shadow={resolvedShadow}
+						>
 							<Stack width="100%" gap="md">
 								<Stack width="100%" gap="xs">
 									<Text text={currentControls.title} size="lg" weight={700} color={themeRefs.text.primary} />

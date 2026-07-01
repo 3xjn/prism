@@ -45,13 +45,13 @@ function MenuStoryCanvas({ controls: currentControls }: { readonly controls: Men
 	const resolvedSize = currentControls.size as MenuSize;
 	const items: readonly MenuItem[] = [
 		{ type: "label", label: "Loadout" },
-		{ value: "equip", label: "Equip primary", rightSection: "E" },
-		{ value: "inspect", label: "Inspect stats", rightSection: "I" },
-		{ value: "favorite", label: "Mark favorite", disabled: true },
+		{ value: "equip", label: "Equip primary", icon: "swords", rightSection: "E" },
+		{ value: "inspect", label: "Inspect stats", icon: "search", rightSection: "I" },
+		{ value: "favorite", label: "Mark favorite", icon: "star", disabled: true },
 		{ type: "divider" },
 		{ type: "label", label: "Inventory" },
-		{ value: "duplicate", label: "Duplicate kit" },
-		{ value: "drop", label: "Drop item", color: "error", rightSection: "Hold" },
+		{ value: "duplicate", label: "Duplicate kit", icon: "copy" },
+		{ value: "drop", label: "Drop item", color: "error", icon: "trash-2", rightSection: "Hold" },
 	];
 
 	return (
