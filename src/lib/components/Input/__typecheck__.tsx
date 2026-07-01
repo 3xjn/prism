@@ -13,6 +13,7 @@ function renderInput(props: InputProps): React.ReactElement {
 
 const validInputProps: InputProps[] = [
 	{ placeholder: "Search Prism", defaultValue: "Initial" },
+	{ placeholder: "Max length", defaultValue: "Clamped", maxLength: 12 },
 	{ value: "Controlled", onChange: () => undefined },
 	{ placeholder: "Readonly", readOnly: true, defaultValue: "Locked" },
 	{ placeholder: "Disabled", disabled: true },
@@ -31,7 +32,7 @@ const validInputProps: InputProps[] = [
 const validExportedInputProps: ExportedInputProps[] = [
 	{ placeholder: "Search" },
 	{ placeholder: "Pointer", cursor: "pointer" },
-	{ value: "Prism", onChange: () => undefined, variant: "outline", color: "primary" },
+	{ value: "Prism", onChange: () => undefined, variant: "outline", color: "primary", maxLength: 20 },
 	{ defaultValue: "Theme", size: "lg", readOnly: true },
 ];
 
@@ -39,6 +40,7 @@ const validInputExamples = [
 	renderInput({ placeholder: "Search" }),
 	renderInput({ defaultValue: "PlayerOne", size: "sm" }),
 	renderInput({ value: "Command palette", onChange: () => undefined, variant: "subtle", color: "secondary" }),
+	renderInput({ defaultValue: "Short code", maxLength: 8 }),
 	renderInput({ defaultValue: "Readonly", readOnly: true, color: "info", variant: "light" }),
 	renderInput({ disabled: true, placeholder: "Disabled" }),
 	renderInput({ slotProps: { root: { ZIndex: 4 }, textbox: { PlaceholderText: "Override" } } }),

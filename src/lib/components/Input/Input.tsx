@@ -110,6 +110,16 @@ function resolveInputSizeStyles(theme: Theme, size: InputSize): InputSizeStyles 
 	}
 }
 
+function resolveInputMaxLength(maxLength: number | undefined): number | undefined {
+	return maxLength !== undefined && maxLength === maxLength && maxLength > -math.huge && maxLength < math.huge
+		? math.max(0, math.floor(maxLength))
+		: undefined;
+}
+
+function clampInputText(value: string, maxLength: number | undefined): string {
+	return maxLength !== undefined && value.size() > maxLength ? string.sub(value, 1, maxLength) : value;
+}
+
 type InputComponent = ((props: InputProps) => React.ReactElement) & React.ForwardRefExoticComponent<InputProps>;
 
 const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
@@ -123,15 +133,18 @@ const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
 		readOnly = false,
 		fullWidth = false,
 		placeholder,
+		maxLength,
 		value,
 		defaultValue,
 		onChange,
 		Event,
 		Change,
 	} = props;
+	const resolvedMaxLength = resolveInputMaxLength(maxLength);
+	const initialUncontrolledValue = clampInputText(value ?? defaultValue ?? "", resolvedMaxLength);
 	const [hovered, setHovered] = React.useState(false);
 	const [focused, setFocused] = React.useState(false);
-	const [uncontrolledValue, setUncontrolledValue] = React.useState(value ?? defaultValue ?? "");
+	const [uncontrolledValue, setUncontrolledValue] = React.useState(initialUncontrolledValue);
 	const sizeStyles = resolveInputSizeStyles(theme, size);
 	const mergedStyleProps = mergeSharedStyleProps(
 		{
@@ -156,9 +169,9 @@ const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
 
 	React.useEffect(() => {
 		if (value !== undefined) {
-			setUncontrolledValue(value);
+			setUncontrolledValue(clampInputText(value, resolvedMaxLength));
 		}
-	}, [value]);
+	}, [value, resolvedMaxLength]);
 
 	React.useEffect(() => {
 		if (!disabled) {
@@ -201,7 +214,12 @@ const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
 	const resolvedFontFace = resolveTextFontFace(textboxSlotProps?.Font, textboxSlotProps?.FontFace, theme.fontFamily);
 	const resolvedTextSize = textboxSlotProps?.TextSize ?? sizeStyles.fontSize;
 	const resolvedLineHeight = textboxSlotProps?.LineHeight ?? sizeStyles.lineHeight;
-	const resolvedTextValue = textboxSlotProps?.Text ?? value ?? uncontrolledValue;
+	const resolvedTextValue = textboxSlotProps?.Text ?? clampInputText(value ?? uncontrolledValue, resolvedMaxLength);
+	const reportedValueRef = React.useRef(resolvedTextValue);
+
+	React.useEffect(() => {
+		reportedValueRef.current = resolvedTextValue;
+	}, [resolvedTextValue]);
 	const resolvedTextXAlignment = textboxSlotProps?.TextXAlignment ?? Enum.TextXAlignment.Left;
 	const resolvedTextYAlignment = textboxSlotProps?.TextYAlignment ?? Enum.TextYAlignment.Center;
 	const resolvedTextTruncate = textboxSlotProps?.TextTruncate ?? Enum.TextTruncate.AtEnd;
@@ -236,7 +254,17 @@ const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
 	};
 	const internalChange: TextBoxChangeMap = {
 		Text: (textbox) => {
-			const nextValue = textbox.Text;
+			const nextValue = clampInputText(textbox.Text, resolvedMaxLength);
+
+			if (textbox.Text !== nextValue) {
+				textbox.Text = nextValue;
+			}
+
+			if (reportedValueRef.current === nextValue) {
+				return;
+			}
+
+			reportedValueRef.current = nextValue;
 			setUncontrolledValue(nextValue);
 			onChange?.(nextValue);
 		},
