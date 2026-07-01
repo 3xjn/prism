@@ -25,6 +25,7 @@ export interface TextStyleProps extends Omit<BoxStyleProps, "border" | "borderCo
 	readonly weight?: number;
 	readonly color?: ConcreteColorValue;
 	readonly font?: Enum.Font;
+	readonly lineHeight?: number;
 	readonly align?: TextAlign;
 	readonly valign?: TextVerticalAlign;
 	readonly wrap?: boolean;
