@@ -131,9 +131,10 @@ export const Text = React.forwardRef<TextLabel, TextProps>((props, ref) => {
 	const resolvedTextColor = resolveColorSafe(theme, "text", props.color ?? themeRefs.text.primary, theme.colors.text.primary);
 	const resolvedFont = props.font ?? theme.fontFamily;
 	const resolvedLineHeight =
-		props.size !== undefined && !typeIs(props.size, "number")
+		props.lineHeight ??
+		(props.size !== undefined && !typeIs(props.size, "number")
 			? theme.lineHeights[props.size]
-			: theme.lineHeights.md;
+			: theme.lineHeights.md);
 
 	const decoratorChildren: React.ReactElement[] = [];
 
