@@ -3,6 +3,7 @@ import React from "@rbxts/react";
 import { useTheme } from "@prism/theme";
 import type { Variant } from "@prism/theme";
 
+import { renderElevationShadow } from "../_shared/elevation";
 import { renderCornerDecorator, renderPaddingDecorator, renderStrokeDecorator } from "../_shared/foundationDecorators";
 import { LayerPortal, useOverlayLocalPosition } from "../_shared/layering";
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
@@ -58,6 +59,21 @@ export function SelectDropdown(props: SelectDropdownProps): React.ReactElement {
 				ZIndex={resolvedOverlayZIndex}
 				{...overlaySlotProps}
 			>
+				{localListPosition !== undefined ? (
+					<frame
+						key="list-shadow"
+						BackgroundTransparency={1}
+						BorderSizePixel={0}
+						AnchorPoint={new Vector2(0, 0)}
+						Position={new UDim2(0, localListPosition.X, 0, localListPosition.Y)}
+						Size={new UDim2(0, layout.size.X, 0, visibleListHeight)}
+						Active={false}
+						Selectable={false}
+						ZIndex={resolvedOverlayZIndex}
+					>
+						{renderElevationShadow({ shadow: theme.shadows.md, radius: sizeStyles.radius })}
+					</frame>
+				) : undefined}
 				{localListPosition !== undefined ? (
 					<frame
 						BackgroundColor3={listVisualStyles.backgroundColor}

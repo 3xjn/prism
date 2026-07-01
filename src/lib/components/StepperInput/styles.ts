@@ -32,6 +32,7 @@ export interface StepperInputFrameVisualStyles {
 	readonly textColor: Color3;
 	readonly placeholderColor: Color3;
 	readonly railFillColor: Color3;
+	readonly railFillTransparency: number;
 }
 
 export interface StepperInputButtonVisualStyles {
@@ -166,6 +167,7 @@ export function resolveStepperInputFrameVisualStyles(
 			textColor: theme.colors.text.disabled,
 			placeholderColor: theme.colors.text.disabled,
 			railFillColor: mixColor(theme.colors.action.disabledBackground, theme.colors.border.default, 0.34),
+			railFillTransparency: 1,
 		};
 	}
 
@@ -195,6 +197,7 @@ export function resolveStepperInputFrameVisualStyles(
 		textColor: idleText,
 		placeholderColor: state === "focused" ? mixColor(placeholderBase, theme.colors.text.primary, 0.16) : placeholderBase,
 		railFillColor: state === "focused" ? mixColor(railFillBase, theme.colors.text.primary, 0.06) : railFillBase,
+		railFillTransparency: state === "focused" ? 0.62 : state === "hovered" ? 0.5 : 1,
 	};
 }
 
@@ -243,6 +246,7 @@ export function resolveStepperInputFrameMotionTransition(state: StepperInputFram
 			textColor: { duration: "instant", easing: "standard" },
 			placeholderColor: { duration: "instant", easing: "standard" },
 			railFillColor: { duration: "instant", easing: "standard" },
+			railFillTransparency: { duration: "instant", easing: "standard" },
 		} as const;
 	}
 
@@ -256,6 +260,7 @@ export function resolveStepperInputFrameMotionTransition(state: StepperInputFram
 		textColor: { duration: 0.12, easing: "standard" },
 		placeholderColor: { duration: 0.12, easing: "standard" },
 		railFillColor: { duration: 0.12, easing: "standard" },
+		railFillTransparency: { duration: 0.12, easing: "standard" },
 	} as const;
 }
 

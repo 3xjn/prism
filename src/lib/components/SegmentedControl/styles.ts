@@ -162,12 +162,12 @@ export function resolveSegmentedControlFrameVisualStyles(
 		? mixColor(theme.colors.background.surface, intentColors.light, 0.18)
 		: variant === "subtle"
 		? mixColor(theme.colors.background.default, intentColors.light, 0.1)
-		: theme.colors.background.surface;
+		: mixColor(theme.colors.background.default, theme.colors.action.hover, 0.75);
 
 	return {
 		backgroundColor: baseSurface,
 		strokeColor: variant === "subtle" ? theme.colors.border.subtle : theme.colors.border.default,
-		strokeTransparency: variant === "subtle" ? 0.18 : 0.08,
+		strokeTransparency: variant === "subtle" ? 0.18 : 0.4,
 	};
 }
 
@@ -236,7 +236,7 @@ export function resolveSegmentedControlIndicatorVisualStyles(
 		? mixColor(theme.colors.background.surface, intentColors.light, 0.28)
 		: variant === "subtle"
 		? mixColor(theme.colors.background.surface, theme.colors.border.default, 0.12)
-		: mixColor(theme.colors.background.default, theme.colors.border.default, 0.28);
+		: theme.colors.background.surface;
 
 	if (disabled) {
 		return {
@@ -251,7 +251,7 @@ export function resolveSegmentedControlIndicatorVisualStyles(
 		backgroundColor: selectedSurface,
 		backgroundTransparency: 0,
 		strokeColor: variant === "filled" || variant === "light" ? mixColor(intentColors.main, theme.colors.border.default, 0.45) : theme.colors.border.default,
-		strokeTransparency: variant === "filled" ? 0.1 : variant === "light" ? 0.22 : 0.32,
+		strokeTransparency: variant === "filled" ? 0.1 : variant === "light" ? 0.22 : 0.25,
 	};
 }
 

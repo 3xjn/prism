@@ -380,8 +380,8 @@ const CheckboxBase = React.forwardRef<TextButton, CheckboxProps>((props, ref) =>
 				<textlabel
 					BackgroundTransparency={1}
 					BorderSizePixel={0}
-					AutomaticSize={Enum.AutomaticSize.XY}
-					Size={UDim2.fromOffset(0, 0)}
+					AutomaticSize={Enum.AutomaticSize.X}
+					Size={UDim2.fromOffset(0, sizeStyles.markHeight)}
 					LayoutOrder={2}
 					Text={resolvedLabelText}
 					TextColor3={animated.labelColor}

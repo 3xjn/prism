@@ -44,6 +44,8 @@ interface TabMotionValues extends Readonly<Record<string, MotionInputValue>> {
 	readonly strokeTransparency: number;
 	readonly textColor: Color3;
 	readonly textTransparency: number;
+	readonly indicatorColor: Color3;
+	readonly indicatorTransparency: number;
 }
 
 interface TabsTabViewProps {
@@ -177,6 +179,8 @@ function TabsTabView({
 		strokeTransparency: tabVisualStyles.strokeTransparency,
 		textColor: tabVisualStyles.textColor,
 		textTransparency: tabVisualStyles.textTransparency,
+		indicatorColor: tabVisualStyles.indicatorColor,
+		indicatorTransparency: tabVisualStyles.indicatorTransparency,
 	};
 	const animatedTabStyles = useMotion({
 		values: motionValues,
@@ -217,6 +221,18 @@ function TabsTabView({
 				transparency: 0.18,
 				thickness: 2,
 			})}
+			<frame
+				key="indicator"
+				BackgroundColor3={animatedTabStyles.indicatorColor}
+				BackgroundTransparency={animatedTabStyles.indicatorTransparency}
+				BorderSizePixel={0}
+				AnchorPoint={new Vector2(0.5, 1)}
+				Position={UDim2.fromScale(0.5, 1)}
+				Size={new UDim2(1, 0, 0, 2)}
+				Active={false}
+				Selectable={false}
+				ZIndex={resolvedTabZIndex}
+			/>
 			{renderPaddingDecorator({
 				enabled: true,
 				paddingTop: new UDim(
@@ -609,21 +625,45 @@ const TabsBase = React.forwardRef<Frame, TabsProps>((props, ref) => {
 				{...listSlotProps}
 			>
 				{renderStrokeDecorator({
-					enabled: true,
+					enabled: variant === "contained",
 					color: listVisualStyles.strokeColor,
 					transparency: listVisualStyles.strokeTransparency,
 					thickness: 1,
 					slotProps: slotProps?.listStroke,
 				})}
-				<uilistlayout
-					FillDirection={Enum.FillDirection.Horizontal}
-					Padding={new UDim(0, sizeStyles.tabGap)}
-					SortOrder={Enum.SortOrder.LayoutOrder}
-					VerticalAlignment={Enum.VerticalAlignment.Center}
-					HorizontalAlignment={fullWidth ? Enum.HorizontalAlignment.Center : Enum.HorizontalAlignment.Left}
-					{...slotProps?.listLayout}
-				/>
-				{tabs.map(renderTab)}
+				{variant === "line" ? (
+					<frame
+						key="baseline"
+						BackgroundColor3={listVisualStyles.strokeColor}
+						BackgroundTransparency={listVisualStyles.strokeTransparency}
+						BorderSizePixel={0}
+						AnchorPoint={new Vector2(0, 1)}
+						Position={UDim2.fromScale(0, 1)}
+						Size={new UDim2(1, 0, 0, 1)}
+						Active={false}
+						Selectable={false}
+						ZIndex={resolvedListZIndex}
+					/>
+				) : undefined}
+				<frame
+					key="tab-row"
+					BackgroundTransparency={1}
+					BorderSizePixel={0}
+					Size={UDim2.fromScale(1, 1)}
+					Active={false}
+					Selectable={false}
+					ZIndex={resolvedListZIndex}
+				>
+					<uilistlayout
+						FillDirection={Enum.FillDirection.Horizontal}
+						Padding={new UDim(0, sizeStyles.tabGap)}
+						SortOrder={Enum.SortOrder.LayoutOrder}
+						VerticalAlignment={Enum.VerticalAlignment.Center}
+						HorizontalAlignment={fullWidth ? Enum.HorizontalAlignment.Center : Enum.HorizontalAlignment.Left}
+						{...slotProps?.listLayout}
+					/>
+					{tabs.map(renderTab)}
+				</frame>
 			</frame>
 			{selectedTab !== undefined || keepMounted ? tabs.map(renderPanel) : undefined}
 		</frame>

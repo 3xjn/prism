@@ -215,7 +215,7 @@ export const DEFAULT_THEME: Theme = table.freeze({
 	colors: table.freeze({
 		palette: PALETTE,
 		primary: createSemanticIntentColors(PALETTE.primary["5"], PALETTE.primary["3"], PALETTE.primary["7"], PALETTE.gray["0"]),
-		secondary: createSemanticIntentColors(PALETTE.blue["5"], PALETTE.blue["3"], PALETTE.blue["7"], PALETTE.gray["0"]),
+		secondary: createSemanticIntentColors(PALETTE.gray["7"], PALETTE.gray["2"], PALETTE.gray["9"], PALETTE.gray["0"]),
 		error: createSemanticIntentColors(PALETTE.red["5"], PALETTE.red["3"], PALETTE.red["7"], PALETTE.gray["0"]),
 		warning: createSemanticIntentColors(PALETTE.yellow["5"], PALETTE.yellow["3"], PALETTE.yellow["7"], PALETTE.gray["9"]),
 		info: createSemanticIntentColors(PALETTE.blue["5"], PALETTE.blue["3"], PALETTE.blue["7"], PALETTE.gray["0"]),
@@ -223,7 +223,7 @@ export const DEFAULT_THEME: Theme = table.freeze({
 		text: createTextColors(PALETTE.gray["9"], PALETTE.gray["7"], PALETTE.gray["5"], PALETTE.gray["0"]),
 		background: createBackgroundColors(PALETTE.gray["0"], Color3.fromRGB(255, 255, 255)),
 		border: createBorderColors(PALETTE.gray["2"], PALETTE.gray["4"], PALETTE.gray["6"]),
-		action: createActionColors(PALETTE.gray["1"], PALETTE.gray["2"], PALETTE.gray["5"], PALETTE.gray["2"]),
+		action: createActionColors(PALETTE.gray["2"], PALETTE.gray["3"], PALETTE.gray["5"], PALETTE.gray["2"]),
 	}),
 	spacing: createThemeScale(4, 8, 12, 16, 24),
 	radius: createThemeScale(2, 4, 8, 16, 24),

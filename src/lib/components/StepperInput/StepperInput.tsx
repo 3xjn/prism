@@ -93,7 +93,9 @@ interface StepperRailViewProps {
 	readonly sizeStyles: StepperInputSizeStyles;
 	readonly displayAlpha: number;
 	readonly displayText: string;
+	readonly dragging: boolean;
 	readonly fillColor: Color3;
+	readonly fillTransparency: FrameProps["BackgroundTransparency"];
 	readonly valueColor: Color3;
 	readonly valueFont: TextLabelProps["Font"];
 	readonly valueFontFace: TextLabelProps["FontFace"];
@@ -200,7 +202,9 @@ function StepperRailView({
 	sizeStyles,
 	displayAlpha,
 	displayText,
+	dragging,
 	fillColor,
+	fillTransparency,
 	valueColor,
 	valueFont,
 	valueFontFace,
@@ -213,9 +217,11 @@ function StepperRailView({
 			{renderCornerDecorator({ radius: sizeStyles.buttonRadius, slotProps: slotProps?.buttonCorner })}
 			<frame
 				BackgroundColor3={fillColor}
-				BackgroundTransparency={railFillSlotProps?.BackgroundTransparency ?? 0.62}
+				BackgroundTransparency={railFillSlotProps?.BackgroundTransparency ?? fillTransparency}
 				BorderSizePixel={0}
-				Size={new UDim2(displayAlpha, 0, 1, 0)}
+				Size={dragging ? new UDim2(displayAlpha, 0, 1, 0) : new UDim2(displayAlpha, 0, 0, 2)}
+				Position={dragging ? new UDim2(0, 0, 0, 0) : new UDim2(0, 0, 1, 0)}
+				AnchorPoint={dragging ? new Vector2(0, 0) : new Vector2(0, 1)}
 				ZIndex={fillZIndex}
 				Active={false}
 				Selectable={false}
@@ -496,6 +502,7 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 			textColor: frameVisualStyles.textColor,
 			placeholderColor: frameVisualStyles.placeholderColor,
 			railFillColor: frameVisualStyles.railFillColor,
+			railFillTransparency: frameVisualStyles.railFillTransparency,
 		},
 		transition: resolveStepperInputFrameMotionTransition(frameState),
 	});
@@ -741,7 +748,9 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 						sizeStyles={sizeStyles}
 						displayAlpha={displayAlpha}
 						displayText={displayText}
+						dragging={dragging}
 						fillColor={animatedFrame.railFillColor}
+						fillTransparency={animatedFrame.railFillTransparency}
 						valueColor={animatedFrame.textColor}
 						valueFont={resolvedRailValueFont}
 						valueFontFace={resolvedRailValueFontFace}

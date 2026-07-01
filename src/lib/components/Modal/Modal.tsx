@@ -14,6 +14,7 @@ import {
 	renderSizeConstraintDecorator,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
+import { renderElevationShadow } from "../_shared/elevation";
 import { assignRef, isPressInput } from "../_shared/interaction";
 import {
 	DEFAULT_SCREEN_OVERLAY_BASE_Z_INDEX,
@@ -159,7 +160,7 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 	const mergedStyleProps = mergeSharedStyleProps(
 		{
 			bg: themeRefs.background.surface,
-			clip: true,
+			clip: false,
 			center: true,
 			p: "lg",
 		},
@@ -186,6 +187,7 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 	const contentLayerZIndex = slotProps?.contentLayer?.ZIndex ?? incrementZIndex(rootOverlayZIndex, 1);
 	const contentZIndex = slotProps?.content?.ZIndex ?? incrementZIndex(contentLayerZIndex, 1);
 	const contentInnerZIndex = incrementZIndex(contentZIndex, 1);
+	const shadowZIndex = typeIs(contentZIndex, "number") ? math.max(contentZIndex - 1, 0) : 0;
 	const headerZIndex = slotProps?.header?.ZIndex ?? contentInnerZIndex;
 	const titleZIndex = slotProps?.title?.ZIndex ?? incrementZIndex(headerZIndex, 1);
 	const closeButtonZIndex = slotProps?.closeButton?.ZIndex ?? titleZIndex;
@@ -364,6 +366,11 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 			ref={panelRef}
 			{...slotProps?.content}
 		>
+			{renderElevationShadow({
+				shadow: theme.shadows.lg,
+				radius: sizeStyles.radius,
+				zIndex: shadowZIndex,
+			})}
 			<uiscale Scale={animated.panelScale} />
 			{renderCornerDecorator({ radius: sizeStyles.radius, slotProps: slotProps?.contentCorner })}
 			{renderStrokeDecorator({

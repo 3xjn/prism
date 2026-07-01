@@ -239,7 +239,7 @@ export function resolveSelectTriggerVisualStyles(
 					: subtleIdleSurface;
 			strokeColor = state === "open" ? intentColors.main : state === "hovered" ? theme.colors.border.default : theme.colors.border.subtle;
 			strokeTransparency = state === "open" ? 0.04 : state === "hovered" ? 0.14 : 0.28;
-			strokeThickness = state === "open" ? 1.5 : 1;
+			strokeThickness = state === "open" ? 2 : 1;
 			break;
 		case "light":
 			backgroundColor =
@@ -252,7 +252,7 @@ export function resolveSelectTriggerVisualStyles(
 					: lightIdleSurface;
 			strokeColor = state === "open" ? intentColors.main : state === "hovered" ? intentColors.dark : intentColors.light;
 			strokeTransparency = state === "open" ? 0.02 : state === "hovered" ? 0.08 : 0.14;
-			strokeThickness = state === "open" ? 1.5 : 1;
+			strokeThickness = state === "open" ? 2 : 1;
 			break;
 		case "filled":
 			backgroundColor =
@@ -270,7 +270,7 @@ export function resolveSelectTriggerVisualStyles(
 					? intentColors.main
 					: mixColor(intentColors.main, theme.colors.border.default, 0.5);
 			strokeTransparency = state === "open" ? 0.02 : state === "hovered" ? 0.08 : 0.16;
-			strokeThickness = state === "open" ? 1.5 : 1;
+			strokeThickness = state === "open" ? 2 : 1;
 			break;
 		case "outline":
 		default:
@@ -284,7 +284,7 @@ export function resolveSelectTriggerVisualStyles(
 					: outlineIdleSurface;
 			strokeColor = state === "open" ? intentColors.main : state === "hovered" ? theme.colors.border.strong : theme.colors.border.default;
 			strokeTransparency = state === "open" ? 0 : state === "hovered" ? 0.06 : 0.12;
-			strokeThickness = state === "open" ? 1.5 : 1;
+			strokeThickness = state === "open" ? 2 : 1;
 			break;
 	}
 
@@ -344,7 +344,7 @@ export function resolveSelectOptionVisualStyles(
 	const intentColors = theme.colors[color];
 	const selectedSurface = mixColor(theme.colors.background.default, intentColors.light, 0.36);
 	const selectedHoverSurface = mixColor(selectedSurface, intentColors.light, 0.16);
-	const hoverSurface = mixColor(theme.colors.background.surface, theme.colors.action.hover, 0.72);
+	const hoverSurface = mixColor(theme.colors.background.surface, theme.colors.action.hover, 0.9);
 
 	if (state === "disabled") {
 		return {

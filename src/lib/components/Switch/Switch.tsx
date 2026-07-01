@@ -45,6 +45,8 @@ interface SwitchVisualStyles {
 	readonly trackStrokeColor: Color3;
 	readonly trackStrokeTransparency: number;
 	readonly thumbColor: Color3;
+	readonly thumbStrokeColor: Color3;
+	readonly thumbStrokeTransparency: number;
 	readonly thumbOffset: number;
 	readonly iconColor: Color3;
 	readonly iconTransparency: number;
@@ -165,6 +167,8 @@ function resolveSwitchVisualStyles(
 			trackStrokeColor: checked ? intentColors.light : theme.colors.border.subtle,
 			trackStrokeTransparency: checked ? 0.2 : 0.12,
 			thumbColor: thumbDisabled,
+			thumbStrokeColor: theme.colors.border.subtle,
+			thumbStrokeTransparency: checked ? 1 : 0.5,
 			thumbOffset: resolveThumbOffset(sizeStyles, checked),
 			iconColor: theme.colors.text.disabled,
 			iconTransparency: 0,
@@ -187,6 +191,8 @@ function resolveSwitchVisualStyles(
 		trackStrokeColor: checked ? intentColors.dark : theme.colors.border.default,
 		trackStrokeTransparency: checked ? (state === "pressed" ? 0.06 : 0.1) : state === "hovered" ? 0.04 : 0.08,
 		thumbColor: state === "pressed" ? thumbPressed : thumbSurface,
+		thumbStrokeColor: checked ? intentColors.dark : theme.colors.border.default,
+		thumbStrokeTransparency: checked ? 0.8 : 0.4,
 		thumbOffset: resolveThumbOffset(sizeStyles, checked),
 		iconColor: checked
 			? state === "hovered" || state === "pressed"
@@ -207,6 +213,8 @@ function resolveSwitchMotionTransition(state: InteractionState) {
 			trackStrokeColor: { duration: "instant", easing: "standard" },
 			trackStrokeTransparency: { duration: "instant", easing: "standard" },
 			thumbColor: { duration: "instant", easing: "standard" },
+			thumbStrokeColor: { duration: "instant", easing: "standard" },
+			thumbStrokeTransparency: { duration: "instant", easing: "standard" },
 			thumbOffset: { duration: "instant", easing: "out" },
 			iconColor: { duration: "instant", easing: "standard" },
 			iconTransparency: { duration: "instant", easing: "standard" },
@@ -220,6 +228,8 @@ function resolveSwitchMotionTransition(state: InteractionState) {
 			trackStrokeColor: { duration: 0.06, easing: "standard" },
 			trackStrokeTransparency: { duration: 0.06, easing: "standard" },
 			thumbColor: { duration: 0.06, easing: "standard" },
+			thumbStrokeColor: { duration: 0.06, easing: "standard" },
+			thumbStrokeTransparency: { duration: 0.06, easing: "standard" },
 			thumbOffset: { duration: 0.08, easing: "out" },
 			iconColor: { duration: 0.06, easing: "standard" },
 			iconTransparency: { duration: 0.06, easing: "standard" },
@@ -233,6 +243,8 @@ function resolveSwitchMotionTransition(state: InteractionState) {
 			trackStrokeColor: { duration: 0.12, easing: "standard" },
 			trackStrokeTransparency: { duration: 0.12, easing: "standard" },
 			thumbColor: { duration: 0.12, easing: "standard" },
+			thumbStrokeColor: { duration: 0.12, easing: "standard" },
+			thumbStrokeTransparency: { duration: 0.12, easing: "standard" },
 			thumbOffset: { duration: 0.14, easing: "out" },
 			iconColor: { duration: 0.12, easing: "standard" },
 			iconTransparency: { duration: 0.12, easing: "standard" },
@@ -245,6 +257,8 @@ function resolveSwitchMotionTransition(state: InteractionState) {
 		trackStrokeColor: { duration: 0.14, easing: "standard" },
 		trackStrokeTransparency: { duration: 0.14, easing: "standard" },
 		thumbColor: { duration: 0.14, easing: "standard" },
+		thumbStrokeColor: { duration: 0.14, easing: "standard" },
+		thumbStrokeTransparency: { duration: 0.14, easing: "standard" },
 		thumbOffset: { duration: 0.14, easing: "out" },
 		iconColor: { duration: 0.14, easing: "standard" },
 		iconTransparency: { duration: 0.14, easing: "standard" },
@@ -315,6 +329,8 @@ const SwitchBase = React.forwardRef<TextButton, SwitchProps>((props, ref) => {
 			trackStrokeColor: resolvedVisualStyles.trackStrokeColor,
 			trackStrokeTransparency: resolvedVisualStyles.trackStrokeTransparency,
 			thumbColor: resolvedVisualStyles.thumbColor,
+			thumbStrokeColor: resolvedVisualStyles.thumbStrokeColor,
+			thumbStrokeTransparency: resolvedVisualStyles.thumbStrokeTransparency,
 			thumbOffset: resolvedVisualStyles.thumbOffset,
 			iconColor: resolvedVisualStyles.iconColor,
 			iconTransparency: resolvedVisualStyles.iconTransparency,
@@ -424,6 +440,12 @@ const SwitchBase = React.forwardRef<TextButton, SwitchProps>((props, ref) => {
 					{...slotProps?.thumb}
 				>
 					{renderCornerDecorator({ radius: thumbRadius, slotProps: slotProps?.thumbCorner })}
+					{renderStrokeDecorator({
+						enabled: true,
+						color: animated.thumbStrokeColor,
+						transparency: animated.thumbStrokeTransparency,
+						thickness: 1,
+					})}
 					{shouldRenderIcon ? (
 						<imagelabel
 							BackgroundTransparency={1}

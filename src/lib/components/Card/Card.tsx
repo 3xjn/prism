@@ -10,6 +10,7 @@ import {
 	renderSizeConstraintDecorator,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
+import { renderElevationShadow } from "../_shared/elevation";
 import { composeEventMaps } from "../_shared/interaction";
 import {
 	mergeSharedStyleProps,
@@ -183,26 +184,17 @@ export const Card = React.forwardRef<Frame, CardProps>((props, ref) => {
 	const decoratorChildren: React.ReactElement[] = [];
 
 	if (renderShadow) {
-		shadowElement = (
-			<frame
-				key="shadow"
-				BackgroundTransparency={1}
-				BorderSizePixel={0}
-				Size={new UDim2(1, 0, 0, shadowHeight ?? 0)}
-				Visible={shadowHeight !== undefined}
-				ZIndex={math.max((mergedStyleProps.zIndex ?? 1) - 1, 0)}
-				{...slotProps?.shadow}
-			>
-				{renderCornerDecorator({ radius: resolvedRadius, slotProps: slotProps?.shadowCorner })}
-				{renderStrokeDecorator({
-					enabled: true,
-					color: fallbackShadow.color,
-					thickness: fallbackShadow.thickness,
-					transparency: fallbackShadow.transparency,
-					slotProps: slotProps?.shadowStroke,
-				})}
-			</frame>
-		);
+		shadowElement = renderElevationShadow({
+			shadow: fallbackShadow,
+			radius: resolvedRadius ?? new UDim(0, 0),
+			size: new UDim2(1, 0, 0, shadowHeight ?? 0),
+			zIndex: math.max((mergedStyleProps.zIndex ?? 1) - 1, 0),
+			visible: shadowHeight !== undefined,
+			slotProps: {
+				root: slotProps?.shadow,
+				ring: slotProps?.shadowStroke,
+			},
+		});
 	}
 
 	pushDecorator(decoratorChildren, renderCornerDecorator({ radius: resolvedRadius, slotProps: slotProps?.corner }));
