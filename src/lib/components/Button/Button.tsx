@@ -508,7 +508,7 @@ const ButtonBase = React.forwardRef<TextButton, ButtonProps>((props, ref) => {
 	};
 
 	return (
-		<textbutton {...textButtonInstanceProps} {...rootSlotProps} BackgroundTransparency={1} TextTransparency={1} TextStrokeTransparency={1} ref={ref}>
+		<textbutton {...textButtonInstanceProps} {...rootSlotProps} ref={ref}>
 			<frame
 				BackgroundColor3={resolvedBackgroundColor}
 				BackgroundTransparency={resolvedBackgroundTransparency}

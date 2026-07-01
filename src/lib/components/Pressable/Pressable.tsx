@@ -161,7 +161,7 @@ export const Pressable = React.forwardRef<TextButton, PressableProps>((props, re
 	};
 
 	return (
-		<textbutton {...textButtonInstanceProps} {...rootSlotProps} Text="" TextTransparency={1} TextStrokeTransparency={1} ref={ref}>
+		<textbutton {...textButtonInstanceProps} {...rootSlotProps} ref={ref}>
 			{decoratorChildren}
 			{children}
 		</textbutton>
