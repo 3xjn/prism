@@ -39,6 +39,7 @@ const validSliderProps: SliderProps[] = [
 	},
 	{ slotProps: { label: { Text: "Volume" }, valueLabel: { Text: "48" } }, defaultValue: 48 },
 	{ slotProps: { hitbox: { AutoButtonColor: true }, sizeConstraint: { MinSize: new Vector2(200, 24) } }, defaultValue: 22 },
+	{ slotProps: { hitbox: { SelectionOrder: 20, NextSelectionRight: sliderRef.current } }, defaultValue: 40 },
 	{ ref: sliderRef, defaultValue: 58 },
 ];
 

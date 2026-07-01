@@ -6,6 +6,15 @@ export interface SliderRange {
 	readonly span: number;
 }
 
+export type SliderStepDirection = -1 | 1;
+
+export interface SliderStepValueInput {
+	readonly value: number;
+	readonly direction: SliderStepDirection;
+	readonly range: SliderRange;
+	readonly step: number | undefined;
+}
+
 function isFiniteNumber(value: number | undefined): value is number {
 	return value !== undefined && value === value && value > -math.huge && value < math.huge;
 }
@@ -121,6 +130,23 @@ export function alphaToValue(alpha: number, range: SliderRange, step: number | u
 	}
 
 	return normalizeSliderValue(range.min + math.clamp(alpha, 0, 1) * range.span, range, step);
+}
+
+function resolveDiscreteStep(range: SliderRange, step: number | undefined): number {
+	if (range.span <= 0) {
+		return 0;
+	}
+
+	return step ?? range.span / 100;
+}
+
+export function stepSliderValue(input: SliderStepValueInput): number {
+	const stepAmount = resolveDiscreteStep(input.range, input.step);
+	if (stepAmount <= 0) {
+		return normalizeSliderValue(input.value, input.range, input.step);
+	}
+
+	return normalizeSliderValue(input.value + input.direction * stepAmount, input.range, input.step);
 }
 
 export function resolveAlphaFromPositionX(track: GuiObject | undefined, positionX: number): number {

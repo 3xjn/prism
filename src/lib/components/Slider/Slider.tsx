@@ -30,6 +30,7 @@ import {
 	shouldHandleTouchDragMoveInput,
 	type DragInputKind,
 } from "../_shared/interaction";
+import { useSliderControllerInput } from "./controllerInput";
 import {
 	alphaToValue,
 	normalizeSliderValue,
@@ -37,6 +38,8 @@ import {
 	resolveSliderRange,
 	resolveTextFontFace,
 	resolveValidStep,
+	stepSliderValue,
+	type SliderStepDirection,
 	valueToAlpha,
 } from "./utils";
 import { resolveSliderSizeStyles, resolveSliderVisualStyles, type SliderInteractionState } from "./styles";
@@ -145,7 +148,6 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 	const trackSlotProps = slotProps?.track;
 	const hitboxSlotProps = slotProps?.hitbox;
 	const tooltipContent = resolveSliderTooltipContent(tooltip, displayValue);
-	const tooltipOpen = tooltipContent !== undefined && !disabled && (hovered || dragging);
 
 	const disconnectDragTracking = React.useCallback(() => {
 		moveConnectionRef.current?.Disconnect();
@@ -194,6 +196,31 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 		onChangeRef.current?.(normalizedValue);
 		return normalizedValue;
 	}, []);
+
+	const commitControllerStep = React.useCallback(
+		(direction: SliderStepDirection) => {
+			if (disabled) {
+				return;
+			}
+
+			const finalValue = commitValue(
+				stepSliderValue({
+					value: dragValueRef.current,
+					direction,
+					range: configRef.current.range,
+					step: configRef.current.step,
+				}),
+			);
+			onChangeEndRef.current?.(finalValue);
+		},
+		[commitValue, disabled],
+	);
+	const controllerInput = useSliderControllerInput({
+		disabled,
+		hitboxInstance,
+		commitStep: commitControllerStep,
+	});
+	const tooltipOpen = tooltipContent !== undefined && !disabled && (hovered || dragging || controllerInput.selected);
 
 	const updateValueFromPositionX = React.useCallback(
 		(positionX: number) => {
@@ -360,6 +387,7 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 		MouseLeave: () => {
 			setHovered(false);
 		},
+		...controllerInput.event,
 		InputBegan: (_button, input) => {
 			beginDrag(input);
 		},
