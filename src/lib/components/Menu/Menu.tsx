@@ -2,15 +2,15 @@ import React from "@rbxts/react";
 
 import { useMotion } from "@prism/motion";
 import { useTheme } from "@prism/theme";
-import { toUDim } from "@prism/utils";
 
 import { Popover } from "../Popover";
 import type { PopoverSlotProps } from "../Popover";
 import { renderCornerDecorator, renderPaddingDecorator } from "../_shared/foundationDecorators";
-import { assignRef, composeEventMaps, isPressInput } from "../_shared/interaction";
+import { assignRef, composeEventMaps } from "../_shared/interaction";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
 import { resolveTextFontFace } from "../_shared/textFont";
-import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
+import { usePressInteraction } from "../_shared/usePressInteraction";
+import { resolveThemeSizeSafe, resolveUDimSafe } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
 import {
@@ -24,7 +24,6 @@ import {
 import type { MenuActionItem, MenuItem, MenuProps } from "./types";
 
 type MenuComponent = ((props: MenuProps) => React.ReactElement) & React.ForwardRefExoticComponent<MenuProps>;
-type MenuItemEventMap = React.InstanceProps<TextButton>["Event"];
 
 function isMenuActionItem(item: MenuItem): item is MenuActionItem {
 	return item.type === undefined || item.type === "item";
@@ -59,7 +58,9 @@ function resolveVisibleListHeight(items: readonly MenuItem[], maxVisibleItems: n
 }
 
 function resolveMenuPanelWidth(props: MenuProps, sizeStyles: MenuSizeStyles): UDim {
-	return props.panelWidth !== undefined ? toUDim(props.panelWidth) : new UDim(0, sizeStyles.panelWidth);
+	return props.panelWidth !== undefined
+		? resolveUDimSafe("menu", props.panelWidth, "panelWidth", new UDim(0, sizeStyles.panelWidth))
+		: new UDim(0, sizeStyles.panelWidth);
 }
 
 function resolveRightSectionWidth(panelWidth: UDim): UDim {
@@ -100,19 +101,14 @@ function MenuActionRow({
 	const itemLabelSlotProps = slotProps?.itemLabel;
 	const itemRightLabelSlotProps = slotProps?.itemRightLabel;
 	const disabled = item.disabled === true;
-	const [hovered, setHovered] = React.useState(false);
-	const [pressed, setPressed] = React.useState(false);
+	const press = usePressInteraction({
+		interactive: !disabled,
+		onActivated: () => {
+			onPress(item);
+		},
+	});
 
-	React.useEffect(() => {
-		if (!disabled) {
-			return;
-		}
-
-		setHovered(false);
-		setPressed(false);
-	}, [disabled]);
-
-	const state: MenuItemState = disabled ? "disabled" : pressed ? "pressed" : hovered ? "hovered" : "idle";
+	const state: MenuItemState = press.state;
 	const visualStyles = resolveMenuItemVisualStyles(theme, item.color, state);
 	const animated = useMotion({
 		values: {
@@ -141,34 +137,8 @@ function MenuActionRow({
 	const iconReservedWidth = hasIcon ? sizeStyles.iconSize + sizeStyles.itemGap : 0;
 	const rightReservedScale = hasRightSection ? rightSectionWidth.Scale : 0;
 	const rightReservedWidth = hasRightSection ? rightSectionWidth.Offset + sizeStyles.itemGap : 0;
-	const internalEvent: MenuItemEventMap = {
-		MouseEnter: () => {
-			if (!disabled) {
-				setHovered(true);
-			}
-		},
-		MouseLeave: () => {
-			setHovered(false);
-			setPressed(false);
-		},
-		InputBegan: (_button, input) => {
-			if (!disabled && isPressInput(input)) {
-				setPressed(true);
-			}
-		},
-		InputEnded: (_button, input) => {
-			if (isPressInput(input)) {
-				setPressed(false);
-			}
-		},
-		Activated: () => {
-			if (!disabled) {
-				onPress(item);
-			}
-		},
-	};
 	const event = useRootCursorEvent(
-		composeEventMaps(internalEvent, itemSlotProps?.Event),
+		composeEventMaps(press.eventMap, itemSlotProps?.Event),
 		itemSlotProps?.Event === undefined ? cursor ?? "pointer" : undefined,
 		disabled,
 	);

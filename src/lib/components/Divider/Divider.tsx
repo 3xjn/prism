@@ -2,22 +2,23 @@ import React from "@rbxts/react";
 
 import { useTheme } from "@prism/theme";
 import type { Theme } from "@prism/theme";
-import { resolveSize } from "@prism/theme";
-import { resolveColorSafe } from "../_shared/useResolvedStyleProps";
+import { resolveColorSafe, resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
 import type { DividerColorValue, DividerOrientation, DividerProps, DividerSizeValue } from "./types";
 
+const DEFAULT_DIVIDER_THICKNESS = 1;
+
 function resolveDividerThickness(theme: Theme, value: DividerSizeValue | undefined): number {
 	if (value === undefined) {
-		return 1;
+		return DEFAULT_DIVIDER_THICKNESS;
 	}
 
 	if (typeIs(value, "number")) {
 		return value;
 	}
 
-	return resolveSize(theme, value, "spacing");
+	return resolveThemeSizeSafe(theme, "divider", value, "spacing", DEFAULT_DIVIDER_THICKNESS);
 }
 
 function resolveDividerColor(theme: Theme, value: DividerColorValue | undefined): Color3 {

@@ -1,11 +1,12 @@
 import type { SemanticIntent, Theme, ThemeSize } from "@prism/theme";
 
+import type { InteractionState } from "../_shared/usePressInteraction";
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 import { mixColor } from "../_shared/visual";
 
 import type { MenuSize } from "./types";
 
-export type MenuItemState = "idle" | "hovered" | "pressed" | "disabled";
+export type MenuItemState = InteractionState;
 
 export interface MenuSizeStyles {
 	readonly panelWidth: number;

@@ -1,9 +1,10 @@
 import type React from "@rbxts/react";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { InteractionState } from "../_shared/usePressInteraction";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
-export type PressableInteractionState = "idle" | "hovered" | "pressed" | "disabled";
+export type PressableInteractionState = InteractionState;
 
 export interface PressableRenderState {
 	readonly state: PressableInteractionState;

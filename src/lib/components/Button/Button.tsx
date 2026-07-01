@@ -11,7 +11,10 @@ import {
 	renderSizeConstraintDecorator,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
-import { composeEventMaps, isPressInput } from "../_shared/interaction";
+import { resolveMinimumHeightConstraint } from "../_shared/frameSize";
+import { composeEventMaps } from "../_shared/interaction";
+import { usePressInteraction } from "../_shared/usePressInteraction";
+import type { InteractionState } from "../_shared/usePressInteraction";
 import {
 	mergeSharedStyleProps,
 	resolveThemeSizeSafe,
@@ -24,8 +27,6 @@ import { mixColor } from "../_shared/visual";
 import type { ButtonColor, ButtonProps, ButtonSize } from "./types";
 
 const TextService = game.GetService("TextService");
-type TextButtonEventMap = React.InstanceProps<TextButton>["Event"];
-type ButtonInteractionState = "idle" | "hovered" | "pressed" | "disabled";
 
 interface ButtonSizeStyles {
 	readonly paddingX: ThemeSize;
@@ -134,7 +135,7 @@ function resolveButtonVisualStyles(
 	theme: Theme,
 	variant: Variant,
 	color: ButtonColor,
-	state: ButtonInteractionState,
+	state: InteractionState,
 ): ButtonVisualStyles {
 	const intentColors = theme.colors[color];
 	const hoverSurface = mixColor(theme.colors.background.surface, theme.colors.action.hover, 0.45);
@@ -204,7 +205,7 @@ function resolveButtonVisualStyles(
 	}
 }
 
-function resolveButtonMotionTransition(state: ButtonInteractionState) {
+function resolveButtonMotionTransition(state: InteractionState) {
 	if (state === "disabled") {
 		return {
 			backgroundColor: { duration: "instant", easing: "standard" },
@@ -297,8 +298,7 @@ const ButtonBase = React.forwardRef<TextButton, ButtonProps>((props, ref) => {
 		Event,
 		Change,
 	} = props;
-	const [hovered, setHovered] = React.useState(false);
-	const [pressed, setPressed] = React.useState(false);
+	const press = usePressInteraction({ interactive: !disabled, onActivated: onPress });
 	const sizeStyles = resolveButtonSizeStyles(theme, size);
 	const mergedStyleProps = mergeSharedStyleProps(
 		{
@@ -322,7 +322,7 @@ const ButtonBase = React.forwardRef<TextButton, ButtonProps>((props, ref) => {
 		hasPadding,
 	} = useResolvedStyleProps("button", mergedStyleProps);
 	const computedWidth = fullWidth ? resolveUDimSafe("button", "100%", "width") : resolvedWidth;
-	const visualState: ButtonInteractionState = disabled ? "disabled" : pressed ? "pressed" : hovered ? "hovered" : "idle";
+	const visualState: InteractionState = press.state;
 	const resolvedVisualStyles = resolveButtonVisualStyles(theme, variant, color, visualState);
 	const motionTransition = resolveButtonMotionTransition(visualState);
 	const animated = useMotion({
@@ -336,28 +336,7 @@ const ButtonBase = React.forwardRef<TextButton, ButtonProps>((props, ref) => {
 		transition: motionTransition,
 	});
 
-	React.useEffect(() => {
-		if (!disabled) {
-			return;
-		}
-
-		setHovered(false);
-		setPressed(false);
-	}, [disabled]);
-
-	const computedConstraint =
-		resolvedConstraint === undefined
-			? {
-				min: new Vector2(0, sizeStyles.minHeight),
-				max: undefined,
-			  }
-			: {
-				min:
-					resolvedConstraint.min === undefined
-						? new Vector2(0, sizeStyles.minHeight)
-						: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, sizeStyles.minHeight)),
-				max: resolvedConstraint.max,
-			  };
+	const computedConstraint = resolveMinimumHeightConstraint(resolvedConstraint, sizeStyles.minHeight);
 	const rootSlotProps = slotProps?.root;
 	const primitiveChildLabel = isPrimitiveButtonLabel(children) ? children : undefined;
 	const resolvedLabelContent = label ?? primitiveChildLabel;
@@ -429,42 +408,8 @@ const ButtonBase = React.forwardRef<TextButton, ButtonProps>((props, ref) => {
 	}
 	const resolvedZIndex = rootSlotProps?.ZIndex ?? props.zIndex;
 	const resolvedLabelZIndex = resolvedZIndex;
-	const internalEvent: TextButtonEventMap = {
-		MouseEnter: () => {
-			if (disabled) {
-				return;
-			}
-
-			setHovered(true);
-		},
-		MouseLeave: () => {
-			setHovered(false);
-			setPressed(false);
-		},
-		InputBegan: (_button, input) => {
-			if (disabled || !isPressInput(input)) {
-				return;
-			}
-
-			setPressed(true);
-		},
-		InputEnded: (_button, input) => {
-			if (!isPressInput(input)) {
-				return;
-			}
-
-			setPressed(false);
-		},
-		Activated: () => {
-			if (disabled) {
-				return;
-			}
-
-			onPress?.();
-		},
-	};
 	const rootEvent = useRootCursorEvent(
-		composeEventMaps(internalEvent, Event),
+		composeEventMaps(press.eventMap, Event),
 		rootSlotProps?.Event === undefined ? mergedStyleProps.cursor : undefined,
 		disabled,
 	);
@@ -508,7 +453,7 @@ const ButtonBase = React.forwardRef<TextButton, ButtonProps>((props, ref) => {
 	};
 
 	return (
-		<textbutton {...textButtonInstanceProps} {...rootSlotProps} BackgroundTransparency={1} TextTransparency={1} TextStrokeTransparency={1} ref={ref}>
+		<textbutton {...textButtonInstanceProps} {...rootSlotProps} ref={ref}>
 			<frame
 				BackgroundColor3={resolvedBackgroundColor}
 				BackgroundTransparency={resolvedBackgroundTransparency}

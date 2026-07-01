@@ -13,6 +13,7 @@ import {
 } from "../_shared/foundationDecorators";
 import { resolveMinimumHeightConstraint } from "../_shared/frameSize";
 import { useTriggerOverlayLayout } from "../_shared/layering";
+import { usePressInteraction } from "../_shared/usePressInteraction";
 import { mergeSharedStyleProps, resolveUDimSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
@@ -29,7 +30,6 @@ import {
 	composeEventMaps,
 	findSelectedOption,
 	incrementZIndex,
-	isPressInput,
 	resolveSelectOverlayLayout,
 	resolveTextFontFace,
 	type SelectOverlayLayout,
@@ -56,9 +56,17 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 		Event,
 		Change,
 	} = props;
-	const [hovered, setHovered] = React.useState(false);
-	const [pressed, setPressed] = React.useState(false);
 	const [open, setOpen] = React.useState(false);
+	const press = usePressInteraction({
+		interactive: !disabled,
+		onActivated: () => {
+			if (options.size() === 0) {
+				return;
+			}
+
+			setOpen((currentOpen) => !currentOpen);
+		},
+	});
 	const controlledValue = value ?? selected;
 	const [uncontrolledValue, setUncontrolledValue] = React.useState(controlledValue ?? defaultValue);
 	const [triggerInstance, setTriggerInstance] = React.useState<TextButton>();
@@ -104,8 +112,6 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 			return;
 		}
 
-		setHovered(false);
-		setPressed(false);
 		setOpen(false);
 	}, [disabled]);
 
@@ -129,11 +135,11 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 	const computedConstraint = resolveMinimumHeightConstraint(resolvedConstraint, sizeStyles.minHeight);
 	const triggerState: SelectTriggerState = disabled
 		? "disabled"
-		: pressed
+		: press.pressed
 			? "pressed"
 			: open
 				? "open"
-				: hovered
+				: press.hovered
 					? "hovered"
 					: "idle";
 	const triggerVisualStyles = resolveSelectTriggerVisualStyles(theme, variant, color, triggerState, hasSelection);
@@ -163,42 +169,8 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 	const resolvedTriggerTextZIndex = triggerTextSlotProps?.ZIndex ?? resolvedTriggerZIndex;
 	const resolvedIndicatorZIndex = indicatorSlotProps?.ZIndex ?? resolvedTriggerZIndex;
 	const resolvedDropdownZIndex = incrementZIndex(resolvedTriggerZIndex ?? overlayLayout?.zIndexBase, 1);
-	const internalEvent: React.InstanceProps<TextButton>["Event"] = {
-		MouseEnter: () => {
-			if (disabled) {
-				return;
-			}
-
-			setHovered(true);
-		},
-		MouseLeave: () => {
-			setHovered(false);
-			setPressed(false);
-		},
-		InputBegan: (_button, input) => {
-			if (disabled || !isPressInput(input)) {
-				return;
-			}
-
-			setPressed(true);
-		},
-		InputEnded: (_button, input) => {
-			if (!isPressInput(input)) {
-				return;
-			}
-
-			setPressed(false);
-		},
-		Activated: () => {
-			if (disabled || options.size() === 0) {
-				return;
-			}
-
-			setOpen((currentOpen) => !currentOpen);
-		},
-	};
 	const triggerEvent = useRootCursorEvent(
-		composeEventMaps(internalEvent, Event),
+		composeEventMaps(press.eventMap, Event),
 		triggerSlotProps?.Event === undefined ? mergedStyleProps.cursor : undefined,
 		disabled,
 	);
@@ -221,7 +193,6 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 		}
 
 		setOpen(false);
-		setPressed(false);
 	};
 	const triggerRef = React.useCallback(
 		(instance: TextButton | undefined) => {

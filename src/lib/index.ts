@@ -28,3 +28,7 @@ export * from "./components/Tooltip";
 export * from "./components/Backdrop";
 export * from "./components/ScrollArea";
 export * from "./bridge";
+export * from "./theme";
+export * from "./motion";
+export * from "./utils";
+export * from "./icons";
