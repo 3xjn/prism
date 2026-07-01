@@ -3,6 +3,8 @@ import React from "@rbxts/react";
 import { useMotion } from "@prism/motion";
 import { useTheme } from "@prism/theme";
 
+import { Icon } from "../Icon";
+import type { IconName } from "../Icon";
 import { Popover } from "../Popover";
 import type { PopoverSlotProps } from "../Popover";
 import { renderCornerDecorator, renderPaddingDecorator } from "../_shared/foundationDecorators";
@@ -10,7 +12,7 @@ import { assignRef, composeEventMaps } from "../_shared/interaction";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
 import { resolveTextFontFace } from "../_shared/textFont";
 import { usePressInteraction } from "../_shared/usePressInteraction";
-import { resolveThemeSizeSafe, resolveUDimSafe } from "../_shared/useResolvedStyleProps";
+import { reportComponentFailure, resolveThemeSizeSafe, resolveUDimSafe } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
 import {
@@ -65,6 +67,28 @@ function resolveMenuPanelWidth(props: MenuProps, sizeStyles: MenuSizeStyles): UD
 
 function resolveRightSectionWidth(panelWidth: UDim): UDim {
 	return new UDim(panelWidth.Scale * 0.34, math.floor(panelWidth.Offset * 0.34));
+}
+
+function resolveMenuItemIcon(
+	icon: IconName | React.ReactElement | undefined,
+	iconSize: number,
+): React.ReactNode {
+	if (icon === undefined) {
+		return undefined;
+	}
+
+	if (typeIs(icon, "string")) {
+		return <Icon name={icon} size={iconSize} />;
+	}
+
+	if (React.isValidElement(icon)) {
+		return icon;
+	}
+
+	// Untyped (Luau) callers can pass anything; drop the icon with the
+	// shared failure policy instead of crashing the React reconciler.
+	reportComponentFailure("menu", `Invalid item icon ${tostring(icon)}. Expected an icon name or a React element.`);
+	return undefined;
 }
 
 function resolvePrimitiveMenuSection(value: React.ReactElement | string | number | undefined): string | number | undefined {
@@ -188,7 +212,7 @@ function MenuActionRow({
 					ZIndex={slotProps?.itemIcon?.ZIndex ?? resolvedContentZIndex}
 					{...slotProps?.itemIcon}
 				>
-					{item.icon}
+					{resolveMenuItemIcon(item.icon, sizeStyles.iconSize)}
 				</frame>
 			) : undefined}
 			<textlabel
