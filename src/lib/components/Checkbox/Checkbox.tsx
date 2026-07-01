@@ -13,8 +13,12 @@ import {
 	renderSizeConstraintDecorator,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
-import { composeEventMaps, isPressInput } from "../_shared/interaction";
+import { resolveFrameSizeProps, resolveMinimumHeightConstraint } from "../_shared/frameSize";
+import { composeEventMaps } from "../_shared/interaction";
 import { resolveTextFontFace } from "../_shared/textFont";
+import { useControllableState } from "../_shared/useControllableState";
+import { usePressInteraction } from "../_shared/usePressInteraction";
+import type { InteractionState } from "../_shared/usePressInteraction";
 import {
 	mergeSharedStyleProps,
 	useResolvedStyleProps,
@@ -24,8 +28,7 @@ import { mixColor } from "../_shared/visual";
 
 import type { CheckboxColor, CheckboxProps, CheckboxSize } from "./types";
 
-type TextButtonEventMap = React.InstanceProps<TextButton>["Event"];
-type CheckboxInteractionState = "idle" | "hovered" | "pressed" | "disabled";
+type CheckboxInteractionState = InteractionState;
 
 interface CheckboxSizeStyles {
 	readonly markWidth: number;
@@ -207,9 +210,11 @@ const CheckboxBase = React.forwardRef<TextButton, CheckboxProps>((props, ref) =>
 		Event,
 		Change,
 	} = props;
-	const [hovered, setHovered] = React.useState(false);
-	const [pressed, setPressed] = React.useState(false);
-	const [uncontrolledChecked, setUncontrolledChecked] = React.useState(checked ?? defaultChecked ?? false);
+	const [checkedState, setCheckedState] = useControllableState({
+		controlled: checked,
+		defaultValue: checked ?? defaultChecked ?? false,
+		onChange,
+	});
 	const mergedStyleProps = mergeSharedStyleProps({ cursor: "pointer" }, props);
 	const {
 		resolvedWidth,
@@ -225,55 +230,21 @@ const CheckboxBase = React.forwardRef<TextButton, CheckboxProps>((props, ref) =>
 		hasPadding,
 	} = useResolvedStyleProps("checkbox", mergedStyleProps);
 	const rootSlotProps = slotProps?.root;
-	const checkedState = checked ?? uncontrolledChecked;
 	const sizeStyles = resolveCheckboxSizeStyles(theme, size);
 
-	React.useEffect(() => {
-		if (checked !== undefined) {
-			setUncontrolledChecked(checked);
-		}
-	}, [checked]);
+	const computedConstraint = resolveMinimumHeightConstraint(resolvedConstraint, sizeStyles.minHeight);
+	const { size: computedSize, automaticSize: computedAutoSize } = resolveFrameSizeProps(
+		resolvedSize,
+		resolvedWidth,
+		resolvedHeight,
+	);
 
-	React.useEffect(() => {
-		if (!disabled) {
-			return;
-		}
+	const toggle = () => {
+		setCheckedState(!checkedState);
+	};
 
-		setHovered(false);
-		setPressed(false);
-	}, [disabled]);
-
-	const computedConstraint =
-		resolvedConstraint === undefined
-			? {
-				min: new Vector2(0, sizeStyles.minHeight),
-				max: undefined,
-			  }
-			: {
-				min:
-					resolvedConstraint.min === undefined
-						? new Vector2(0, sizeStyles.minHeight)
-						: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, sizeStyles.minHeight)),
-				max: resolvedConstraint.max,
-			  };
-
-	let computedSize: UDim2 | undefined;
-	let computedAutoSize: Enum.AutomaticSize | undefined;
-	if (resolvedSize !== undefined) {
-		computedSize = resolvedSize;
-	} else if (resolvedWidth !== undefined && resolvedHeight !== undefined) {
-		computedSize = new UDim2(resolvedWidth, resolvedHeight);
-	} else if (resolvedWidth !== undefined) {
-		computedSize = new UDim2(resolvedWidth, new UDim(0, 0));
-		computedAutoSize = Enum.AutomaticSize.Y;
-	} else if (resolvedHeight !== undefined) {
-		computedSize = new UDim2(new UDim(0, 0), resolvedHeight);
-		computedAutoSize = Enum.AutomaticSize.X;
-	} else {
-		computedAutoSize = Enum.AutomaticSize.XY;
-	}
-
-	const interactionState: CheckboxInteractionState = disabled ? "disabled" : pressed ? "pressed" : hovered ? "hovered" : "idle";
+	const press = usePressInteraction({ interactive: !disabled, onActivated: toggle });
+	const interactionState: CheckboxInteractionState = press.state;
 	const visualStyles = resolveCheckboxVisualStyles(theme, color, interactionState, checkedState);
 	const animated = useMotion({
 		values: {
@@ -289,51 +260,8 @@ const CheckboxBase = React.forwardRef<TextButton, CheckboxProps>((props, ref) =>
 		transition: resolveCheckboxMotionTransition(interactionState),
 	});
 
-	const toggle = () => {
-		if (disabled) {
-			return;
-		}
-
-		const nextChecked = !checkedState;
-		if (checked === undefined) {
-			setUncontrolledChecked(nextChecked);
-		}
-
-		onChange?.(nextChecked);
-	};
-
-	const internalEvent: TextButtonEventMap = {
-		MouseEnter: () => {
-			if (disabled) {
-				return;
-			}
-
-			setHovered(true);
-		},
-		MouseLeave: () => {
-			setHovered(false);
-			setPressed(false);
-		},
-		InputBegan: (_button, input) => {
-			if (disabled || !isPressInput(input)) {
-				return;
-			}
-
-			setPressed(true);
-		},
-		InputEnded: (_button, input) => {
-			if (!isPressInput(input)) {
-				return;
-			}
-
-			setPressed(false);
-		},
-		Activated: () => {
-			toggle();
-		},
-	};
 	const rootEvent = useRootCursorEvent(
-		composeEventMaps(internalEvent, Event),
+		composeEventMaps(press.eventMap, Event),
 		rootSlotProps?.Event === undefined ? mergedStyleProps.cursor : undefined,
 		disabled,
 	);

@@ -1,29 +1,12 @@
 import React from "@rbxts/react";
 
 import { pushDecorator, renderPaddingDecorator, renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
-import { composeEventMaps, isPressInput } from "../_shared/interaction";
+import { composeEventMaps } from "../_shared/interaction";
+import { resolveInteractionState, usePressInteraction } from "../_shared/usePressInteraction";
 import { mergeSharedStyleProps, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
-import type { PressableInteractionState, PressableProps, PressableRenderState } from "./types";
-
-type TextButtonEventMap = React.InstanceProps<TextButton>["Event"];
-
-function resolveInteractionState(disabled: boolean, hovered: boolean, pressed: boolean): PressableInteractionState {
-	if (disabled) {
-		return "disabled";
-	}
-
-	if (pressed) {
-		return "pressed";
-	}
-
-	if (hovered) {
-		return "hovered";
-	}
-
-	return "idle";
-}
+import type { PressableProps, PressableRenderState } from "./types";
 
 export const Pressable = React.forwardRef<TextButton, PressableProps>((props, ref) => {
 	const { Event, Change, onPress, slotProps } = props;
@@ -31,18 +14,8 @@ export const Pressable = React.forwardRef<TextButton, PressableProps>((props, re
 	const disabled = props.disabled ?? false;
 	const active = props.active ?? true;
 	const interactive = active && !disabled;
-	const [hovered, setHovered] = React.useState(false);
-	const [pressed, setPressed] = React.useState(false);
 	const mergedStyleProps = mergeSharedStyleProps({ cursor: "pointer" }, props);
-
-	React.useEffect(() => {
-		if (interactive) {
-			return;
-		}
-
-		setHovered(false);
-		setPressed(false);
-	}, [interactive]);
+	const press = usePressInteraction({ interactive, onActivated: onPress });
 
 	const {
 		resolvedWidth,
@@ -71,54 +44,17 @@ export const Pressable = React.forwardRef<TextButton, PressableProps>((props, re
 		computedAutoSize = Enum.AutomaticSize.X;
 	}
 
-	const effectiveHovered = interactive && hovered;
-	const effectivePressed = interactive && pressed;
-	const interactionState = resolveInteractionState(disabled, effectiveHovered, effectivePressed);
 	const renderState: PressableRenderState = {
-		state: interactionState,
-		hovered: effectiveHovered,
-		pressed: effectivePressed,
+		state: resolveInteractionState(disabled, press.hovered, press.pressed),
+		hovered: press.hovered,
+		pressed: press.pressed,
 		disabled,
 		active,
 	};
 	const children = props.render !== undefined ? props.render(renderState) : props.children;
 
-	const internalEvent: TextButtonEventMap = {
-		MouseEnter: () => {
-			if (!interactive) {
-				return;
-			}
-
-			setHovered(true);
-		},
-		MouseLeave: () => {
-			setHovered(false);
-			setPressed(false);
-		},
-		InputBegan: (_button, input) => {
-			if (!interactive || !isPressInput(input)) {
-				return;
-			}
-
-			setPressed(true);
-		},
-		InputEnded: (_button, input) => {
-			if (!isPressInput(input)) {
-				return;
-			}
-
-			setPressed(false);
-		},
-		Activated: () => {
-			if (!interactive) {
-				return;
-			}
-
-			onPress?.();
-		},
-	};
 	const rootEvent = useRootCursorEvent(
-		composeEventMaps(internalEvent, Event),
+		composeEventMaps(press.eventMap, Event),
 		rootSlotProps?.Event === undefined && interactive ? mergedStyleProps.cursor : undefined,
 		!interactive,
 	);
