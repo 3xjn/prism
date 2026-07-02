@@ -167,7 +167,7 @@ export function resolveStepperInputFrameVisualStyles(
 			textColor: theme.colors.text.disabled,
 			placeholderColor: theme.colors.text.disabled,
 			railFillColor: mixColor(theme.colors.action.disabledBackground, theme.colors.border.default, 0.34),
-			railFillTransparency: 1,
+			railFillTransparency: 0.78,
 		};
 	}
 
@@ -183,9 +183,9 @@ export function resolveStepperInputFrameVisualStyles(
 	const inputSurface = variant === "filled"
 		? mixColor(tacticalSurface, theme.colors.background.surface, 0.2)
 		: mixColor(theme.colors.background.default, theme.colors.border.default, 0.16);
-	const railFillBase = variant === "filled"
-		? mixColor(theme.colors.border.strong, theme.colors.background.surface, readOnly ? 0.72 : 0.56)
-		: mixColor(theme.colors.border.strong, theme.colors.border.default, readOnly ? 0.82 : 0.62);
+	// The value fill carries the primary tint so it reads as "value" (like
+	// Slider and Progress) instead of inert gray chrome.
+	const railFillBase = mixColor(theme.colors.primary.light, theme.colors.background.surface, readOnly ? 0.55 : 0.3);
 
 	return {
 		backgroundColor: state === "focused" ? focusSurface : state === "hovered" ? hoverSurface : tacticalSurface,
@@ -196,8 +196,10 @@ export function resolveStepperInputFrameVisualStyles(
 		strokeThickness: 1,
 		textColor: idleText,
 		placeholderColor: state === "focused" ? mixColor(placeholderBase, theme.colors.text.primary, 0.16) : placeholderBase,
-		railFillColor: state === "focused" ? mixColor(railFillBase, theme.colors.text.primary, 0.06) : railFillBase,
-		railFillTransparency: state === "focused" ? 0.62 : state === "hovered" ? 0.5 : 1,
+		railFillColor: state === "focused" ? mixColor(railFillBase, theme.colors.primary.main, 0.14) : railFillBase,
+		// The full-height value fill stays visible at rest so the fraction
+		// always reads; hover and dragging strengthen it slightly.
+		railFillTransparency: state === "focused" ? 0.3 : state === "hovered" ? 0.42 : 0.5,
 	};
 }
 
@@ -211,9 +213,14 @@ export function resolveStepperInputButtonVisualStyles(
 		: variant === "light"
 		? mixColor(theme.colors.background.surface, theme.colors.action.hover, 0.28)
 		: mixColor(theme.colors.background.default, theme.colors.border.default, 0.26);
-	const hoverSurface = variant === "filled" ? mixColor(idleSurface, theme.colors.text.primary, 0.08) : mixColor(idleSurface, theme.colors.action.hover, 0.44);
-	const pressedSurface = variant === "filled" ? mixColor(idleSurface, theme.colors.action.pressed, 0.28) : mixColor(idleSurface, theme.colors.action.pressed, 0.72);
+	const hoverSurface = variant === "filled"
+		? mixColor(idleSurface, theme.colors.text.primary, 0.08)
+		: mixColor(idleSurface, theme.colors.primary.light, 0.4);
+	const pressedSurface = variant === "filled"
+		? mixColor(idleSurface, theme.colors.action.pressed, 0.28)
+		: mixColor(idleSurface, theme.colors.primary.light, 0.65);
 	const idleText = variant === "filled" ? theme.colors.text.inverse : theme.colors.text.primary;
+	const accentText = variant === "filled" ? theme.colors.text.inverse : theme.colors.primary.dark;
 
 	if (state === "disabled") {
 		return {
@@ -228,9 +235,12 @@ export function resolveStepperInputButtonVisualStyles(
 	return {
 		backgroundColor: state === "pressed" ? pressedSurface : state === "hovered" ? hoverSurface : idleSurface,
 		backgroundTransparency: 0,
-		strokeColor: state === "pressed" ? theme.colors.border.strong : state === "hovered" ? theme.colors.border.strong : theme.colors.border.default,
+		strokeColor:
+			state === "pressed" || state === "hovered"
+				? mixColor(theme.colors.primary.main, theme.colors.border.strong, 0.4)
+				: theme.colors.border.default,
 		strokeTransparency: state === "pressed" ? 0.1 : state === "hovered" ? 0.16 : 0.1,
-		textColor: state === "pressed" ? theme.colors.text.primary : idleText,
+		textColor: state === "pressed" || state === "hovered" ? accentText : idleText,
 	};
 }
 

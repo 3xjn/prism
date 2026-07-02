@@ -26,7 +26,7 @@ import { Switch } from "../components/Switch";
 import { Text } from "../components/Text";
 import { Tooltip } from "../components/Tooltip";
 import { ThemeProvider, theme as themeRefs } from "@prism/theme";
-import type { ConcreteColorValue, SemanticIntent, ThemeSize, Variant } from "@prism/theme";
+import type { ConcreteColorValue, SemanticIntent, ThemeOverride, ThemeSize, Variant } from "@prism/theme";
 import { isDevMode } from "@prism/utils";
 import type { SizeValue, SizeValue2D } from "@prism/utils";
 import type { SharedCursorValue } from "../components/_shared/useResolvedStyleProps";
@@ -1088,7 +1088,7 @@ function renderNode(node: PrismLuauNode, key = "root"): React.ReactElement {
 	}
 }
 
-export function mountPrism(parent: Instance, tree: PrismLuauNode): PrismLuauMountHandle {
+export function mountPrism(parent: Instance, tree: PrismLuauNode, theme?: ThemeOverride): PrismLuauMountHandle {
 	const root = ReactRoblox.createRoot(parent);
 	let destroyed = false;
 
@@ -1097,7 +1097,7 @@ export function mountPrism(parent: Instance, tree: PrismLuauNode): PrismLuauMoun
 			return;
 		}
 
-		root.render(<ThemeProvider>{renderNode(nextTree)}</ThemeProvider>);
+		root.render(<ThemeProvider theme={theme}>{renderNode(nextTree)}</ThemeProvider>);
 	};
 
 	const handle: PrismLuauMountHandle = {

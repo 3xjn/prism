@@ -68,15 +68,17 @@ function resolveTooltipSizeStyles(theme: ReturnType<typeof useTheme>, gap: numbe
 }
 
 function resolveTooltipVisualStyles(theme: ReturnType<typeof useTheme>): TooltipVisualStyles {
-	// Tooltips render inverse (dark on light themes) so they separate from
-	// the content they float over instead of blending into light surfaces.
-	const inverseSurface = theme.colors.palette.gray["9"];
+	// Tooltips render inverse so they separate from the content they
+	// float over: the bubble takes the theme's primary text color and the
+	// label takes the page background, which flips correctly between
+	// light and dark themes.
+	const inverseSurface = theme.colors.text.primary;
 
 	return {
 		backgroundColor: inverseSurface,
 		strokeColor: inverseSurface,
 		strokeTransparency: 1,
-		textColor: theme.colors.text.inverse,
+		textColor: theme.colors.background.default,
 		tailFillColor: inverseSurface,
 		tailBorderColor: inverseSurface,
 		tailBorderTransparency: 1,
