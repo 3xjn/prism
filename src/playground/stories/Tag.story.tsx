@@ -117,6 +117,12 @@ function TagStoryCanvas({ controls: currentControls }: { readonly controls: TagS
 								<Tag label="Low ammo" color="warning" variant="light" />
 								<Tag label="Locked" color="error" variant="outline" rightSection={<Icon name="lock" color={themeRefs.error.dark} size={14} />} />
 							</Stack>
+							<Tag
+								width={180}
+								label="Extremely long server status label that should ellipsize inside the constrained tag"
+								leftSection={<StatusDot color={theme.colors.info.main} />}
+								rightSection={<Icon name="info" color={themeRefs.info.dark} size={14} />}
+							/>
 							<Text
 								text="Use `label` for compact copy. Optional leftSection and rightSection accept small Prism content without making Tag interactive."
 								size="sm"

@@ -33,6 +33,8 @@ interface TagVisualStyles {
 	readonly strokeThickness: number;
 }
 
+type GuiZIndex = React.InstanceProps<Frame>["ZIndex"];
+
 function resolveTagSizeStyles(theme: Theme, size: TagSize): TagSizeStyles {
 	switch (size) {
 		case "xs":
@@ -183,13 +185,30 @@ function resolveTagVisualStyles(theme: Theme, variant: TagVariant, color: TagCol
 	return color === "neutral" ? resolveNeutralTagVisualStyles(theme, variant) : resolveIntentTagVisualStyles(theme, variant, color);
 }
 
-function renderSection(section: React.ReactNode | undefined, slotProps: Partial<React.InstanceProps<Frame>> | undefined, keyName: string) {
+function resolveContentZIndex(rootZIndex: GuiZIndex | undefined): GuiZIndex {
+	if (rootZIndex === undefined) {
+		return 2;
+	}
+
+	if (typeIs(rootZIndex, "number")) {
+		return rootZIndex + 1;
+	}
+
+	return rootZIndex.map((value) => value + 1);
+}
+
+function renderSection(
+	section: React.ReactNode | undefined,
+	slotProps: Partial<React.InstanceProps<Frame>> | undefined,
+	keyName: string,
+	zIndex: GuiZIndex,
+) {
 	if (section === undefined && slotProps === undefined) {
 		return undefined;
 	}
 
 	return (
-		<frame key={keyName} AutomaticSize={Enum.AutomaticSize.XY} BackgroundTransparency={1} BorderSizePixel={0} Size={UDim2.fromOffset(0, 0)} {...slotProps}>
+		<frame key={keyName} AutomaticSize={Enum.AutomaticSize.XY} BackgroundTransparency={1} BorderSizePixel={0} Size={UDim2.fromOffset(0, 0)} ZIndex={zIndex} {...slotProps}>
 			{section}
 		</frame>
 	);
@@ -224,6 +243,9 @@ const TagBase = React.forwardRef<Frame, TagProps>((props, ref) => {
 	const automaticSize = resolvedSize === undefined && computedWidth === undefined ? Enum.AutomaticSize.X : undefined;
 	const labelText = props.label ?? props.children ?? "";
 	const rootSlotProps = slotProps?.root;
+	const resolvedRootZIndex = rootSlotProps?.ZIndex ?? props.zIndex;
+	const contentZIndex = resolveContentZIndex(resolvedRootZIndex);
+	const isWidthConstrained = resolvedSize !== undefined || computedWidth !== undefined || resolvedConstraint?.max?.X !== undefined;
 	const rootEvent = useRootCursorEvent(Event, rootSlotProps?.Event === undefined ? props.cursor : undefined);
 	const decoratorChildren: React.ReactElement[] = [];
 
@@ -256,7 +278,7 @@ const TagBase = React.forwardRef<Frame, TagProps>((props, ref) => {
 			ClipsDescendants={props.clip ?? true}
 			Visible={props.visible}
 			LayoutOrder={props.layoutOrder}
-			ZIndex={props.zIndex}
+			ZIndex={resolvedRootZIndex}
 			Event={rootEvent}
 			Change={Change}
 			{...rootSlotProps}
@@ -269,30 +291,33 @@ const TagBase = React.forwardRef<Frame, TagProps>((props, ref) => {
 				VerticalAlignment={Enum.VerticalAlignment.Center}
 				SortOrder={Enum.SortOrder.LayoutOrder}
 				Padding={new UDim(0, sizeStyles.gap)}
+				HorizontalFlex={isWidthConstrained ? Enum.UIFlexAlignment.Fill : undefined}
 				{...slotProps?.listLayout}
 			/>
-			{renderSection(props.leftSection, slotProps?.leftSection, "left-section")}
+			{renderSection(props.leftSection, slotProps?.leftSection, "left-section", contentZIndex)}
 			<textlabel
 				key="label"
-				AutomaticSize={Enum.AutomaticSize.XY}
+				AutomaticSize={isWidthConstrained ? Enum.AutomaticSize.Y : Enum.AutomaticSize.XY}
 				BackgroundTransparency={1}
 				BorderSizePixel={0}
-				Size={UDim2.fromOffset(0, 0)}
+				Size={isWidthConstrained ? UDim2.fromScale(0, 1) : UDim2.fromOffset(0, 0)}
 				Text={slotProps?.label?.Text ?? tostring(labelText)}
 				TextColor3={slotProps?.label?.TextColor3 ?? visualStyles.textColor}
 				TextTransparency={slotProps?.label?.TextTransparency ?? 0}
 				TextStrokeTransparency={slotProps?.label?.TextStrokeTransparency ?? 1}
 				TextSize={slotProps?.label?.TextSize ?? sizeStyles.textSize}
 				Font={theme.fontFamily}
-				FontFace={resolveTextFontFace(undefined, slotProps?.label?.FontFace, theme.fontFamily)}
+				FontFace={resolveTextFontFace(slotProps?.label?.Font, slotProps?.label?.FontFace, theme.fontFamily)}
 				LineHeight={slotProps?.label?.LineHeight ?? sizeStyles.lineHeight}
 				TextXAlignment={slotProps?.label?.TextXAlignment ?? Enum.TextXAlignment.Center}
 				TextYAlignment={slotProps?.label?.TextYAlignment ?? Enum.TextYAlignment.Center}
 				TextTruncate={slotProps?.label?.TextTruncate ?? Enum.TextTruncate.AtEnd}
-				ZIndex={(props.zIndex ?? 1) + 1}
+				ZIndex={contentZIndex}
 				{...slotProps?.label}
-			/>
-			{renderSection(props.rightSection, slotProps?.rightSection, "right-section")}
+			>
+				{isWidthConstrained ? <uiflexitem FlexMode={Enum.UIFlexMode.Fill} /> : undefined}
+			</textlabel>
+			{renderSection(props.rightSection, slotProps?.rightSection, "right-section", contentZIndex)}
 		</frame>
 	);
 });

@@ -24,7 +24,7 @@ Prism currently includes theme tokens, motion helpers, unit helpers, public comp
 
 ## Component and API inventory
 
-This inventory is generated from the current export list in `src/lib/index.ts`. It includes 29 public component exports from `@prism` and keeps the small bridge export separate.
+This inventory is generated from the current export list in `src/lib/index.ts`. It includes 30 public component exports from `@prism` and keeps the small bridge export separate.
 
 <!-- component-inventory:start -->
 | Purpose | Components |
@@ -32,7 +32,7 @@ This inventory is generated from the current export list in `src/lib/index.ts`. 
 | Layout | `Box`, `Stack`, `Divider`, `Card`, `ScrollArea` |
 | Text and media | `Text`, `Icon`, `Image`, `Avatar` |
 | Inputs and forms | `Button`, `Pressable`, `Input`, `KeybindInput`, `Checkbox`, `Switch`, `StepperInput`, `Slider` |
-| Feedback | `Progress`, `CircularProgress`, `Backdrop` |
+| Feedback | `Progress`, `CircularProgress`, `Backdrop`, `Tag` |
 | Navigation | `SegmentedControl`, `Tabs`, `Menu`, `Select` |
 | Overlays | `WorldPortal`, `Popover`, `Modal`, `Tooltip` |
 | Utility and advanced | `Draggable` |
