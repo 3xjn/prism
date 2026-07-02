@@ -59,15 +59,34 @@ function AbilitySlot({
 	const iconColor = disabled ? themeRefs.text.disabled : dragging ? themeRefs.primary.dark : themeRefs.text.primary;
 
 	if (direction === "horizontal") {
+		const slotBackground = disabled
+			? themeRefs.palette.gray["7"]
+			: dragging
+				? themeRefs.palette.gray["7"]
+				: themeRefs.palette.gray["8"];
+		const slotBorder = dragging ? themeRefs.primary.main : themeRefs.palette.gray["6"];
+
 		return (
-			<Box width={96} bg={background} radius="md" borderColor={border} p="sm">
-				<Stack width="100%" gap="xs" align="center">
-					<Image src={item.icon} width={44} height={44} transparency={disabled ? 0.6 : 0} />
-					<Text text={item.label} size="sm" weight={700} color={iconColor} />
-					<Box bg={themeRefs.background.default} radius="sm" px="sm" py="xs">
-						<Text text={`Slot ${slotNumber}`} size="xs" color={themeRefs.text.secondary} />
-					</Box>
-				</Stack>
+			<Box width={64} height={64} bg={slotBackground} radius="md" borderColor={slotBorder}>
+				<Image src={item.icon} width={52} height={52} center transparency={disabled ? 0.6 : 0} />
+				<Box
+					width={18}
+					height={16}
+					bg={themeRefs.palette.gray["9"]}
+					radius="sm"
+					position={{ x: "100%", y: "100%" }}
+					anchor={new Vector2(1, 1)}
+				>
+					<Text
+						text={`${slotNumber}`}
+						size="xs"
+						weight={700}
+						color={themeRefs.text.inverse}
+						width="100%"
+						height="100%"
+						align="center"
+					/>
+				</Box>
 			</Box>
 		);
 	}
@@ -113,30 +132,38 @@ function DraggableStoryCanvas({ controls: currentControls }: { readonly controls
 								wrap
 								width="100%"
 							/>
-							<Draggable
-								width="100%"
-								direction={direction}
-								gap={currentControls.gap}
-								align={direction === "vertical" ? "stretch" : "center"}
-								justify="start"
-								items={abilities}
-								value={order}
-								onReorder={setOrder}
-								disabled={currentControls.disabled}
-								active={currentControls.active}
-								renderItem={(state) => {
-									const slotIndex = order.indexOf(state.item.id);
-									return (
-										<AbilitySlot
-											item={state.item}
-											slotNumber={(slotIndex >= 0 ? slotIndex : state.index) + 1}
-											disabled={state.disabled}
-											dragging={state.dragging}
-											direction={direction}
-										/>
-									);
-								}}
-							/>
+							<Box
+								width={direction === "horizontal" ? undefined : "100%"}
+								bg={direction === "horizontal" ? themeRefs.palette.gray["9"] : undefined}
+								bgTransparency={direction === "horizontal" ? 0 : 1}
+								radius="lg"
+								p={direction === "horizontal" ? "sm" : undefined}
+							>
+								<Draggable
+									width={direction === "horizontal" ? undefined : "100%"}
+									direction={direction}
+									gap={currentControls.gap}
+									align={direction === "vertical" ? "stretch" : "center"}
+									justify="start"
+									items={abilities}
+									value={order}
+									onReorder={setOrder}
+									disabled={currentControls.disabled}
+									active={currentControls.active}
+									renderItem={(state) => {
+										const slotIndex = order.indexOf(state.item.id);
+										return (
+											<AbilitySlot
+												item={state.item}
+												slotNumber={(slotIndex >= 0 ? slotIndex : state.index) + 1}
+												disabled={state.disabled}
+												dragging={state.dragging}
+												direction={direction}
+											/>
+										);
+									}}
+								/>
+							</Box>
 						</Stack>
 					</Box>
 				</Stack>
