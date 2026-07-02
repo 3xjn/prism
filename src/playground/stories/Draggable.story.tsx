@@ -1,24 +1,24 @@
 import React from "@rbxts/react";
 import { theme as themeRefs } from "@prism/theme";
 import ReactRoblox from "@rbxts/react-roblox";
-import { Box, Draggable, Icon, Stack, Text } from "@prism";
-import type { DraggableItem, IconName } from "@prism";
+import { Box, Draggable, Image, Stack, Text } from "@prism";
+import type { DraggableItem } from "@prism";
 import { Boolean, CreateReactStory, EnumList, Number } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
 
 interface AbilityItem extends DraggableItem {
 	readonly label: string;
-	readonly icon: IconName;
+	readonly icon: string;
 	readonly cooldown: string;
 }
 
 const abilities: readonly AbilityItem[] = [
-	{ id: "dash", label: "Dash", icon: "zap", cooldown: "4s" },
-	{ id: "barrier", label: "Barrier", icon: "shield", cooldown: "12s" },
-	{ id: "mend", label: "Mend", icon: "heart", cooldown: "9s" },
-	{ id: "ignite", label: "Ignite", icon: "flame", cooldown: "7s" },
-	{ id: "focus", label: "Focus", icon: "crosshair", cooldown: "15s" },
+	{ id: "dash", label: "Dash", icon: "rbxassetid://110526050617848", cooldown: "4s" },
+	{ id: "barrier", label: "Barrier", icon: "rbxassetid://70420218349466", cooldown: "12s" },
+	{ id: "mend", label: "Mend", icon: "rbxassetid://77237225617245", cooldown: "9s" },
+	{ id: "ignite", label: "Ignite", icon: "rbxassetid://124578818898399", cooldown: "7s" },
+	{ id: "focus", label: "Focus", icon: "rbxassetid://125807330222658", cooldown: "15s" },
 ];
 
 const controls = {
@@ -62,7 +62,7 @@ function AbilitySlot({
 		return (
 			<Box width={96} bg={background} radius="md" borderColor={border} p="sm">
 				<Stack width="100%" gap="xs" align="center">
-					<Icon name={item.icon} size={22} color={iconColor} />
+					<Image src={item.icon} width={44} height={44} transparency={disabled ? 0.6 : 0} />
 					<Text text={item.label} size="sm" weight={700} color={iconColor} />
 					<Box bg={themeRefs.background.default} radius="sm" px="sm" py="xs">
 						<Text text={`Slot ${slotNumber}`} size="xs" color={themeRefs.text.secondary} />
@@ -78,7 +78,7 @@ function AbilitySlot({
 				<Box bg={themeRefs.background.default} radius="sm" px="sm" py="xs">
 					<Text text={`${slotNumber}`} weight={700} color={themeRefs.text.secondary} />
 				</Box>
-				<Icon name={item.icon} size={20} color={iconColor} />
+				<Image src={item.icon} width={36} height={36} transparency={disabled ? 0.6 : 0} />
 				<Stack gap="xs">
 					<Text text={item.label} weight={700} color={iconColor} />
 					<Text text={`Cooldown ${item.cooldown}`} size="xs" color={themeRefs.text.secondary} />
