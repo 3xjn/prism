@@ -1,7 +1,10 @@
 import React from "@rbxts/react";
 
+import { useMotion } from "@prism/motion";
+import { useTheme } from "@prism/theme";
 import type { Theme } from "@prism/theme";
 
+import { renderElevationShadow } from "../_shared/elevation";
 import { pushDecorator, renderPaddingDecorator, renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
 import {
 	assignRef,
@@ -13,6 +16,7 @@ import {
 	shouldHandleTouchDragMoveInput,
 	type DragInputKind,
 } from "../_shared/interaction";
+import { DRAG_OVERLAY_Z_INDEX } from "../_shared/overlayLayerPolicy";
 import { resolveThemeSizeSafe, resolveUDimSafe, mergeSharedStyleProps, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
@@ -22,8 +26,8 @@ const UserInputService = game.GetService("UserInputService");
 const RunService = game.GetService("RunService");
 const TweenService = game.GetService("TweenService");
 
-const ITEM_TRANSITION_DURATION = 0.16;
-const DRAGGING_ITEM_Z_INDEX = 1000;
+const DRAG_LIFT_SCALE = 0.04;
+const DRAG_LIFT_ROTATION = 1.5;
 
 type TextButtonEventMap = React.InstanceProps<TextButton>["Event"];
 
@@ -362,6 +366,8 @@ interface DraggableItemButtonProps<TItem extends DraggableItem> {
 	readonly itemDisabled: boolean;
 	readonly itemActive: boolean;
 	readonly itemDragging: boolean;
+	/** True while the drag overlay owns this item's visual (dragging or settling). */
+	readonly itemHidden: boolean;
 	readonly direction: DraggableProps["direction"];
 	readonly align: DraggableProps["align"];
 	readonly cursor: DraggableProps["cursor"];
@@ -375,16 +381,19 @@ interface DraggableItemButtonProps<TItem extends DraggableItem> {
 }
 
 function DraggableItemButton<TItem extends DraggableItem>(props: DraggableItemButtonProps<TItem>) {
+	const theme = useTheme();
 	const [itemInstance, setItemInstance] = React.useState<TextButton>();
 	const [animatedOffset, setAnimatedOffset] = React.useState(new Vector2(0, 0));
 	const [measuredSize, setMeasuredSize] = React.useState<Vector2>();
 	const lastAbsolutePositionRef = React.useRef<Vector2>();
-	const draggingRef = React.useRef(props.itemDragging);
+	const draggingRef = React.useRef(props.itemHidden);
 	const transitionConnectionRef = React.useRef<RBXScriptConnection | undefined>(undefined);
 	const transitionVersionRef = React.useRef(0);
+	const shiftMotionRef = React.useRef(theme.motion);
 	const itemSize = React.useMemo(() => resolveItemSize(props.direction, props.align), [props.align, props.direction]);
 
-	draggingRef.current = props.itemDragging;
+	draggingRef.current = props.itemHidden;
+	shiftMotionRef.current = theme.motion;
 
 	const stopTransition = React.useCallback(() => {
 		transitionConnectionRef.current?.Disconnect();
@@ -406,8 +415,9 @@ function DraggableItemButton<TItem extends DraggableItem>(props: DraggableItemBu
 					return;
 				}
 
-				const alpha = math.clamp((os.clock() - startedAt) / ITEM_TRANSITION_DURATION, 0, 1);
-				const easedAlpha = TweenService.GetValue(alpha, Enum.EasingStyle.Quint, Enum.EasingDirection.Out);
+				const motion = shiftMotionRef.current;
+				const alpha = math.clamp((os.clock() - startedAt) / math.max(motion.duration.normal, 0.01), 0, 1);
+				const easedAlpha = TweenService.GetValue(alpha, motion.easing.out.style, motion.easing.out.direction);
 				const remainingAlpha = 1 - easedAlpha;
 				setAnimatedOffset(new Vector2(offset.X * remainingAlpha, offset.Y * remainingAlpha));
 
@@ -477,11 +487,11 @@ function DraggableItemButton<TItem extends DraggableItem>(props: DraggableItemBu
 	}, [animateOffsetToZero, itemInstance]);
 
 	React.useEffect(() => {
-		if (props.itemDragging) {
+		if (props.itemHidden) {
 			stopTransition();
 			setAnimatedOffset(new Vector2(0, 0));
 		}
-	}, [props.itemDragging, stopTransition]);
+	}, [props.itemHidden, stopTransition]);
 
 	React.useEffect(() => {
 		return () => {
@@ -512,9 +522,9 @@ function DraggableItemButton<TItem extends DraggableItem>(props: DraggableItemBu
 		active: props.itemActive,
 		disabled: props.itemDisabled,
 	};
-	const renderedOffset = props.itemDragging ? new Vector2(0, 0) : animatedOffset;
+	const renderedOffset = props.itemHidden ? new Vector2(0, 0) : animatedOffset;
 	const hasVisualOffset = renderedOffset.X !== 0 || renderedOffset.Y !== 0;
-	const measuredLayout = props.itemDragging || hasVisualOffset ? resolveMeasuredItemLayout(measuredSize) : undefined;
+	const measuredLayout = props.itemHidden || hasVisualOffset ? resolveMeasuredItemLayout(measuredSize) : undefined;
 	const layoutSize = measuredLayout?.size ?? itemSize.size;
 	const layoutAutomaticSize = measuredLayout?.automaticSize ?? itemSize.automaticSize;
 	const visualSize = measuredLayout?.size ?? itemSize.size ?? UDim2.fromScale(1, 1);
@@ -532,14 +542,14 @@ function DraggableItemButton<TItem extends DraggableItem>(props: DraggableItemBu
 			AutomaticSize={layoutAutomaticSize}
 			LayoutOrder={props.index}
 			Event={itemEvent}
+			Text=""
+			TextTransparency={1}
+			TextStrokeTransparency={1}
 			ref={(instance) => {
 				setItemInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
 				props.setItemRef(props.item.id, instance);
 			}}
 			{...props.slotProps}
-			Text=""
-			TextTransparency={1}
-			TextStrokeTransparency={1}
 		>
 			<frame
 				BackgroundTransparency={1}
@@ -549,7 +559,7 @@ function DraggableItemButton<TItem extends DraggableItem>(props: DraggableItemBu
 				AutomaticSize={visualAutomaticSize}
 				Active={false}
 				Selectable={false}
-				Visible={!props.itemDragging}
+				Visible={!props.itemHidden}
 			>
 				{props.renderItem(renderState)}
 			</frame>
@@ -585,6 +595,7 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 	);
 	const [activeItemId, setActiveItemId] = React.useState<string | undefined>(undefined);
 	const [draggingItemId, setDraggingItemId] = React.useState<string | undefined>(undefined);
+	const [settlingItemId, setSettlingItemId] = React.useState<string | undefined>(undefined);
 	const [dragVisualPosition, setDragVisualPosition] = React.useState<Vector2 | undefined>(undefined);
 	const [dragVisualSize, setDragVisualSize] = React.useState<Vector2 | undefined>(undefined);
 	const [rootInstance, setRootInstance] = React.useState<Frame>();
@@ -599,6 +610,8 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 	const dragVisualSizeRef = React.useRef<Vector2 | undefined>(undefined);
 	const moveConnectionRef = React.useRef<RBXScriptConnection | undefined>(undefined);
 	const endConnectionRef = React.useRef<RBXScriptConnection | undefined>(undefined);
+	const settleConnectionRef = React.useRef<RBXScriptConnection | undefined>(undefined);
+	const dragVisualPositionRef = React.useRef<Vector2 | undefined>(undefined);
 	const draggingItemIdRef = React.useRef<string | undefined>(undefined);
 	const configRef = React.useRef({ controlled, direction });
 	const onReorderRef = React.useRef(onReorder);
@@ -623,6 +636,9 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 		hasPadding,
 	} = useResolvedStyleProps("draggable", mergedStyleProps);
 
+	const themeRef = React.useRef(theme);
+	themeRef.current = theme;
+
 	const disconnectDragTracking = React.useCallback(() => {
 		moveConnectionRef.current?.Disconnect();
 		moveConnectionRef.current = undefined;
@@ -635,19 +651,60 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 		dragVisualSizeRef.current = undefined;
 	}, []);
 
+	const stopSettle = React.useCallback(() => {
+		settleConnectionRef.current?.Disconnect();
+		settleConnectionRef.current = undefined;
+		setSettlingItemId(undefined);
+	}, []);
+
+	const clearDragVisual = React.useCallback(() => {
+		dragVisualPositionRef.current = undefined;
+		setDragVisualPosition(undefined);
+		setDragVisualSize(undefined);
+	}, []);
+
 	const endDrag = React.useCallback(
 		(clearActiveItem: boolean) => {
+			const itemId = draggingItemIdRef.current;
+			const startPosition = dragVisualPositionRef.current;
+
 			disconnectDragTracking();
 			draggingItemIdRef.current = undefined;
 			setDraggingItemId(undefined);
-			setDragVisualPosition(undefined);
-			setDragVisualSize(undefined);
 
 			if (clearActiveItem) {
 				setActiveItemId(undefined);
 			}
+
+			// Settle: fly the overlay back to its slot before releasing it,
+			// tracking the slot live in case layout shifts mid-flight.
+			const targetInstance = itemId !== undefined ? itemRefs.current[itemId] : undefined;
+			if (itemId === undefined || startPosition === undefined || targetInstance === undefined) {
+				clearDragVisual();
+				return;
+			}
+
+			stopSettle();
+			setSettlingItemId(itemId);
+			const motion = themeRef.current.motion;
+			const duration = math.max(motion.duration.slow, 0.01);
+			const startedAt = os.clock();
+			settleConnectionRef.current = RunService.Heartbeat.Connect(() => {
+				const instance = itemRefs.current[itemId];
+				const alpha = math.clamp((os.clock() - startedAt) / duration, 0, 1);
+				if (instance === undefined || alpha >= 1) {
+					settleConnectionRef.current?.Disconnect();
+					settleConnectionRef.current = undefined;
+					setSettlingItemId(undefined);
+					clearDragVisual();
+					return;
+				}
+
+				const easedAlpha = TweenService.GetValue(alpha, motion.easing.out.style, motion.easing.out.direction);
+				setDragVisualPosition(startPosition.Lerp(instance.AbsolutePosition, easedAlpha));
+			});
 		},
-		[disconnectDragTracking],
+		[clearDragVisual, disconnectDragTracking, stopSettle],
 	);
 
 	const commitOrder = React.useCallback((nextOrder: readonly string[]) => {
@@ -687,6 +744,7 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 				return undefined;
 			}
 
+			dragVisualPositionRef.current = visualPosition;
 			setDragVisualPosition(visualPosition);
 			return visualPosition;
 		},
@@ -757,6 +815,7 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 			}
 
 			disconnectDragTracking();
+			stopSettle();
 
 			const itemInstance = itemRefs.current[itemId];
 			if (itemInstance !== undefined) {
@@ -765,11 +824,13 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 				dragGrabOffsetRef.current = grabOffset;
 				dragOriginRef.current = itemInstance.AbsolutePosition;
 				dragVisualSizeRef.current = itemInstance.AbsoluteSize;
+				dragVisualPositionRef.current = itemInstance.AbsolutePosition;
 				setDragVisualPosition(itemInstance.AbsolutePosition);
 				setDragVisualSize(itemInstance.AbsoluteSize);
 			} else {
 				dragOriginRef.current = undefined;
 				dragVisualSizeRef.current = undefined;
+				dragVisualPositionRef.current = undefined;
 				setDragVisualPosition(undefined);
 				setDragVisualSize(undefined);
 			}
@@ -787,7 +848,7 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 				handleDragEndInput(endedInput);
 			});
 		},
-		[disconnectDragTracking, handleDragEndInput, handleDragMoveInput, interactive, updateDragVisualPosition, updateOrderFromInput],
+		[disconnectDragTracking, handleDragEndInput, handleDragMoveInput, interactive, stopSettle, updateDragVisualPosition, updateOrderFromInput],
 	);
 
 	React.useEffect(() => {
@@ -829,6 +890,8 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 	React.useEffect(() => {
 		return () => {
 			disconnectDragTracking();
+			settleConnectionRef.current?.Disconnect();
+			settleConnectionRef.current = undefined;
 		};
 	}, [disconnectDragTracking]);
 
@@ -921,6 +984,7 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 				itemDisabled={itemDisabled}
 				itemActive={activeItemId === item.id}
 				itemDragging={draggingItemId === item.id}
+				itemHidden={draggingItemId === item.id || settlingItemId === item.id}
 				direction={direction}
 				align={props.align}
 				cursor={mergedStyleProps.cursor}
@@ -965,29 +1029,42 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 	const listRef = React.useCallback((instance: Frame | undefined) => {
 		setListInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
 	}, []);
-	const draggingItem = draggingItemId !== undefined ? itemRecord[draggingItemId] : undefined;
-	const draggingIndex = draggingItemId !== undefined ? findOrderIndex(resolvedOrder, draggingItemId) : -1;
+	const overlayItemId = draggingItemId ?? settlingItemId;
+	const overlayItem = overlayItemId !== undefined ? itemRecord[overlayItemId] : undefined;
+	const overlayIndex = overlayItemId !== undefined ? findOrderIndex(resolvedOrder, overlayItemId) : -1;
 	const overlayPosition =
 		dragVisualPosition !== undefined && rootInstance !== undefined ? dragVisualPosition.sub(rootInstance.AbsolutePosition) : undefined;
 	const overlaySize = dragVisualSize ?? dragVisualSizeRef.current;
+	const animatedLift = useMotion({
+		values: { lift: draggingItemId !== undefined ? 1 : 0 },
+		transition: { lift: { duration: "fast", easing: "out" } },
+	});
 	const overlayElement =
-		draggingItem !== undefined && overlayPosition !== undefined && overlaySize !== undefined ? (
+		overlayItem !== undefined && overlayPosition !== undefined && overlaySize !== undefined ? (
 			<frame
 				key="drag-overlay"
 				BackgroundTransparency={1}
 				BorderSizePixel={0}
 				Position={UDim2.fromOffset(overlayPosition.X, overlayPosition.Y)}
 				Size={UDim2.fromOffset(overlaySize.X, overlaySize.Y)}
-				ZIndex={DRAGGING_ITEM_Z_INDEX}
+				Rotation={DRAG_LIFT_ROTATION * animatedLift.lift}
+				ZIndex={DRAG_OVERLAY_Z_INDEX}
 				Active={false}
 				Selectable={false}
 			>
+				{renderElevationShadow({
+					shadow: theme.shadows.md,
+					radius: new UDim(0, theme.radius.md),
+					size: UDim2.fromOffset(overlaySize.X, overlaySize.Y),
+					visible: animatedLift.lift > 0.05,
+				})}
+				<uiscale Scale={1 + DRAG_LIFT_SCALE * animatedLift.lift} />
 				{renderItem({
-					item: draggingItem,
-					index: draggingIndex >= 0 ? draggingIndex : 0,
+					item: overlayItem,
+					index: overlayIndex >= 0 ? overlayIndex : 0,
 					dragging: true,
 					active: true,
-					disabled: disabled || draggingItem.disabled === true,
+					disabled: disabled || overlayItem.disabled === true,
 				})}
 			</frame>
 		) : undefined;
@@ -1005,7 +1082,7 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 				{decoratorChildren}
 				{itemElements}
 			</frame>
-			<frame key="overlay-layer" BackgroundTransparency={1} BorderSizePixel={0} Position={UDim2.fromOffset(0, 0)} Size={UDim2.fromOffset(0, 0)} ZIndex={DRAGGING_ITEM_Z_INDEX}>
+			<frame key="overlay-layer" BackgroundTransparency={1} BorderSizePixel={0} Position={UDim2.fromOffset(0, 0)} Size={UDim2.fromOffset(0, 0)} ZIndex={DRAG_OVERLAY_Z_INDEX}>
 				{overlayElement}
 			</frame>
 		</frame>
