@@ -32,6 +32,8 @@ export interface PopoverStyleProps extends Omit<SharedStyleProps, "bg" | "bgTran
 	readonly placement?: PopoverPlacement;
 	readonly align?: PopoverAlign;
 	readonly triggerMode?: PopoverTriggerMode;
+	/** Seconds to wait before hover-mode opens; leaving before the delay cancels the open. Defaults to 0. */
+	readonly openDelay?: number;
 	readonly disabled?: boolean;
 	readonly opened?: boolean;
 	readonly defaultOpened?: boolean;

@@ -8,6 +8,7 @@ import { assignRef, composeEventMaps, isPressInput } from "../_shared/interactio
 import { TriggerOverlayLayer } from "../_shared/TriggerOverlayLayer";
 import type { TriggerOverlayLayout } from "../_shared/layering";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
+import { useDelayedCallback } from "../_shared/useDelayedCallback";
 import { useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
@@ -36,11 +37,13 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 		placement = "bottom",
 		align = "center",
 		triggerMode = "click",
+		openDelay = 0,
 		closeOnOutsidePress = true,
 		Event,
 		Change,
 	} = props;
 	const [uncontrolledOpened, setUncontrolledOpened] = React.useState(defaultOpened);
+	const delayedOpen = useDelayedCallback();
 	const [rootInstance, setRootInstance] = React.useState<Frame>();
 	const [panelInstance, setPanelInstance] = React.useState<TextButton>();
 	const pressArmedRef = React.useRef(false);
@@ -106,12 +109,13 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 	const internalTriggerEvent: TriggerEventMap = {
 		MouseEnter: () => {
 			if (triggerMode === "hover") {
-				setOpened(true);
+				delayedOpen.schedule(openDelay, () => setOpened(true));
 			}
 		},
 		MouseLeave: () => {
 			pressArmedRef.current = false;
 			if (triggerMode === "hover") {
+				delayedOpen.cancel();
 				setOpened(false);
 			}
 		},

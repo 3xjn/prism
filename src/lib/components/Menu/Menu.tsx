@@ -25,6 +25,8 @@ import {
 } from "./styles";
 import type { MenuActionItem, MenuItem, MenuProps } from "./types";
 
+const TextService = game.GetService("TextService");
+
 type MenuComponent = ((props: MenuProps) => React.ReactElement) & React.ForwardRefExoticComponent<MenuProps>;
 
 function isMenuActionItem(item: MenuItem): item is MenuActionItem {
@@ -159,8 +161,25 @@ function MenuActionRow({
 	const hasIcon = item.icon !== undefined;
 	const hasRightSection = item.rightSection !== undefined;
 	const iconReservedWidth = hasIcon ? sizeStyles.iconSize + sizeStyles.itemGap : 0;
-	const rightReservedScale = hasRightSection ? rightSectionWidth.Scale : 0;
-	const rightReservedWidth = hasRightSection ? rightSectionWidth.Offset + sizeStyles.itemGap : 0;
+	// Primitive sections reserve their measured text width; only rich
+	// (element) sections fall back to the fractional panel reservation.
+	const rightSlotText = itemRightLabelSlotProps?.Text;
+	const rightSlotTextSize = itemRightLabelSlotProps?.TextSize;
+	const measuredRightSectionWidth =
+		primitiveRightSection !== undefined && richRightSection === undefined
+			? math.ceil(
+					TextService.GetTextSize(
+						typeIs(rightSlotText, "string") ? rightSlotText : tostring(primitiveRightSection),
+						typeIs(rightSlotTextSize, "number") ? rightSlotTextSize : sizeStyles.metaFontSize,
+						typeIs(resolvedRightLabelFont, "EnumItem") ? (resolvedRightLabelFont as Enum.Font) : theme.fontFamily,
+						new Vector2(1000, 100),
+					).X,
+				) + 2
+			: undefined;
+	const resolvedRightSectionWidth =
+		measuredRightSectionWidth !== undefined ? new UDim(0, measuredRightSectionWidth) : rightSectionWidth;
+	const rightReservedScale = hasRightSection ? resolvedRightSectionWidth.Scale : 0;
+	const rightReservedWidth = hasRightSection ? resolvedRightSectionWidth.Offset + sizeStyles.itemGap : 0;
 	const event = useRootCursorEvent(
 		composeEventMaps(press.eventMap, itemSlotProps?.Event),
 		itemSlotProps?.Event === undefined ? cursor ?? "pointer" : undefined,
@@ -241,7 +260,7 @@ function MenuActionRow({
 				<frame
 					BackgroundTransparency={1}
 					BorderSizePixel={0}
-					Size={new UDim2(rightSectionWidth, new UDim(1, 0))}
+					Size={new UDim2(resolvedRightSectionWidth, new UDim(1, 0))}
 					Position={UDim2.fromScale(1, 0)}
 					AnchorPoint={new Vector2(1, 0)}
 					ZIndex={resolvedRightSectionZIndex}

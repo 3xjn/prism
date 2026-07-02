@@ -8,6 +8,7 @@ import { resolveFrameSizeProps } from "../_shared/frameSize";
 import { assignRef, composeEventMaps } from "../_shared/interaction";
 import { TriggerOverlayLayer } from "../_shared/TriggerOverlayLayer";
 import type { TriggerOverlayLayout } from "../_shared/layering";
+import { useDelayedCallback } from "../_shared/useDelayedCallback";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
 import { resolveThemeSizeSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 
@@ -67,14 +68,18 @@ function resolveTooltipSizeStyles(theme: ReturnType<typeof useTheme>, gap: numbe
 }
 
 function resolveTooltipVisualStyles(theme: ReturnType<typeof useTheme>): TooltipVisualStyles {
+	// Tooltips render inverse (dark on light themes) so they separate from
+	// the content they float over instead of blending into light surfaces.
+	const inverseSurface = theme.colors.palette.gray["9"];
+
 	return {
-		backgroundColor: theme.colors.background.surface,
-		strokeColor: theme.colors.border.default,
-		strokeTransparency: 0.08,
-		textColor: theme.colors.text.primary,
-		tailFillColor: theme.colors.background.surface,
-		tailBorderColor: theme.colors.border.default,
-		tailBorderTransparency: 0.24,
+		backgroundColor: inverseSurface,
+		strokeColor: inverseSurface,
+		strokeTransparency: 1,
+		textColor: theme.colors.text.inverse,
+		tailFillColor: inverseSurface,
+		tailBorderColor: inverseSurface,
+		tailBorderTransparency: 1,
 		shadow: theme.shadows.sm,
 	};
 }
@@ -89,12 +94,14 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 		disabled = false,
 		opened,
 		placement = "top",
+		openDelay = 0.35,
 		tailImage = DEFAULT_TOOLTIP_TAIL_IMAGE,
 		tailBorderImage = DEFAULT_TOOLTIP_TAIL_BORDER_IMAGE,
 		Event,
 		Change,
 	} = props;
 	const [hovered, setHovered] = React.useState(false);
+	const delayedOpen = useDelayedCallback();
 	const [rootInstance, setRootInstance] = React.useState<Frame>();
 	const tooltipContent = content ?? label;
 	const hasContent = tooltipContent !== undefined;
@@ -152,13 +159,14 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 				return;
 			}
 
-			setHovered(true);
+			delayedOpen.schedule(openDelay, () => setHovered(true));
 		},
 		MouseLeave: () => {
 			if (opened !== undefined) {
 				return;
 			}
 
+			delayedOpen.cancel();
 			setHovered(false);
 		},
 	};
