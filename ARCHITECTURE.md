@@ -195,6 +195,7 @@ Deliberate next steps, roughly in priority order:
 - converge `Tabs` and `SegmentedControl` per-item hover tracking with the shared interaction hook where their keyed-map semantics allow
 - add runtime coverage for the theme resolvers, `mergeTheme`, motion interpolation, and the bridge (only unit conversion and Progress/Slider math run under `npm test` today)
 - add a tooltip `openDelay` (tooltips currently open instantly on hover)
+- migrate the per-state duration literals in component motion transitions (e.g. `0.06`/`0.14` in Checkbox, Button, Tabs styles) to `theme.motion.duration` tokens; easing already flows through tokens, durations mostly do not (Draggable now reads both from the theme)
 - styled gamepad focus (`SelectionImageObject`) so controller selection matches the design language instead of the stock Roblox box
 - Menu reserves 34% of panel width for `rightSection`, truncating labels even when the section is narrow; measure the section instead
 - optional: swap `elevation.tsx` internals for a 9-slice shadow image (`assets/drop-shadow-128.png`, uploaded as `rbxassetid://110725881404654`). The current 10-ring gaussian stack is visually smooth; the image route needs a punched-out center (a child ImageLabel draws over its parent surface) and measured pixel sizing everywhere (an ImageLabel larger than an AutomaticSize surface inflates it — rotation does not exempt it), so it only pays off if stroke rendering ever becomes a bottleneck

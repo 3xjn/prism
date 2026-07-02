@@ -1,23 +1,24 @@
 import React from "@rbxts/react";
 import { theme as themeRefs } from "@prism/theme";
 import ReactRoblox from "@rbxts/react-roblox";
-import { Box, Draggable, Stack, Text } from "@prism";
+import { Box, Draggable, Image, Stack, Text } from "@prism";
 import type { DraggableItem } from "@prism";
 import { Boolean, CreateReactStory, EnumList, Number } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
 
-interface StoryItem extends DraggableItem {
+interface AbilityItem extends DraggableItem {
 	readonly label: string;
-	readonly note: string;
+	readonly icon: string;
+	readonly cooldown: string;
 }
 
-const baseItems: readonly StoryItem[] = [
-	{ id: "backlog", label: "Backlog", note: "Ideas and incoming tasks" },
-	{ id: "design", label: "Design", note: "Specs, mocks, and content" },
-	{ id: "build", label: "Build", note: "Implementation work in progress" },
-	{ id: "qa", label: "QA", note: "Verification before shipping" },
-	{ id: "done", label: "Done", note: "Everything ready to publish" },
+const abilities: readonly AbilityItem[] = [
+	{ id: "dash", label: "Dash", icon: "rbxassetid://110526050617848", cooldown: "4s" },
+	{ id: "barrier", label: "Barrier", icon: "rbxassetid://70420218349466", cooldown: "12s" },
+	{ id: "mend", label: "Mend", icon: "rbxassetid://77237225617245", cooldown: "9s" },
+	{ id: "ignite", label: "Ignite", icon: "rbxassetid://124578818898399", cooldown: "7s" },
+	{ id: "focus", label: "Focus", icon: "rbxassetid://125807330222658", cooldown: "15s" },
 ];
 
 const controls = {
@@ -26,53 +27,81 @@ const controls = {
 	active: Boolean(true),
 	direction: EnumList(
 		{
-			vertical: "vertical",
 			horizontal: "horizontal",
+			vertical: "vertical",
 		},
-		"vertical",
+		"horizontal",
 	),
-		gap: Number(12, 0, 32, 1),
+	gap: Number(8, 0, 32, 1),
 };
 
 type DraggableStoryControls = InferControls<typeof controls>;
 
-function SortableCard({
+function AbilitySlot({
 	item,
+	slotNumber,
 	disabled,
-	active,
 	dragging,
 	direction,
 }: {
-	readonly item: StoryItem;
+	readonly item: AbilityItem;
+	readonly slotNumber: number;
 	readonly disabled: boolean;
-	readonly active: boolean;
 	readonly dragging: boolean;
 	readonly direction: "vertical" | "horizontal";
 }): React.ReactElement {
-	const background = disabled ? themeRefs.action.disabledBackground : dragging ? themeRefs.primary.light : active ? themeRefs.action.hover : themeRefs.background.surface;
-	const border = disabled ? themeRefs.border.subtle : dragging ? themeRefs.primary.main : active ? themeRefs.primary.light : themeRefs.border.default;
-	const badgeBackground = dragging ? themeRefs.primary.main : active ? themeRefs.secondary.light : themeRefs.background.default;
-	const badgeColor = dragging ? themeRefs.text.inverse : active ? themeRefs.secondary.dark : themeRefs.text.secondary;
+	const background = disabled
+		? themeRefs.action.disabledBackground
+		: dragging
+			? themeRefs.primary.light
+			: themeRefs.background.surface;
+	const border = disabled ? themeRefs.border.subtle : dragging ? themeRefs.primary.main : themeRefs.border.default;
+	const iconColor = disabled ? themeRefs.text.disabled : dragging ? themeRefs.primary.dark : themeRefs.text.primary;
+
+	if (direction === "horizontal") {
+		const slotBackground = disabled
+			? themeRefs.palette.gray["7"]
+			: dragging
+				? themeRefs.palette.gray["7"]
+				: themeRefs.palette.gray["8"];
+		const slotBorder = dragging ? themeRefs.primary.main : themeRefs.palette.gray["6"];
+
+		return (
+			<Box width={64} height={64} bg={slotBackground} radius="md" borderColor={slotBorder}>
+				<Image src={item.icon} width={52} height={52} center transparency={disabled ? 0.6 : 0} />
+				<Box
+					width={18}
+					height={16}
+					bg={themeRefs.palette.gray["9"]}
+					radius="sm"
+					position={{ x: "100%", y: "100%" }}
+					anchor={new Vector2(1, 1)}
+				>
+					<Text
+						text={`${slotNumber}`}
+						size="xs"
+						weight={700}
+						color={themeRefs.text.inverse}
+						width="100%"
+						height="100%"
+						align="center"
+					/>
+				</Box>
+			</Box>
+		);
+	}
 
 	return (
-		<Box
-			width={direction === "horizontal" ? 160 : "100%"}
-			bg={background}
-			radius="md"
-			borderColor={border}
-			p="md"
-		>
-			<Stack width="100%" gap="sm">
-				<Stack width="100%" direction="horizontal" justify="spaceBetween" align="center">
-					<Text text={item.label} weight={700} color={disabled ? themeRefs.text.disabled : themeRefs.text.primary} />
-					<Box bg={badgeBackground} radius="xl" px="sm" py="xs">
-						<Text text={dragging ? "Dragging" : active ? "Active" : "Ready"} size="sm" color={badgeColor} />
-					</Box>
-				</Stack>
-				<Text text={item.note} size="sm" color={disabled ? themeRefs.text.disabled : themeRefs.text.secondary} wrap width="100%" />
-				<Box width="100%" bg={themeRefs.background.default} radius="sm" p="sm">
-					<Text text={`ID: ${item.id}`} size="sm" color={themeRefs.text.secondary} />
+		<Box width="100%" bg={background} radius="md" borderColor={border} p="sm">
+			<Stack width="100%" direction="horizontal" gap="md" align="center">
+				<Box bg={themeRefs.background.default} radius="sm" px="sm" py="xs">
+					<Text text={`${slotNumber}`} weight={700} color={themeRefs.text.secondary} />
 				</Box>
+				<Image src={item.icon} width={36} height={36} transparency={disabled ? 0.6 : 0} />
+				<Stack gap="xs">
+					<Text text={item.label} weight={700} color={iconColor} />
+					<Text text={`Cooldown ${item.cooldown}`} size="xs" color={themeRefs.text.secondary} />
+				</Stack>
 			</Stack>
 		</Box>
 	);
@@ -80,15 +109,7 @@ function SortableCard({
 
 function DraggableStoryCanvas({ controls: currentControls }: { readonly controls: DraggableStoryControls }): React.ReactElement {
 	const direction = currentControls.direction as "vertical" | "horizontal";
-	const [order, setOrder] = React.useState<readonly string[]>(() => baseItems.map((item) => item.id));
-	const orderedLabelParts: string[] = [];
-	for (const id of order) {
-		const label = baseItems.find((item) => item.id === id)?.label;
-		if (label !== undefined) {
-			orderedLabelParts.push(label);
-		}
-	}
-	const orderedLabels = orderedLabelParts.join(" → ");
+	const [order, setOrder] = React.useState<readonly string[]>(() => abilities.map((item) => item.id));
 
 	return (
 		<StoryCanvas>
@@ -96,43 +117,53 @@ function DraggableStoryCanvas({ controls: currentControls }: { readonly controls
 				<Stack width="100%" gap="md">
 					<Text text="Draggable" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="A headless reorderable Stack primitive. Drag an item through the list and Prism updates the order while your render function owns the actual visuals."
+						text="A headless reorderable list primitive. Drag an ability to change its hotbar slot -- Prism animates the pickup, the reorder shifts, and the drop settle while your render function owns the visuals."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
 					<Box width="100%" bg={themeRefs.background.default} radius="md" p="lg">
 						<Stack width="100%" gap="sm">
-							<Text text="Sortable workflow" weight={700} color={themeRefs.text.primary} />
+							<Text text="Ability loadout" weight={700} color={themeRefs.text.primary} />
 							<Text
-								text="This behaves like a Stack with drag-and-drop reordering. It supports controlled order, disabled states, and both vertical and horizontal lists without introducing game-specific visuals."
+								text="Keybind slots follow the order: whatever sits first casts on 1, and so on. Try dropping an ability far from its slot to see the settle animation."
 								size="sm"
 								color={themeRefs.text.secondary}
 								wrap
 								width="100%"
 							/>
-							<Draggable
-								width="100%"
-								direction={direction}
-								gap={currentControls.gap}
-								align={direction === "vertical" ? "stretch" : "center"}
-								justify="start"
-								items={baseItems}
-								value={order}
-								onReorder={setOrder}
-								disabled={currentControls.disabled}
-								active={currentControls.active}
-								renderItem={(state) => (
-									<SortableCard
-										item={state.item}
-										disabled={state.disabled}
-										active={state.active}
-										dragging={state.dragging}
-										direction={direction}
-									/>
-								)}
-							/>
-							<Text text={`Order: ${orderedLabels}`} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
+							<Box
+								width={direction === "horizontal" ? undefined : "100%"}
+								bg={direction === "horizontal" ? themeRefs.palette.gray["9"] : undefined}
+								bgTransparency={direction === "horizontal" ? 0 : 1}
+								radius="lg"
+								p={direction === "horizontal" ? "sm" : undefined}
+							>
+								<Draggable
+									width={direction === "horizontal" ? undefined : "100%"}
+									direction={direction}
+									gap={currentControls.gap}
+									align={direction === "vertical" ? "stretch" : "center"}
+									justify="start"
+									items={abilities}
+									value={order}
+									onReorder={setOrder}
+									disabled={currentControls.disabled}
+									active={currentControls.active}
+									renderItem={(state) => {
+										const slotIndex = order.indexOf(state.item.id);
+										return (
+											<AbilitySlot
+												item={state.item}
+												slotNumber={(slotIndex >= 0 ? slotIndex : state.index) + 1}
+												disabled={state.disabled}
+												dragging={state.dragging}
+												direction={direction}
+											/>
+										);
+									}}
+								/>
+							</Box>
 						</Stack>
 					</Box>
 				</Stack>
@@ -144,7 +175,8 @@ function DraggableStoryCanvas({ controls: currentControls }: { readonly controls
 const story = CreateReactStory(
 	{
 		name: "Draggable",
-		summary: "Headless drag-and-drop reorderable Stack/list primitive with controlled or uncontrolled order, mouse and touch dragging, and render-state driven item styling.",
+		summary:
+			"Headless drag-and-drop reorderable list primitive with controlled or uncontrolled order, mouse and touch dragging, animated pickup/settle, and render-state driven item styling.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,
