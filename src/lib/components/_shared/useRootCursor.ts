@@ -3,7 +3,14 @@ import React from "@rbxts/react";
 import { composeEventMaps } from "./interaction";
 import type { SharedCursorValue } from "./useResolvedStyleProps";
 
+const RunService = game.GetService("RunService");
 const UserInputService = game.GetService("UserInputService");
+
+// MouseIcon writes warn and no-op in Edit mode (plugin security), where
+// ui-labs stories render; only drive the cursor inside a running game.
+function canApplyMouseCursor(): boolean {
+	return RunService.IsRunning() && UserInputService.MouseEnabled;
+}
 
 type EventMapLike = Record<string, unknown>;
 
@@ -58,7 +65,7 @@ function resolveMouseCursor(cursor: SharedCursorValue | undefined): string | und
 function applyActiveMouseCursor(): void {
 	const activeClaim = activeCursorClaims[activeCursorClaims.size() - 1];
 
-	if (UserInputService.MouseEnabled) {
+	if (canApplyMouseCursor()) {
 		UserInputService.MouseIcon = activeClaim?.cursor ?? previousMouseCursor ?? "";
 	}
 
@@ -68,7 +75,7 @@ function applyActiveMouseCursor(): void {
 }
 
 function acquireMouseCursor(cursor: string): number | undefined {
-	if (!UserInputService.MouseEnabled) {
+	if (!canApplyMouseCursor()) {
 		return undefined;
 	}
 

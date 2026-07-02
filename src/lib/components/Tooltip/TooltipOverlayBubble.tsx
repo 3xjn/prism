@@ -1,11 +1,14 @@
 import React from "@rbxts/react";
 
+import type { ThemeShadow } from "@prism/theme";
+
 import {
 	renderCornerDecorator,
 	renderInsetPaddingDecorator,
 	renderOverlayTextLabel,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
+import { renderElevationShadow } from "../_shared/elevation";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
 import type { GuiZIndex } from "../_shared/overlayLayerPolicy";
 import { resolveTextFontFace } from "../_shared/textFont";
@@ -30,6 +33,7 @@ export interface TooltipOverlayVisualStyles {
 	readonly tailFillColor: Color3;
 	readonly tailBorderColor: Color3;
 	readonly tailBorderTransparency: number;
+	readonly shadow: ThemeShadow;
 }
 
 export interface TooltipOverlayBubbleProps {
@@ -69,6 +73,7 @@ export function TooltipOverlayBubble({
 	const resolvedTailBorderZIndex = tailBorderSlotProps?.ZIndex ?? incrementZIndex(resolvedBubbleZIndex, 1);
 	const resolvedTailZIndex = tailSlotProps?.ZIndex ?? incrementZIndex(resolvedTailBorderZIndex, 1);
 	const resolvedLabelZIndex = labelSlotProps?.ZIndex ?? incrementZIndex(resolvedTailZIndex, 1);
+	const resolvedShadowZIndex = typeIs(resolvedBubbleZIndex, "number") ? math.max(resolvedBubbleZIndex - 1, 0) : 0;
 	const resolvedLabelFont = labelSlotProps?.Font ?? themeFontFamily;
 	const resolvedLabelFontFace = resolveTextFontFace(labelSlotProps?.Font, labelSlotProps?.FontFace, themeFontFamily);
 
@@ -96,6 +101,11 @@ export function TooltipOverlayBubble({
 				Selectable={false}
 				{...bubbleSlotProps}
 			>
+				{renderElevationShadow({
+					shadow: visualStyles.shadow,
+					radius: sizeStyles.radius,
+					zIndex: resolvedShadowZIndex,
+				})}
 				{renderCornerDecorator({ radius: sizeStyles.radius, slotProps: slotProps?.bubbleCorner })}
 				{renderStrokeDecorator({
 					enabled: true,

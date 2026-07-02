@@ -3,6 +3,7 @@ import type React from "@rbxts/react";
 import type { SemanticIntent, ThemeSize } from "@prism/theme";
 import type { SizeValue } from "@prism/utils";
 
+import type { IconName } from "../Icon";
 import type { PopoverAlign, PopoverPlacement, PopoverStyleProps, PopoverTriggerMode } from "../Popover";
 import type { RawSlotProps } from "../_shared/slotProps";
 
@@ -18,7 +19,7 @@ export interface MenuActionItem {
 	readonly label: string | number;
 	readonly disabled?: boolean;
 	readonly color?: SemanticIntent;
-	readonly icon?: React.ReactElement;
+	readonly icon?: IconName | React.ReactElement;
 	readonly rightSection?: React.ReactElement | string | number;
 	readonly closeMenuOnPress?: boolean;
 	readonly onPress?: (value: string) => void;

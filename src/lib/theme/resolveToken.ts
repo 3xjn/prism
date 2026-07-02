@@ -192,11 +192,27 @@ function resolveColorToken(theme: Theme, value: string): Color3 {
 }
 
 export function resolveColor(theme: Theme, value: ConcreteColorValue): Color3 {
-	if (typeIs(value, "Color3")) {
-		return value;
+	// Untyped (Luau) callers can pass anything; validate at runtime and
+	// reject bad shapes with the designed invalid-token message instead
+	// of an internal string.split error.
+	const runtimeValue = value as unknown;
+
+	if (typeIs(runtimeValue, "Color3")) {
+		return runtimeValue;
 	}
 
-	return resolveColorToken(theme, value.token);
+	if (typeIs(runtimeValue, "table")) {
+		const token = (runtimeValue as { token?: unknown }).token;
+		if (typeIs(token, "string")) {
+			return resolveColorToken(theme, token);
+		}
+	}
+
+	if (typeIs(runtimeValue, "string")) {
+		return resolveColorToken(theme, runtimeValue);
+	}
+
+	throw `[prism/theme] Invalid color value ${tostring(runtimeValue)}. Expected a Color3, an exported theme ref like theme.text.primary, or a color token string.`;
 }
 
 export function resolveSize(

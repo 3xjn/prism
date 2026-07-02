@@ -1,4 +1,4 @@
-import type { Theme } from "@prism/theme";
+import type { Theme, ThemeShadow } from "@prism/theme";
 
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 
@@ -17,6 +17,7 @@ export interface PopoverVisualStyles {
 	readonly strokeTransparency: number;
 	readonly strokeThickness: number;
 	readonly textColor: Color3;
+	readonly shadow: ThemeShadow;
 }
 
 export function resolvePopoverSizeStyles(theme: Theme, gap: number | undefined): PopoverSizeStyles {
@@ -37,5 +38,6 @@ export function resolvePopoverVisualStyles(theme: Theme): PopoverVisualStyles {
 		strokeTransparency: 0.12,
 		strokeThickness: 1,
 		textColor: theme.colors.text.primary,
+		shadow: theme.shadows.md,
 	};
 }

@@ -1,6 +1,7 @@
 import React from "@rbxts/react";
 
 import { useTheme } from "@prism/theme";
+import type { ThemeShadow } from "@prism/theme";
 
 import { renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
 import { resolveFrameSizeProps } from "../_shared/frameSize";
@@ -46,6 +47,7 @@ interface TooltipVisualStyles {
 	readonly tailFillColor: Color3;
 	readonly tailBorderColor: Color3;
 	readonly tailBorderTransparency: number;
+	readonly shadow: ThemeShadow;
 }
 
 type TooltipComponent = ((props: TooltipProps) => React.ReactElement) & React.ForwardRefExoticComponent<TooltipProps>;
@@ -73,6 +75,7 @@ function resolveTooltipVisualStyles(theme: ReturnType<typeof useTheme>): Tooltip
 		tailFillColor: theme.colors.background.surface,
 		tailBorderColor: theme.colors.border.default,
 		tailBorderTransparency: 0.24,
+		shadow: theme.shadows.sm,
 	};
 }
 

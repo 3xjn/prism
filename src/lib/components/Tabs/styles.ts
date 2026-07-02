@@ -34,6 +34,8 @@ export interface TabsTabVisualStyles {
 	readonly strokeTransparency: number;
 	readonly textColor: Color3;
 	readonly textTransparency: number;
+	readonly indicatorColor: Color3;
+	readonly indicatorTransparency: number;
 }
 
 export interface TabsPanelVisualStyles {
@@ -190,18 +192,22 @@ export function resolveTabsTabVisualStyles(
 			strokeTransparency: 0.64,
 			textColor: theme.colors.text.disabled,
 			textTransparency: 0,
+			indicatorColor: theme.colors.text.disabled,
+			indicatorTransparency: 1,
 		};
 	}
 
 	if (state === "selected") {
 		return {
 			backgroundColor: variant === "contained" ? containedSelectedSurface : lineSelectedSurface,
-			backgroundTransparency: variant === "contained" ? 0 : 0.14,
+			backgroundTransparency: variant === "contained" ? 0 : 1,
 			strokeColor:
 				variant === "contained" ? mixColor(intentColors.main, theme.colors.border.default, 0.28) : intentColors.main,
 			strokeTransparency: variant === "contained" ? 0.14 : 1,
-			textColor: mixColor(theme.colors.text.primary, intentColors.main, 0.42),
+			textColor: mixColor(theme.colors.text.primary, intentColors.main, variant === "contained" ? 0.42 : 0.55),
 			textTransparency: 0,
+			indicatorColor: intentColors.main,
+			indicatorTransparency: variant === "contained" ? 1 : 0,
 		};
 	}
 
@@ -221,6 +227,8 @@ export function resolveTabsTabVisualStyles(
 			state === "idle" ? 1 : variant === "line" && state !== "pressed" ? 0.76 : state === "pressed" ? 0.18 : 0.36,
 		textColor: state === "idle" ? theme.colors.text.secondary : theme.colors.text.primary,
 		textTransparency: 0,
+		indicatorColor: intentColors.main,
+		indicatorTransparency: 1,
 	};
 }
 
@@ -238,9 +246,9 @@ export function resolveTabsPanelVisualStyles(
 			: variant === "contained"
 				? mixColor(theme.colors.background.surface, intentColors.light, 0.08)
 				: theme.colors.background.surface,
-		backgroundTransparency: disabled ? 0.42 : 0,
+		backgroundTransparency: disabled ? 0.42 : variant === "contained" ? 0 : 1,
 		strokeColor: disabled ? theme.colors.border.subtle : mixColor(theme.colors.border.default, intentColors.main, 0.1),
-		strokeTransparency: disabled ? 0.34 : variant === "contained" ? 0.18 : 0.22,
+		strokeTransparency: disabled ? 0.34 : variant === "contained" ? 0.18 : 1,
 	};
 }
 
@@ -253,6 +261,8 @@ export function resolveTabsTabMotionTransition(state: TabsTabState) {
 			strokeTransparency: { duration: 0.06, easing: "standard" },
 			textColor: { duration: 0.06, easing: "standard" },
 			textTransparency: { duration: 0.06, easing: "standard" },
+			indicatorColor: { duration: 0.06, easing: "standard" },
+			indicatorTransparency: { duration: 0.06, easing: "standard" },
 		} as const;
 	}
 
@@ -263,5 +273,7 @@ export function resolveTabsTabMotionTransition(state: TabsTabState) {
 		strokeTransparency: { duration: 0.14, easing: "standard" },
 		textColor: { duration: 0.12, easing: "standard" },
 		textTransparency: { duration: 0.12, easing: "standard" },
+		indicatorColor: { duration: 0.12, easing: "standard" },
+		indicatorTransparency: { duration: 0.12, easing: "standard" },
 	} as const;
 }

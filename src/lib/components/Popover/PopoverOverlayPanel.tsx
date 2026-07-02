@@ -6,6 +6,7 @@ import {
 	renderOverlayTextLabel,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
+import { renderElevationShadow } from "../_shared/elevation";
 import { Backdrop } from "../Backdrop";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
 import type { GuiZIndex } from "../_shared/overlayLayerPolicy";
@@ -54,6 +55,7 @@ export function PopoverOverlayPanel({
 	const resolvedPanelZIndex = panelSlotProps?.ZIndex ?? incrementZIndex(resolvedOutsideCaptureZIndex, 1);
 	const resolvedContentZIndex = contentSlotProps?.ZIndex ?? incrementZIndex(resolvedPanelZIndex, 1);
 	const resolvedLabelZIndex = labelSlotProps?.ZIndex ?? incrementZIndex(resolvedContentZIndex, 1);
+	const resolvedShadowZIndex = typeIs(resolvedPanelZIndex, "number") ? math.max(resolvedPanelZIndex - 1, 0) : 0;
 	const resolvedLabelFont = labelSlotProps?.Font ?? themeFontFamily;
 	const resolvedLabelFontFace = resolveTextFontFace(labelSlotProps?.Font, labelSlotProps?.FontFace, themeFontFamily);
 
@@ -89,6 +91,11 @@ export function PopoverOverlayPanel({
 				{...panelSlotProps}
 				ref={setPanelInstance}
 			>
+				{renderElevationShadow({
+					shadow: visualStyles.shadow,
+					radius: sizeStyles.radius,
+					zIndex: resolvedShadowZIndex,
+				})}
 				{renderCornerDecorator({ radius: sizeStyles.radius, slotProps: slotProps?.panelCorner })}
 				{renderStrokeDecorator({
 					enabled: true,

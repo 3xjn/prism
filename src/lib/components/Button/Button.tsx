@@ -39,6 +39,7 @@ interface ButtonSizeStyles {
 
 interface ButtonVisualStyles {
 	readonly backgroundColor: Color3;
+	readonly backgroundTransparency: number;
 	readonly textColor: Color3;
 	readonly strokeColor: Color3;
 	readonly strokeTransparency: number;
@@ -70,7 +71,7 @@ function resolveButtonSizeStyles(theme: Theme, size: ButtonSize): ButtonSizeStyl
 	switch (size) {
 		case "xs":
 			return {
-				paddingX: "sm",
+				paddingX: "md",
 				paddingY: "xs",
 				fontSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.xs,
@@ -148,6 +149,7 @@ function resolveButtonVisualStyles(
 	if (state === "disabled") {
 		return {
 			backgroundColor: theme.colors.action.disabledBackground,
+			backgroundTransparency: 0,
 			textColor: theme.colors.text.disabled,
 			strokeColor: theme.colors.border.default,
 			strokeTransparency: variant === "outline" ? 0 : 1,
@@ -161,6 +163,7 @@ function resolveButtonVisualStyles(
 			return {
 				backgroundColor:
 					state === "pressed" ? pressedIntentLight : state === "hovered" ? hoverIntentLight : intentColors.light,
+				backgroundTransparency: 0,
 				textColor: intentColors.dark,
 				strokeColor: intentColors.light,
 				strokeTransparency: 1,
@@ -171,6 +174,7 @@ function resolveButtonVisualStyles(
 			return {
 				backgroundColor:
 					state === "pressed" ? pressedSurface : state === "hovered" ? hoverSurface : theme.colors.background.surface,
+				backgroundTransparency: 0,
 				textColor: intentColors.main,
 				strokeColor: state === "pressed" ? intentColors.dark : intentColors.main,
 				strokeTransparency: 0,
@@ -182,10 +186,9 @@ function resolveButtonVisualStyles(
 				backgroundColor:
 					state === "pressed"
 						? mixColor(intentColors.light, theme.colors.action.pressed, 0.3)
-						: state === "hovered"
-						? mixColor(intentColors.light, theme.colors.background.surface, 0.1)
-						: mixColor(intentColors.light, theme.colors.background.default, 0.25),
-				textColor: intentColors.main,
+						: intentColors.light,
+				backgroundTransparency: state === "pressed" || state === "hovered" ? 0 : 1,
+				textColor: intentColors.dark,
 				strokeColor: intentColors.light,
 				strokeTransparency: 1,
 				scale: state === "pressed" ? BUTTON_PRESS_SCALE : 1,
@@ -196,6 +199,7 @@ function resolveButtonVisualStyles(
 			return {
 				backgroundColor:
 					state === "pressed" ? filledPressed : state === "hovered" ? filledHover : intentColors.main,
+				backgroundTransparency: 0,
 				textColor: intentColors.contrast,
 				strokeColor: intentColors.dark,
 				strokeTransparency: 1,
@@ -209,6 +213,7 @@ function resolveButtonMotionTransition(state: InteractionState) {
 	if (state === "disabled") {
 		return {
 			backgroundColor: { duration: "instant", easing: "standard" },
+			backgroundTransparency: { duration: "instant", easing: "standard" },
 			textColor: { duration: "instant", easing: "standard" },
 			strokeColor: { duration: "instant", easing: "standard" },
 			strokeTransparency: { duration: "instant", easing: "standard" },
@@ -219,6 +224,7 @@ function resolveButtonMotionTransition(state: InteractionState) {
 	if (state === "pressed") {
 		return {
 			backgroundColor: { duration: 0.045, easing: "standard" },
+			backgroundTransparency: { duration: 0.045, easing: "standard" },
 			textColor: { duration: 0.045, easing: "standard" },
 			strokeColor: { duration: 0.045, easing: "standard" },
 			strokeTransparency: { duration: 0.045, easing: "standard" },
@@ -229,6 +235,7 @@ function resolveButtonMotionTransition(state: InteractionState) {
 	if (state === "hovered") {
 		return {
 			backgroundColor: { duration: 0.1, easing: "standard" },
+			backgroundTransparency: { duration: 0.1, easing: "standard" },
 			textColor: { duration: 0.1, easing: "standard" },
 			strokeColor: { duration: 0.1, easing: "standard" },
 			strokeTransparency: { duration: 0.1, easing: "standard" },
@@ -238,6 +245,7 @@ function resolveButtonMotionTransition(state: InteractionState) {
 
 	return {
 		backgroundColor: { duration: 0.11, easing: "standard" },
+		backgroundTransparency: { duration: 0.11, easing: "standard" },
 		textColor: { duration: 0.11, easing: "standard" },
 		strokeColor: { duration: 0.11, easing: "standard" },
 		strokeTransparency: { duration: 0.11, easing: "standard" },
@@ -328,6 +336,7 @@ const ButtonBase = React.forwardRef<TextButton, ButtonProps>((props, ref) => {
 	const animated = useMotion({
 		values: {
 			backgroundColor: resolvedVisualStyles.backgroundColor,
+			backgroundTransparency: resolvedVisualStyles.backgroundTransparency,
 			textColor: resolvedVisualStyles.textColor,
 			strokeColor: resolvedVisualStyles.strokeColor,
 			strokeTransparency: resolvedVisualStyles.strokeTransparency,
@@ -366,7 +375,7 @@ const ButtonBase = React.forwardRef<TextButton, ButtonProps>((props, ref) => {
 	const resolvedTextStrokeColor = rootSlotProps?.TextStrokeColor3;
 	const resolvedTextStrokeTransparency = rootSlotProps?.TextStrokeTransparency;
 	const resolvedBackgroundColor = rootSlotProps?.BackgroundColor3 ?? animated.backgroundColor;
-	const resolvedBackgroundTransparency = rootSlotProps?.BackgroundTransparency ?? 0;
+	const resolvedBackgroundTransparency = rootSlotProps?.BackgroundTransparency ?? animated.backgroundTransparency;
 	const resolvedPaddingTop = resolveConcretePaddingValue(slotProps?.padding?.PaddingTop, paddingTop);
 	const resolvedPaddingRight = resolveConcretePaddingValue(slotProps?.padding?.PaddingRight, paddingRight);
 	const resolvedPaddingBottom = resolveConcretePaddingValue(slotProps?.padding?.PaddingBottom, paddingBottom);
