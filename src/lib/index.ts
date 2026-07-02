@@ -11,6 +11,7 @@ export * from "./components/Avatar";
 export * from "./components/Input";
 export * from "./components/KeybindInput";
 export * from "./components/Card";
+export * from "./components/Tag";
 export * from "./components/Checkbox";
 export * from "./components/Progress";
 export * from "./components/CircularProgress";

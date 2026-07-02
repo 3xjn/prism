@@ -11,6 +11,7 @@ import "./Avatar.story";
 import "./Input.story";
 import "./KeybindInput.story";
 import "./Card.story";
+import "./Tag.story";
 import "./Checkbox.story";
 import "./Progress.story";
 import "./CircularProgress.story";
