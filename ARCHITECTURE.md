@@ -173,7 +173,7 @@ Shipped today in this repo:
 
 - scaffolding for roblox-ts, rbxts-react, Rojo, and ui-labs
 - a ui-labs story discovery setup driven by `src/playground/stories/index.storybook.ts`
-- theme tokens, default theme values, strict theme types, `ThemeProvider`, `useTheme`, `resolveColor`, and `resolveSize` under `@prism/theme`
+- theme tokens, strict theme types, `ThemeProvider`, `useTheme`, `resolveColor`, and `resolveSize` under `@prism/theme`, with first-class light and dark themes (`DEFAULT_THEME`, `DEFAULT_DARK_THEME`); intent `light` shades are subtle fills and `dark` shades are strong accents, so dark themes map them to dark tints and bright accents respectively, and `background.raised` marks elevated controls (lighter than `surface` on dark, white on light)
 - theme motion tokens plus `useMotion` under `@prism/motion`
 - unit conversion helpers and `isDevMode` under `@prism/utils`
 - the Lucide icon atlas under `@prism/icons`

@@ -85,6 +85,7 @@ function isBackgroundColorRole(value: string): value is BackgroundColorRole {
 	switch (value) {
 		case "default":
 		case "surface":
+		case "raised":
 			return true;
 		default:
 			return false;

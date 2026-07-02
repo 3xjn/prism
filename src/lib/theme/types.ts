@@ -10,7 +10,7 @@ export type SemanticIntentRole = "main" | "light" | "dark" | "contrast";
 
 export type TextColorRole = "primary" | "secondary" | "disabled" | "inverse";
 
-export type BackgroundColorRole = "default" | "surface";
+export type BackgroundColorRole = "default" | "surface" | "raised";
 
 export type BorderColorRole = "subtle" | "default" | "strong";
 

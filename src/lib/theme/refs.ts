@@ -50,6 +50,7 @@ export const theme = table.freeze({
 	background: table.freeze({
 		default: colorRef("background.default"),
 		surface: colorRef("background.surface"),
+		raised: colorRef("background.raised"),
 	}),
 	border: table.freeze({
 		subtle: colorRef("border.subtle"),

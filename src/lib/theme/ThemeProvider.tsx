@@ -94,6 +94,7 @@ function mergeBackgroundColors(base: BackgroundColors, override?: PartialBackgro
 	return table.freeze({
 		default: override?.default ?? base.default,
 		surface: override?.surface ?? base.surface,
+		raised: override?.raised ?? base.raised,
 	});
 }
 

@@ -76,10 +76,11 @@ function createTextColors(primary: Color3, secondary: Color3, disabled: Color3, 
 	});
 }
 
-function createBackgroundColors(defaultColor: Color3, surface: Color3): BackgroundColors {
+function createBackgroundColors(defaultColor: Color3, surface: Color3, raised: Color3): BackgroundColors {
 	return table.freeze({
 		default: defaultColor,
 		surface,
+		raised,
 	});
 }
 
@@ -221,7 +222,7 @@ export const DEFAULT_THEME: Theme = table.freeze({
 		info: createSemanticIntentColors(PALETTE.blue["5"], PALETTE.blue["3"], PALETTE.blue["7"], PALETTE.gray["0"]),
 		success: createSemanticIntentColors(PALETTE.green["5"], PALETTE.green["3"], PALETTE.green["7"], PALETTE.gray["0"]),
 		text: createTextColors(PALETTE.gray["9"], PALETTE.gray["7"], PALETTE.gray["5"], PALETTE.gray["0"]),
-		background: createBackgroundColors(PALETTE.gray["0"], Color3.fromRGB(255, 255, 255)),
+		background: createBackgroundColors(PALETTE.gray["0"], Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 255, 255)),
 		border: createBorderColors(PALETTE.gray["2"], PALETTE.gray["4"], PALETTE.gray["6"]),
 		action: createActionColors(PALETTE.gray["2"], PALETTE.gray["3"], PALETTE.gray["5"], PALETTE.gray["2"]),
 	}),
@@ -236,6 +237,80 @@ export const DEFAULT_THEME: Theme = table.freeze({
 		createShadow(Color3.fromRGB(15, 23, 42), 2, 0.82),
 		createShadow(Color3.fromRGB(15, 23, 42), 3, 0.78),
 		createShadow(Color3.fromRGB(15, 23, 42), 4, 0.74),
+	),
+	motion: createThemeMotion(DEFAULT_MOTION_DURATIONS),
+});
+
+// Dark counterpart to DEFAULT_THEME. Intent "light" shades map to dark
+// tinted fills (they are used as subtle backgrounds) and "dark" shades
+// map to brighter accents, mirroring how the roles read on dark
+// surfaces. Shadows are near-black and considerably more opaque -- soft
+// gray shadows disappear against dark backgrounds.
+export const DEFAULT_DARK_THEME: Theme = table.freeze({
+	colors: table.freeze({
+		palette: PALETTE,
+		primary: createSemanticIntentColors(
+			Color3.fromRGB(88, 166, 255),
+			Color3.fromRGB(20, 61, 103),
+			Color3.fromRGB(121, 192, 255),
+			Color3.fromRGB(13, 17, 23),
+		),
+		secondary: createSemanticIntentColors(
+			Color3.fromRGB(139, 148, 158),
+			Color3.fromRGB(33, 40, 48),
+			Color3.fromRGB(201, 209, 217),
+			Color3.fromRGB(13, 17, 23),
+		),
+		error: createSemanticIntentColors(
+			Color3.fromRGB(248, 81, 73),
+			Color3.fromRGB(90, 30, 27),
+			Color3.fromRGB(255, 161, 152),
+			Color3.fromRGB(13, 17, 23),
+		),
+		warning: createSemanticIntentColors(
+			Color3.fromRGB(210, 153, 34),
+			Color3.fromRGB(77, 53, 8),
+			Color3.fromRGB(227, 179, 65),
+			Color3.fromRGB(13, 17, 23),
+		),
+		info: createSemanticIntentColors(
+			Color3.fromRGB(121, 192, 255),
+			Color3.fromRGB(18, 58, 90),
+			Color3.fromRGB(165, 214, 255),
+			Color3.fromRGB(13, 17, 23),
+		),
+		success: createSemanticIntentColors(
+			Color3.fromRGB(63, 185, 80),
+			Color3.fromRGB(20, 61, 32),
+			Color3.fromRGB(86, 211, 100),
+			Color3.fromRGB(13, 17, 23),
+		),
+		text: createTextColors(
+			Color3.fromRGB(240, 246, 252),
+			Color3.fromRGB(183, 189, 200),
+			Color3.fromRGB(125, 133, 144),
+			Color3.fromRGB(13, 17, 23),
+		),
+		background: createBackgroundColors(Color3.fromRGB(13, 17, 23), Color3.fromRGB(21, 27, 35), Color3.fromRGB(52, 60, 72)),
+		border: createBorderColors(Color3.fromRGB(47, 55, 66), Color3.fromRGB(61, 68, 77), Color3.fromRGB(125, 133, 144)),
+		action: createActionColors(
+			Color3.fromRGB(42, 49, 60),
+			Color3.fromRGB(47, 55, 66),
+			Color3.fromRGB(125, 133, 144),
+			Color3.fromRGB(33, 40, 48),
+		),
+	}),
+	spacing: createThemeScale(4, 8, 12, 16, 24),
+	radius: createThemeScale(2, 4, 8, 16, 24),
+	fontSizes: createThemeScale(12, 14, 16, 18, 24),
+	lineHeights: createThemeScale(1.2, 1.4, 1.5, 1.5, 1.5),
+	fontFamily: Enum.Font.BuilderSans,
+	shadows: createThemeScale(
+		createShadow(Color3.fromRGB(0, 0, 0), 1, 0.72),
+		createShadow(Color3.fromRGB(0, 0, 0), 1, 0.64),
+		createShadow(Color3.fromRGB(0, 0, 0), 2, 0.58),
+		createShadow(Color3.fromRGB(0, 0, 0), 3, 0.52),
+		createShadow(Color3.fromRGB(0, 0, 0), 4, 0.46),
 	),
 	motion: createThemeMotion(DEFAULT_MOTION_DURATIONS),
 });
