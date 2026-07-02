@@ -13,10 +13,10 @@ export interface ElevationShadowProps {
 	/** Corner radius of the surface the shadow sits behind. */
 	readonly radius: UDim;
 	/**
-	 * Explicit container size. REQUIRED when the surface uses
-	 * AutomaticSize: scale-sized children can lock an AutomaticSize
-	 * parent into an inflated layout fixed point, so pass the measured
-	 * pixel size instead (see Card). Defaults to full surface scale.
+	 * Explicit container size. When omitted, the shadow measures its
+	 * parent's AbsoluteSize instead — scale-sized shadow children can
+	 * lock an AutomaticSize parent into an inflated layout fixed point,
+	 * so the container is never scale-sized.
 	 */
 	readonly size?: UDim2;
 	readonly zIndex?: number;
@@ -52,27 +52,56 @@ function resolveShadowRings(shadow: ThemeShadow): ShadowRing[] {
 	return rings;
 }
 
-/**
- * Soft drop shadow built from stacked UIStroke rings. Every ring frame is
- * exactly surface-sized and the falloff lives entirely in stroke
- * thickness, so the shadow neither tints the surface nor inflates
- * AutomaticSize parents (strokes are render-only). Render it before
- * decorators and content so it stays underneath siblings.
- */
-export function renderElevationShadow(props: ElevationShadowProps): React.ReactElement {
+function ElevationShadow(props: ElevationShadowProps): React.ReactElement {
 	const { shadow, radius, size, zIndex, visible, slotProps } = props;
 	const rings = resolveShadowRings(shadow);
+	const [containerInstance, setContainerInstance] = React.useState<Frame>();
+	const [measuredSize, setMeasuredSize] = React.useState<Vector2>();
+
+	React.useEffect(() => {
+		if (size !== undefined || containerInstance === undefined) {
+			return;
+		}
+
+		const surface = containerInstance.Parent;
+		if (surface === undefined || !surface.IsA("GuiObject")) {
+			return;
+		}
+
+		const updateMeasuredSize = () => {
+			const nextSize = surface.AbsoluteSize;
+			setMeasuredSize((currentSize) =>
+				currentSize !== undefined && currentSize.X === nextSize.X && currentSize.Y === nextSize.Y
+					? currentSize
+					: nextSize,
+			);
+		};
+
+		updateMeasuredSize();
+		const connection = surface.GetPropertyChangedSignal("AbsoluteSize").Connect(updateMeasuredSize);
+
+		return () => {
+			connection.Disconnect();
+		};
+	}, [containerInstance, size]);
+
+	// The container is never scale-sized: explicit sizes pass through and
+	// measured surfaces get pixel sizes, so AutomaticSize parents are
+	// never given a self-referential layout to lock onto.
+	const containerSize = size ?? (measuredSize !== undefined ? UDim2.fromOffset(measuredSize.X, measuredSize.Y) : UDim2.fromOffset(0, 0));
+	const ringsVisible = visible ?? (size !== undefined || measuredSize !== undefined);
 
 	return (
 		<frame
 			key="elevation-shadow"
 			BackgroundTransparency={1}
 			BorderSizePixel={0}
-			Size={size ?? UDim2.fromScale(1, 1)}
+			Size={containerSize}
 			Position={UDim2.fromScale(0.5, 0.5)}
 			AnchorPoint={new Vector2(0.5, 0.5)}
 			ZIndex={zIndex ?? 0}
-			Visible={visible}
+			Visible={ringsVisible}
+			ref={setContainerInstance}
 			{...slotProps?.root}
 		>
 			{rings.map((ring, index) => (
@@ -95,4 +124,15 @@ export function renderElevationShadow(props: ElevationShadowProps): React.ReactE
 			))}
 		</frame>
 	);
+}
+
+/**
+ * Soft drop shadow built from stacked UIStroke rings. Ring frames never
+ * exceed the surface bounds and the falloff lives entirely in stroke
+ * thickness (strokes are render-only), so the shadow neither tints the
+ * surface nor inflates AutomaticSize parents. Render it before
+ * decorators and content so it stays underneath siblings.
+ */
+export function renderElevationShadow(props: ElevationShadowProps): React.ReactElement {
+	return <ElevationShadow key="elevation-shadow" {...props} />;
 }

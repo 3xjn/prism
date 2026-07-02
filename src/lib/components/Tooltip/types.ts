@@ -28,6 +28,8 @@ export interface TooltipStyleProps extends Omit<SharedStyleProps, "bg" | "bgTran
 	readonly placement?: TooltipPlacement;
 	readonly disabled?: boolean;
 	readonly opened?: boolean;
+	/** Seconds to wait before the hover tooltip opens; leaving before the delay cancels the open. Defaults to 0.35. */
+	readonly openDelay?: number;
 	readonly gap?: number;
 	readonly tailImage?: string;
 	readonly tailBorderImage?: string;

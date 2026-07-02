@@ -122,7 +122,7 @@ Recurring mechanics live in `components/_shared` and new components must use the
 - `useControllableState` owns controlled/uncontrolled value plumbing for `value`/`defaultValue`/`onChange`-shaped props
 - `frameSize.ts` derives `Size`/`AutomaticSize` and minimum-height constraints from resolved style props
 - `useResolvedStyleProps` resolves shared style props and is the sole gateway to token resolution failures
-- `elevation.tsx` renders drop shadows from `theme.shadows` tokens (`sm` for cards, `md` for dropdown/popover panels, `lg` for modals); surfaces that use `AutomaticSize` must pass their measured pixel size (see Card) because scale-sized shadow children can lock an AutomaticSize parent into an inflated layout
+- `elevation.tsx` renders drop shadows from `theme.shadows` tokens (`sm` for cards, `md` for dropdown/popover panels, `lg` for modals); when no explicit size is passed it measures its parent's `AbsoluteSize` instead of scale-sizing, because scale-sized shadow children can lock an `AutomaticSize` parent into an inflated layout fixed point
 - `foundationDecorators`, `layering`/`TriggerOverlayLayer`, `usePresence`, `useRootCursor`, `textFont`, and `visual` cover decorators, overlay portals, presence transitions, cursor claims, fonts, and color mixing
 
 Components whose semantics genuinely differ (for example per-item hover maps keyed by value in `Tabs` and `SegmentedControl`, or conditional `onChange` firing) may keep local logic, but the divergence should be deliberate, not copy-paste drift.
@@ -194,10 +194,8 @@ Deliberate next steps, roughly in priority order:
 - split the outsized files: `KeybindInput.tsx` (~1,100 lines), `Draggable.tsx` (~1,000 lines), and `LuauBridge.tsx` (~1,100 lines, with heavy internal duplication across its per-prop validators)
 - converge `Tabs` and `SegmentedControl` per-item hover tracking with the shared interaction hook where their keyed-map semantics allow
 - add runtime coverage for the theme resolvers, `mergeTheme`, motion interpolation, and the bridge (only unit conversion and Progress/Slider math run under `npm test` today)
-- add a tooltip `openDelay` (tooltips currently open instantly on hover)
 - migrate the per-state duration literals in component motion transitions (e.g. `0.06`/`0.14` in Checkbox, Button, Tabs styles) to `theme.motion.duration` tokens; easing already flows through tokens, durations mostly do not (Draggable now reads both from the theme)
 - styled gamepad focus (`SelectionImageObject`) so controller selection matches the design language instead of the stock Roblox box
-- Menu reserves 34% of panel width for `rightSection`, truncating labels even when the section is narrow; measure the section instead
 - optional: swap `elevation.tsx` internals for a 9-slice shadow image (`assets/drop-shadow-128.png`, uploaded as `rbxassetid://110725881404654`). The current 10-ring gaussian stack is visually smooth; the image route needs a punched-out center (a child ImageLabel draws over its parent surface) and measured pixel sizing everywhere (an ImageLabel larger than an AutomaticSize surface inflates it — rotation does not exempt it), so it only pays off if stroke rendering ever becomes a bottleneck
 
 ### Non-goals for this phase
