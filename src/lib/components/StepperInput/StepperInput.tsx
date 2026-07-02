@@ -93,7 +93,6 @@ interface StepperRailViewProps {
 	readonly sizeStyles: StepperInputSizeStyles;
 	readonly displayAlpha: number;
 	readonly displayText: string;
-	readonly dragging: boolean;
 	readonly fillColor: Color3;
 	readonly fillTransparency: FrameProps["BackgroundTransparency"];
 	readonly valueColor: Color3;
@@ -202,7 +201,6 @@ function StepperRailView({
 	sizeStyles,
 	displayAlpha,
 	displayText,
-	dragging,
 	fillColor,
 	fillTransparency,
 	valueColor,
@@ -219,9 +217,9 @@ function StepperRailView({
 				BackgroundColor3={fillColor}
 				BackgroundTransparency={railFillSlotProps?.BackgroundTransparency ?? fillTransparency}
 				BorderSizePixel={0}
-				Size={dragging ? new UDim2(displayAlpha, 0, 1, 0) : new UDim2(displayAlpha, 0, 0, 2)}
-				Position={dragging ? new UDim2(0, 0, 0, 0) : new UDim2(0, 0, 1, 0)}
-				AnchorPoint={dragging ? new Vector2(0, 0) : new Vector2(0, 1)}
+				Size={new UDim2(displayAlpha, 0, 1, 0)}
+				Position={UDim2.fromOffset(0, 0)}
+				AnchorPoint={new Vector2(0, 0)}
 				ZIndex={fillZIndex}
 				Active={false}
 				Selectable={false}
@@ -748,7 +746,6 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 						sizeStyles={sizeStyles}
 						displayAlpha={displayAlpha}
 						displayText={displayText}
-						dragging={dragging}
 						fillColor={animatedFrame.railFillColor}
 						fillTransparency={animatedFrame.railFillTransparency}
 						valueColor={animatedFrame.textColor}

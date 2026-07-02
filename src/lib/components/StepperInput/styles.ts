@@ -167,7 +167,7 @@ export function resolveStepperInputFrameVisualStyles(
 			textColor: theme.colors.text.disabled,
 			placeholderColor: theme.colors.text.disabled,
 			railFillColor: mixColor(theme.colors.action.disabledBackground, theme.colors.border.default, 0.34),
-			railFillTransparency: 1,
+			railFillTransparency: 0.78,
 		};
 	}
 
@@ -197,7 +197,9 @@ export function resolveStepperInputFrameVisualStyles(
 		textColor: idleText,
 		placeholderColor: state === "focused" ? mixColor(placeholderBase, theme.colors.text.primary, 0.16) : placeholderBase,
 		railFillColor: state === "focused" ? mixColor(railFillBase, theme.colors.text.primary, 0.06) : railFillBase,
-		railFillTransparency: state === "focused" ? 0.62 : state === "hovered" ? 0.5 : 1,
+		// The full-height value fill stays visible at rest so the fraction
+		// always reads; hover and dragging strengthen it slightly.
+		railFillTransparency: state === "focused" ? 0.5 : state === "hovered" ? 0.58 : 0.62,
 	};
 }
 
