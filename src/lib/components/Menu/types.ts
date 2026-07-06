@@ -1,11 +1,14 @@
 import type React from "@rbxts/react";
 
-import type { SemanticIntent, ThemeSize } from "@prism/theme";
+import type { SemanticIntent, Theme, ThemeSize } from "@prism/theme";
 import type { SizeValue } from "@prism/utils";
 
 import type { IconName } from "../Icon";
 import type { PopoverAlign, PopoverPlacement, PopoverStyleProps, PopoverTriggerMode } from "../Popover";
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { StyleOverride } from "../_shared/styleOverride";
+
+import type { MenuItemState, MenuItemVisualStyles, MenuPanelVisualStyles } from "./styles";
 
 export type MenuPlacement = PopoverPlacement;
 
@@ -66,10 +69,33 @@ export type MenuSlotProps = RawSlotProps<MenuSlots>;
 
 export type MenuSize = ThemeSize;
 
-export interface MenuStyleProps extends Omit<PopoverStyleProps, "content"> {
+export interface MenuPanelStyleOverrideContext {
+	readonly theme: Theme;
+	readonly size: MenuSize;
+}
+
+export interface MenuItemStyleOverrideContext {
+	readonly theme: Theme;
+	readonly size: MenuSize;
+	readonly item: MenuActionItem;
+	readonly state: MenuItemState;
+}
+
+export interface MenuStyleOverrides {
+	readonly panel?: StyleOverride<MenuPanelVisualStyles, MenuPanelStyleOverrideContext>;
+	readonly item?: StyleOverride<MenuItemVisualStyles, MenuItemStyleOverrideContext>;
+}
+
+export interface MenuStyleProps extends Omit<PopoverStyleProps, "content" | "styleOverrides"> {
 	readonly size?: MenuSize;
 	readonly panelWidth?: SizeValue;
 	readonly maxVisibleItems?: number;
+	/**
+	 * Per-state visual values only. styleOverrides runs before motion/static visual use so values animate;
+	 * slotProps are raw post-motion/static final escapes and win. Radius, padding, font, and layout stay on existing props/slotProps.
+	 * Callbacks must be pure and inexpensive because they run on every render; the item callback runs once per rendered action item.
+	 */
+	readonly styleOverrides?: MenuStyleOverrides;
 }
 
 export interface MenuProps extends MenuStyleProps {

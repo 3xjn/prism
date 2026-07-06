@@ -6,6 +6,9 @@ export type {
 	ProgressSize,
 	ProgressSlotProps,
 	ProgressSlots,
+	ProgressStyleOverride,
+	ProgressStyleOverrideContext,
 	ProgressStyleProps,
 	ProgressVariant,
+	ProgressVisualStyles,
 } from "./types";

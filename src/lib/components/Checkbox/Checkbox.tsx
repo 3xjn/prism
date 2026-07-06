@@ -2,7 +2,6 @@ import React from "@rbxts/react";
 
 import { useMotion } from "@prism/motion";
 import { useTheme } from "@prism/theme";
-import type { Theme } from "@prism/theme";
 
 import { getLucideIconAsset } from "../../icons/lucide";
 
@@ -15,182 +14,23 @@ import {
 } from "../_shared/foundationDecorators";
 import { resolveFrameSizeProps, resolveMinimumHeightConstraint } from "../_shared/frameSize";
 import { composeEventMaps } from "../_shared/interaction";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveTextFontFace } from "../_shared/textFont";
 import { useControllableState } from "../_shared/useControllableState";
 import { usePressInteraction } from "../_shared/usePressInteraction";
-import type { InteractionState } from "../_shared/usePressInteraction";
 import {
 	mergeSharedStyleProps,
 	useResolvedStyleProps,
 } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
-import { mixColor } from "../_shared/visual";
 
-import type { CheckboxColor, CheckboxProps, CheckboxSize } from "./types";
-
-interface CheckboxSizeStyles {
-	readonly markWidth: number;
-	readonly markHeight: number;
-	readonly glyphSize: number;
-	readonly labelGap: number;
-	readonly labelSize: number;
-	readonly lineHeight: number;
-	readonly minHeight: number;
-}
-
-interface CheckboxVisualStyles {
-	readonly markColor: Color3;
-	readonly markStrokeColor: Color3;
-	readonly markStrokeTransparency: number;
-	readonly fillColor: Color3;
-	readonly fillTransparency: number;
-	readonly glyphColor: Color3;
-	readonly glyphTransparency: number;
-	readonly labelColor: Color3;
-}
-
-function resolveCheckboxSizeStyles(theme: Theme, size: CheckboxSize): CheckboxSizeStyles {
-	switch (size) {
-		case "xs":
-			return {
-				markWidth: 14,
-				markHeight: 14,
-				glyphSize: 9,
-				labelGap: theme.spacing.xs,
-				labelSize: theme.fontSizes.xs,
-				lineHeight: theme.lineHeights.xs,
-				minHeight: 20,
-			};
-		case "sm":
-			return {
-				markWidth: 16,
-				markHeight: 16,
-				glyphSize: 10,
-				labelGap: theme.spacing.xs,
-				labelSize: theme.fontSizes.sm,
-				lineHeight: theme.lineHeights.sm,
-				minHeight: 22,
-			};
-		case "lg":
-			return {
-				markWidth: 20,
-				markHeight: 20,
-				glyphSize: 13,
-				labelGap: theme.spacing.sm,
-				labelSize: theme.fontSizes.lg,
-				lineHeight: theme.lineHeights.lg,
-				minHeight: 28,
-			};
-		case "xl":
-			return {
-				markWidth: 22,
-				markHeight: 22,
-				glyphSize: 15,
-				labelGap: theme.spacing.md,
-				labelSize: theme.fontSizes.xl,
-				lineHeight: theme.lineHeights.xl,
-				minHeight: 32,
-			};
-		case "md":
-		default:
-			return {
-				markWidth: 18,
-				markHeight: 18,
-				glyphSize: 12,
-				labelGap: theme.spacing.sm,
-				labelSize: theme.fontSizes.md,
-				lineHeight: theme.lineHeights.md,
-				minHeight: 24,
-			};
-	}
-}
-
-function resolveCheckboxVisualStyles(
-	theme: Theme,
-	color: CheckboxColor,
-	state: InteractionState,
-	checked: boolean,
-): CheckboxVisualStyles {
-	const intentColors = theme.colors[color];
-	const idleMark = mixColor(theme.colors.background.surface, theme.colors.border.default, 0.18);
-	const hoverMark = mixColor(idleMark, theme.colors.action.hover, 0.65);
-	const pressedMark = mixColor(idleMark, theme.colors.action.pressed, 0.85);
-	const uncheckedStroke = theme.colors.border.default;
-	const uncheckedInteractiveStroke = mixColor(theme.colors.border.strong, theme.colors.background.surface, 0.12);
-	const checkedStroke = mixColor(intentColors.dark, theme.colors.background.surface, 0.24);
-	const checkedFill = mixColor(intentColors.main, theme.colors.background.surface, 0.04);
-	const checkedHoverFill = mixColor(intentColors.main, intentColors.dark, 0.14);
-	const checkedPressedFill = mixColor(intentColors.dark, theme.colors.action.pressed, 0.14);
-
-	if (state === "disabled") {
-		return {
-			markColor: theme.colors.action.disabledBackground,
-			markStrokeColor: checked ? intentColors.light : theme.colors.border.subtle,
-			markStrokeTransparency: checked ? 0.26 : 0.16,
-			fillColor: checked ? mixColor(theme.colors.action.disabledBackground, intentColors.light, 0.28) : theme.colors.action.disabledBackground,
-			fillTransparency: checked ? 0 : 1,
-			glyphColor: theme.colors.text.disabled,
-			glyphTransparency: checked ? 0.08 : 1,
-			labelColor: theme.colors.text.disabled,
-		};
-	}
-
-	return {
-		markColor: checked ? checkedFill : state === "pressed" ? pressedMark : state === "hovered" ? hoverMark : idleMark,
-		markStrokeColor: checked ? checkedStroke : state === "hovered" || state === "pressed" ? uncheckedInteractiveStroke : uncheckedStroke,
-		markStrokeTransparency: checked ? (state === "pressed" ? 0.08 : 0.14) : state === "hovered" ? 0.06 : 0.12,
-		fillColor: checked
-			? state === "pressed"
-				? checkedPressedFill
-				: state === "hovered"
-				? checkedHoverFill
-				: checkedFill
-			: intentColors.main,
-		fillTransparency: checked ? 0 : 1,
-		glyphColor: checked ? theme.colors.text.inverse : intentColors.main,
-		glyphTransparency: checked ? 0 : 1,
-		labelColor: theme.colors.text.primary,
-	};
-}
-
-function resolveCheckboxMotionTransition(state: InteractionState) {
-	if (state === "disabled") {
-		return {
-			markColor: { duration: "instant", easing: "standard" },
-			markStrokeColor: { duration: "instant", easing: "standard" },
-			markStrokeTransparency: { duration: "instant", easing: "standard" },
-			fillColor: { duration: "instant", easing: "standard" },
-			fillTransparency: { duration: "instant", easing: "standard" },
-			glyphColor: { duration: "instant", easing: "standard" },
-			glyphTransparency: { duration: "instant", easing: "standard" },
-			labelColor: { duration: "instant", easing: "standard" },
-		} as const;
-	}
-
-	if (state === "pressed") {
-		return {
-			markColor: { duration: 0.06, easing: "standard" },
-			markStrokeColor: { duration: 0.06, easing: "standard" },
-			markStrokeTransparency: { duration: 0.06, easing: "standard" },
-			fillColor: { duration: 0.06, easing: "standard" },
-			fillTransparency: { duration: 0.06, easing: "standard" },
-			glyphColor: { duration: 0.06, easing: "standard" },
-			glyphTransparency: { duration: 0.06, easing: "standard" },
-			labelColor: { duration: 0.06, easing: "standard" },
-		} as const;
-	}
-
-	return {
-		markColor: { duration: 0.14, easing: "standard" },
-		markStrokeColor: { duration: 0.14, easing: "standard" },
-		markStrokeTransparency: { duration: 0.14, easing: "standard" },
-		fillColor: { duration: 0.14, easing: "standard" },
-		fillTransparency: { duration: 0.12, easing: "standard" },
-		glyphColor: { duration: 0.14, easing: "standard" },
-		glyphTransparency: { duration: 0.1, easing: "standard" },
-		labelColor: { duration: 0.14, easing: "standard" },
-	} as const;
-}
+import type { CheckboxInteractionState } from "./styles";
+import {
+	resolveCheckboxMotionTransition,
+	resolveCheckboxSizeStyles,
+	resolveCheckboxVisualStyles,
+} from "./styles";
+import type { CheckboxProps } from "./types";
 
 type CheckboxComponent = ((props: CheckboxProps) => React.ReactElement) & React.ForwardRefExoticComponent<CheckboxProps>;
 
@@ -198,6 +38,7 @@ const CheckboxBase = React.forwardRef<TextButton, CheckboxProps>((props, ref) =>
 	const theme = useTheme();
 	const {
 		slotProps,
+		styleOverrides,
 		color = "primary",
 		size = "md",
 		disabled = false,
@@ -242,8 +83,13 @@ const CheckboxBase = React.forwardRef<TextButton, CheckboxProps>((props, ref) =>
 	};
 
 	const press = usePressInteraction({ interactive: !disabled, onActivated: toggle });
-	const interactionState: InteractionState = press.state;
-	const visualStyles = resolveCheckboxVisualStyles(theme, color, interactionState, checkedState);
+	const interactionState: CheckboxInteractionState = press.state;
+	const styleOverrideContext = { theme, color, size, state: interactionState, checked: checkedState };
+	const visualStyles = applyStyleOverride(
+		resolveCheckboxVisualStyles(theme, color, interactionState, checkedState),
+		styleOverrides,
+		styleOverrideContext,
+	);
 	const animated = useMotion({
 		values: {
 			markColor: visualStyles.markColor,

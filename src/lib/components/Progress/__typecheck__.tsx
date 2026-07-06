@@ -1,10 +1,23 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 
 import { Progress } from "./Progress";
-import type { ProgressProps } from "./types";
+import type { ProgressProps, ProgressStyleOverride, ProgressStyleOverrideContext, ProgressVisualStyles } from "./types";
 
 const progressRef = React.createRef<Frame>();
 type ExportedProgressProps = React.ComponentProps<typeof Progress>;
+
+const progressStyleOverride: ProgressStyleOverride = (visualStyles, ctx) => {
+	if (ctx.variant === "subtle") {
+		return { trackStrokeTransparency: 1 };
+	}
+
+	if (ctx.color === "error") {
+		return { fillColor: ctx.theme.colors.error.dark, valueLabelColor: visualStyles.fillColor };
+	}
+
+	return {};
+};
 
 const validProgressProps: ProgressProps[] = [
 	{},
@@ -24,6 +37,7 @@ const validProgressProps: ProgressProps[] = [
 	{ slotProps: { trackCorner: { CornerRadius: new UDim(0, 4) }, fillCorner: { CornerRadius: new UDim(0, 4) } } },
 	{ slotProps: { trackStroke: { Thickness: 2 }, fill: { BackgroundColor3: Color3.fromRGB(64, 160, 255) } } },
 	{ slotProps: { padding: { PaddingLeft: new UDim(0, 6) }, sizeConstraint: { MinSize: new Vector2(220, 20) } } },
+	{ styleOverrides: progressStyleOverride, value: 30 },
 	{ ref: progressRef, label: "Ref progress" },
 ];
 
@@ -53,6 +67,31 @@ type InvalidProgressValueAllowed = string extends NonNullable<ProgressProps["val
 type InvalidProgressVariantAllowed = "ghost" extends NonNullable<ProgressProps["variant"]> ? true : false;
 type ProgressRadiusNumberAllowed = 6 extends NonNullable<ProgressProps["radius"]> ? true : false;
 type ExportedProgressValueAllowed = 42 extends NonNullable<ExportedProgressProps["value"]> ? true : false;
+type ProgressStyleOverrideAssignableToProp = AssertTrue<IsAssignable<ProgressStyleOverride, ProgressProps["styleOverrides"]>>;
+type ProgressStyleOverrideAssignableToExportedProp = AssertTrue<IsAssignable<ProgressStyleOverride, ExportedProgressProps["styleOverrides"]>>;
+type ProgressStyleOverrideContextHasFields = AssertTrue<
+	IsAssignable<"theme" | "variant" | "color" | "size", keyof ProgressStyleOverrideContext>
+>;
+type ProgressStyleOverrideContextHasNoState = AssertFalse<HasProp<ProgressStyleOverrideContext, "state">>;
+type ProgressVisualStyleOverrideFieldsAllowed = AssertTrue<
+	IsAssignable<
+		{
+			readonly trackColor: Color3;
+			readonly trackStrokeTransparency: number;
+			readonly fillColor: Color3;
+			readonly valueLabelColor: Color3;
+		},
+		Partial<ProgressVisualStyles>
+	>
+>;
+type ProgressVisualStylesHasNoRadius = AssertFalse<IsAssignable<"radius", keyof ProgressVisualStyles>>;
+type ProgressVisualStylesHasNoCornerRadius = AssertFalse<IsAssignable<"cornerRadius", keyof ProgressVisualStyles>>;
+type ProgressVisualStylesHasNoPadding = AssertFalse<IsAssignable<"padding", keyof ProgressVisualStyles>>;
+type ProgressVisualStylesHasNoFontSize = AssertFalse<IsAssignable<"fontSize", keyof ProgressVisualStyles>>;
+type ProgressVisualStylesHasNoLabelSize = AssertFalse<IsAssignable<"labelSize", keyof ProgressVisualStyles>>;
+type ProgressVisualStylesHasNoTrackHeight = AssertFalse<IsAssignable<"trackHeight", keyof ProgressVisualStyles>>;
+type ProgressVisualStylesHasNoLayout = AssertFalse<IsAssignable<"layout", keyof ProgressVisualStyles>>;
+type ProgressVisualStylesHasNoSlotProps = AssertFalse<IsAssignable<"slotProps", keyof ProgressVisualStyles>>;
 
 const progressHasChildrenProp: ProgressHasChildrenProp = false;
 const invalidProgressColor: InvalidProgressColorAllowed = false;
@@ -60,6 +99,19 @@ const invalidProgressValue: InvalidProgressValueAllowed = false;
 const invalidProgressVariant: InvalidProgressVariantAllowed = false;
 const progressRadiusNumber: ProgressRadiusNumberAllowed = true;
 const exportedProgressValue: ExportedProgressValueAllowed = true;
+const progressStyleOverrideAssignableToProp: ProgressStyleOverrideAssignableToProp = true;
+const progressStyleOverrideAssignableToExportedProp: ProgressStyleOverrideAssignableToExportedProp = true;
+const progressStyleOverrideContextHasFields: ProgressStyleOverrideContextHasFields = true;
+const progressStyleOverrideContextHasNoState: ProgressStyleOverrideContextHasNoState = false;
+const progressVisualStyleOverrideFieldsAllowed: ProgressVisualStyleOverrideFieldsAllowed = true;
+const progressVisualStylesHasNoRadius: ProgressVisualStylesHasNoRadius = false;
+const progressVisualStylesHasNoCornerRadius: ProgressVisualStylesHasNoCornerRadius = false;
+const progressVisualStylesHasNoPadding: ProgressVisualStylesHasNoPadding = false;
+const progressVisualStylesHasNoFontSize: ProgressVisualStylesHasNoFontSize = false;
+const progressVisualStylesHasNoLabelSize: ProgressVisualStylesHasNoLabelSize = false;
+const progressVisualStylesHasNoTrackHeight: ProgressVisualStylesHasNoTrackHeight = false;
+const progressVisualStylesHasNoLayout: ProgressVisualStylesHasNoLayout = false;
+const progressVisualStylesHasNoSlotProps: ProgressVisualStylesHasNoSlotProps = false;
 
 export {
 	acceptsExportedProgressProps,
@@ -71,4 +123,18 @@ export {
 	invalidProgressVariant,
 	progressHasChildrenProp,
 	progressRadiusNumber,
+	progressStyleOverride,
+	progressStyleOverrideAssignableToExportedProp,
+	progressStyleOverrideAssignableToProp,
+	progressStyleOverrideContextHasFields,
+	progressStyleOverrideContextHasNoState,
+	progressVisualStyleOverrideFieldsAllowed,
+	progressVisualStylesHasNoCornerRadius,
+	progressVisualStylesHasNoFontSize,
+	progressVisualStylesHasNoLabelSize,
+	progressVisualStylesHasNoLayout,
+	progressVisualStylesHasNoPadding,
+	progressVisualStylesHasNoRadius,
+	progressVisualStylesHasNoSlotProps,
+	progressVisualStylesHasNoTrackHeight,
 };

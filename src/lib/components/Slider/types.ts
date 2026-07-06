@@ -1,9 +1,14 @@
 import type React from "@rbxts/react";
 
-import type { SemanticIntent, ThemeSize } from "@prism/theme";
+import type { SemanticIntent, Theme, ThemeSize } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
+
+import type { SliderInteractionState, SliderVisualStyles } from "./styles";
+
+export type { SliderVisualStyles } from "./styles";
 
 export interface SliderSlots {
 	readonly root: Frame;
@@ -37,6 +42,15 @@ export type SliderSize = ThemeSize;
 
 export type SliderColor = SemanticIntent;
 
+export interface SliderStyleOverrideContext {
+	readonly theme: Theme;
+	readonly color: SliderColor;
+	readonly size: SliderSize;
+	readonly state: SliderInteractionState;
+}
+
+export type SliderStyleOverride = StyleOverride<SliderVisualStyles, SliderStyleOverrideContext>;
+
 export interface SliderStyleProps extends Omit<SharedStyleProps, "bg" | "bgTransparency"> {
 	readonly color?: SliderColor;
 	readonly size?: SliderSize;
@@ -45,6 +59,11 @@ export interface SliderStyleProps extends Omit<SharedStyleProps, "bg" | "bgTrans
 	readonly min?: number;
 	readonly max?: number;
 	readonly step?: number;
+	/**
+	 * Per-state visual values only. styleOverrides runs before motion/static visual use so values animate;
+	 * slotProps are raw post-motion/static final escapes and win. Radius, padding, font, and layout stay on existing props/slotProps.
+	 */
+	readonly styleOverrides?: SliderStyleOverride;
 }
 
 export interface SliderProps extends SliderStyleProps {

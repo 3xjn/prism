@@ -23,6 +23,7 @@ import {
 	shouldHandleTouchDragMoveInput,
 	type DragInputKind,
 } from "../_shared/interaction";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveTextFontFace } from "../_shared/textFont";
 import { mergeSharedStyleProps, resolveThemeSizeSafe, resolveUDimSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
@@ -37,7 +38,7 @@ import {
 	type StepperInputButtonVisualStyles,
 	type StepperInputSizeStyles,
 } from "./styles";
-import type { StepperInputProps } from "./types";
+import type { StepperInputButtonStyleOverrideContext, StepperInputProps } from "./types";
 import {
 	formatStepperInputValue,
 	normalizeStepperInputValue,
@@ -270,6 +271,7 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 		onChange,
 		onChangeEnd,
 		formatValue,
+		styleOverrides,
 		Event,
 		Change,
 	} = props;
@@ -490,7 +492,13 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 	const decrementDisabled = !canEdit || stepStepperInputValue(resolvedValue, -1, range, resolvedStep) === resolvedValue;
 	const incrementDisabled = !canEdit || stepStepperInputValue(resolvedValue, 1, range, resolvedStep) === resolvedValue;
 	const frameState = disabled ? "disabled" : dragging ? "focused" : hovered ? "hovered" : "idle";
-	const frameVisualStyles = resolveStepperInputFrameVisualStyles(theme, variant, frameState, readOnly);
+	const frameVisualStyles = applyStyleOverride(resolveStepperInputFrameVisualStyles(theme, variant, frameState, readOnly), styleOverrides?.frame, {
+		theme,
+		variant,
+		size,
+		state: frameState,
+		readOnly,
+	});
 	const animatedFrame = useMotion({
 		values: {
 			backgroundColor: frameVisualStyles.backgroundColor,
@@ -508,8 +516,18 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 	});
 	const decrementState: StepperInputButtonState = decrementDisabled ? "disabled" : decrementPressed ? "pressed" : decrementHovered ? "hovered" : "idle";
 	const incrementState: StepperInputButtonState = incrementDisabled ? "disabled" : incrementPressed ? "pressed" : incrementHovered ? "hovered" : "idle";
-	const decrementVisualStyles = resolveStepperInputButtonVisualStyles(theme, variant, decrementState);
-	const incrementVisualStyles = resolveStepperInputButtonVisualStyles(theme, variant, incrementState);
+	const decrementStyleOverrideContext: StepperInputButtonStyleOverrideContext = { theme, variant, size, state: decrementState, control: "decrement" };
+	const incrementStyleOverrideContext: StepperInputButtonStyleOverrideContext = { theme, variant, size, state: incrementState, control: "increment" };
+	const decrementVisualStyles = applyStyleOverride(
+		resolveStepperInputButtonVisualStyles(theme, variant, decrementState),
+		styleOverrides?.button,
+		decrementStyleOverrideContext,
+	);
+	const incrementVisualStyles = applyStyleOverride(
+		resolveStepperInputButtonVisualStyles(theme, variant, incrementState),
+		styleOverrides?.button,
+		incrementStyleOverrideContext,
+	);
 	const mergedStyleProps = mergeSharedStyleProps({ cursor: canEdit ? "pointer" : "default" }, props);
 	const {
 		resolvedWidth,

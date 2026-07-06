@@ -1,13 +1,31 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, IsAssignable } from "@prism/testing/typeContracts";
 
 import { StepperInput } from "./StepperInput";
-import type { StepperInputProps } from "./types";
+import type { StepperInputButtonVisualStyles, StepperInputFrameVisualStyles } from "./styles";
+import type { StepperInputProps, StepperInputStyleOverrides } from "./types";
 
 const stepperInputRef = React.createRef<TextButton>();
 type ExportedStepperInputProps = React.ComponentProps<typeof StepperInput>;
 
+const stepperInputStyleOverrides: StepperInputStyleOverrides = {
+	frame: (_visualStyles, ctx) => {
+		if (ctx.state === "focused") {
+			return { strokeTransparency: 0, railFillTransparency: 0.4 };
+		}
+
+		return ctx.readOnly && ctx.variant === "outline" && ctx.size === "md" ? { textColor: ctx.theme.colors.text.secondary } : {};
+	},
+	button: (visualStyles, ctx) =>
+		ctx.state === "pressed" && ctx.control === "increment"
+			? { backgroundColor: ctx.theme.colors.action.pressed, strokeTransparency: visualStyles.strokeTransparency * 0.5 }
+			: {},
+};
+
 const validStepperInputProps: StepperInputProps[] = [
 	{ defaultValue: 4 },
+	{ defaultValue: 5, styleOverrides: stepperInputStyleOverrides },
+	{ defaultValue: 2, styleOverrides: { button: (_visualStyles, ctx) => (ctx.state === "hovered" ? { strokeTransparency: 0 } : {}) } },
 	{ value: 12, onChange: () => undefined },
 	{ value: 24, onChange: () => undefined, onChangeEnd: () => undefined },
 	{ defaultValue: 3, min: 0, max: 10, step: 1 },
@@ -32,6 +50,7 @@ const validStepperInputProps: StepperInputProps[] = [
 
 const validExportedStepperInputProps: ExportedStepperInputProps[] = [
 	{ defaultValue: 4 },
+	{ defaultValue: 6, styleOverrides: stepperInputStyleOverrides },
 	{ value: 8, onChange: () => undefined, cursor: "resize-ew" },
 	{ defaultValue: 2, min: 0, max: 10, step: 2, size: "sm" },
 	{ defaultValue: 75, formatValue: (currentValue) => `${tostring(currentValue)} HP`, readOnly: true },
@@ -73,6 +92,17 @@ type InvalidStepperInputDefaultValueAllowed = string extends NonNullable<Stepper
 type InvalidStepperInputStepAllowed = string extends NonNullable<StepperInputProps["step"]> ? true : false;
 type InvalidStepperInputFormatAllowed = string extends NonNullable<StepperInputProps["formatValue"]> ? true : false;
 type ExportedStepperInputValueAllowed = 42 extends NonNullable<ExportedStepperInputProps["value"]> ? true : false;
+type StepperInputVisualStyleKey = keyof StepperInputFrameVisualStyles | keyof StepperInputButtonVisualStyles;
+type StepperInputStyleOverridesAssignableToProp = AssertTrue<IsAssignable<StepperInputStyleOverrides, StepperInputProps["styleOverrides"]>>;
+type StepperInputStyleOverridesAssignableToExportedProp = AssertTrue<
+	IsAssignable<StepperInputStyleOverrides, ExportedStepperInputProps["styleOverrides"]>
+>;
+type StepperInputVisualStylesHaveNoRadius = AssertFalse<IsAssignable<"radius", StepperInputVisualStyleKey>>;
+type StepperInputVisualStylesHaveNoButtonRadius = AssertFalse<IsAssignable<"buttonRadius", StepperInputVisualStyleKey>>;
+type StepperInputVisualStylesHaveNoPadding = AssertFalse<IsAssignable<"padding", StepperInputVisualStyleKey>>;
+type StepperInputVisualStylesHaveNoFontSize = AssertFalse<IsAssignable<"fontSize", StepperInputVisualStyleKey>>;
+type StepperInputVisualStylesHaveNoButtonWidth = AssertFalse<IsAssignable<"buttonWidth", StepperInputVisualStyleKey>>;
+type StepperInputVisualStylesHaveNoGap = AssertFalse<IsAssignable<"gap", StepperInputVisualStyleKey>>;
 
 const stepperInputHasChildrenProp: StepperInputHasChildrenProp = false;
 	const invalidStepperInputVariant: InvalidStepperInputVariantAllowed = false;
@@ -81,6 +111,14 @@ const invalidStepperInputDefaultValue: InvalidStepperInputDefaultValueAllowed = 
 const invalidStepperInputStep: InvalidStepperInputStepAllowed = false;
 const invalidStepperInputFormat: InvalidStepperInputFormatAllowed = false;
 const exportedStepperInputValue: ExportedStepperInputValueAllowed = true;
+const stepperInputStyleOverridesAssignableToProp: StepperInputStyleOverridesAssignableToProp = true;
+const stepperInputStyleOverridesAssignableToExportedProp: StepperInputStyleOverridesAssignableToExportedProp = true;
+const stepperInputVisualStylesHaveNoRadius: StepperInputVisualStylesHaveNoRadius = false;
+const stepperInputVisualStylesHaveNoButtonRadius: StepperInputVisualStylesHaveNoButtonRadius = false;
+const stepperInputVisualStylesHaveNoPadding: StepperInputVisualStylesHaveNoPadding = false;
+const stepperInputVisualStylesHaveNoFontSize: StepperInputVisualStylesHaveNoFontSize = false;
+const stepperInputVisualStylesHaveNoButtonWidth: StepperInputVisualStylesHaveNoButtonWidth = false;
+const stepperInputVisualStylesHaveNoGap: StepperInputVisualStylesHaveNoGap = false;
 
 export {
 	acceptsExportedStepperInputProps,
@@ -93,4 +131,13 @@ export {
 	invalidStepperInputValue,
 	invalidStepperInputVariant,
 	stepperInputHasChildrenProp,
+	stepperInputStyleOverrides,
+	stepperInputStyleOverridesAssignableToExportedProp,
+	stepperInputStyleOverridesAssignableToProp,
+	stepperInputVisualStylesHaveNoButtonRadius,
+	stepperInputVisualStylesHaveNoButtonWidth,
+	stepperInputVisualStylesHaveNoFontSize,
+	stepperInputVisualStylesHaveNoGap,
+	stepperInputVisualStylesHaveNoPadding,
+	stepperInputVisualStylesHaveNoRadius,
 };

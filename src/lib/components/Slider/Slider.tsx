@@ -16,6 +16,7 @@ import {
 	renderSizeConstraintDecorator,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 import { Tooltip } from "../Tooltip";
 
@@ -81,6 +82,7 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 		min,
 		max,
 		step,
+		styleOverrides,
 		value,
 		defaultValue,
 		tooltip,
@@ -343,7 +345,8 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 					max: resolvedConstraint.max,
 			  };
 	const interactionState: SliderInteractionState = disabled ? "disabled" : dragging ? "pressed" : hovered ? "hovered" : "idle";
-	const visualStyles = resolveSliderVisualStyles(theme, color, interactionState);
+	const styleOverrideContext = { theme, color, size, state: interactionState };
+	const visualStyles = applyStyleOverride(resolveSliderVisualStyles(theme, color, interactionState), styleOverrides, styleOverrideContext);
 	const resolvedRootZIndex = rootSlotProps?.ZIndex ?? props.zIndex;
 	const resolvedLabelZIndex = labelSlotProps?.ZIndex ?? incrementZIndex(resolvedRootZIndex, 1);
 	const resolvedValueLabelZIndex = valueLabelSlotProps?.ZIndex ?? incrementZIndex(resolvedRootZIndex, 1);

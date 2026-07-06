@@ -1,7 +1,6 @@
 import React from "@rbxts/react";
 
 import { useTheme } from "@prism/theme";
-import type { ThemeShadow } from "@prism/theme";
 
 import { renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
 import { resolveFrameSizeProps } from "../_shared/frameSize";
@@ -10,12 +9,14 @@ import { TriggerOverlayLayer } from "../_shared/TriggerOverlayLayer";
 import type { TriggerOverlayLayout } from "../_shared/layering";
 import { useDelayedCallback } from "../_shared/useDelayedCallback";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
-import { resolveThemeSizeSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
+import { applyStyleOverride } from "../_shared/styleOverride";
+import { useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
 import { TooltipOverlayBubble } from "./TooltipOverlayBubble";
-import type { TooltipPlacement, TooltipProps } from "./types";
+import { resolveTooltipSizeStyles, resolveTooltipVisualStyles } from "./styles";
+import type { TooltipProps } from "./types";
 
 const DEFAULT_TOOLTIP_TAIL_IMAGE = "rbxassetid://10983945016";
 const DEFAULT_TOOLTIP_TAIL_BORDER_IMAGE = "rbxassetid://10983946430";
@@ -28,61 +29,7 @@ function isPrimitiveTooltipContent(value: unknown): value is string | number {
 	return typeIs(value, "string") || typeIs(value, "number");
 }
 
-interface TooltipSizeStyles {
-	readonly paddingX: number;
-	readonly paddingY: number;
-	readonly radius: UDim;
-	readonly fontSize: number;
-	readonly lineHeight: number;
-	readonly tailWidth: number;
-	readonly tailHeight: number;
-	readonly triggerMinimumSize: number;
-	readonly gap: number;
-}
-
-interface TooltipVisualStyles {
-	readonly backgroundColor: Color3;
-	readonly strokeColor: Color3;
-	readonly strokeTransparency: number;
-	readonly textColor: Color3;
-	readonly tailFillColor: Color3;
-	readonly tailBorderColor: Color3;
-	readonly tailBorderTransparency: number;
-	readonly shadow: ThemeShadow;
-}
-
 type TooltipComponent = ((props: TooltipProps) => React.ReactElement) & React.ForwardRefExoticComponent<TooltipProps>;
-
-function resolveTooltipSizeStyles(theme: ReturnType<typeof useTheme>, gap: number | undefined): TooltipSizeStyles {
-	return {
-		paddingX: theme.spacing.sm,
-		paddingY: theme.spacing.xs,
-		radius: new UDim(0, resolveThemeSizeSafe(theme, "tooltip", "sm", "radius", theme.radius.sm)),
-		fontSize: theme.fontSizes.sm,
-		lineHeight: theme.lineHeights.sm,
-		tailWidth: 18,
-		tailHeight: 8,
-		triggerMinimumSize: 1,
-		gap: gap ?? theme.spacing.xs,
-	};
-}
-
-function resolveTooltipVisualStyles(theme: ReturnType<typeof useTheme>): TooltipVisualStyles {
-	// Tooltips render inverse (dark on light themes) so they separate from
-	// the content they float over instead of blending into light surfaces.
-	const inverseSurface = theme.colors.palette.gray["9"];
-
-	return {
-		backgroundColor: inverseSurface,
-		strokeColor: inverseSurface,
-		strokeTransparency: 1,
-		textColor: theme.colors.text.inverse,
-		tailFillColor: inverseSurface,
-		tailBorderColor: inverseSurface,
-		tailBorderTransparency: 1,
-		shadow: theme.shadows.sm,
-	};
-}
 
 const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 	const theme = useTheme();
@@ -110,7 +57,7 @@ const TooltipBase = React.forwardRef<Frame, TooltipProps>((props, ref) => {
 		tooltipContent !== undefined && !isPrimitiveTooltipContent(tooltipContent) ? tooltipContent : undefined;
 	const isOpen = !disabled && hasContent && (opened ?? hovered);
 	const sizeStyles = resolveTooltipSizeStyles(theme, props.gap);
-	const visualStyles = resolveTooltipVisualStyles(theme);
+	const visualStyles = applyStyleOverride(resolveTooltipVisualStyles(theme), props.styleOverrides, { theme });
 	const { resolvedWidth, resolvedHeight, resolvedSize, resolvedPosition, resolvedAnchor, resolvedConstraint } =
 		useResolvedStyleProps("tooltip", props);
 	const rootSlotProps = slotProps?.root;

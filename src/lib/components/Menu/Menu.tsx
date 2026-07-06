@@ -11,6 +11,7 @@ import { renderCornerDecorator, renderPaddingDecorator } from "../_shared/founda
 import { assignRef, composeEventMaps } from "../_shared/interaction";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
 import { resolveTextFontFace } from "../_shared/textFont";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { usePressInteraction } from "../_shared/usePressInteraction";
 import { reportComponentFailure, resolveThemeSizeSafe, resolveUDimSafe } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
@@ -23,7 +24,7 @@ import {
 	type MenuItemState,
 	type MenuSizeStyles,
 } from "./styles";
-import type { MenuActionItem, MenuItem, MenuProps } from "./types";
+import type { MenuActionItem, MenuItem, MenuProps, MenuSize, MenuStyleOverrides } from "./types";
 
 const TextService = game.GetService("TextService");
 
@@ -107,16 +108,20 @@ function resolveRichMenuSection(value: React.ReactElement | string | number | un
 
 function MenuActionRow({
 	item,
+	size,
 	sizeStyles,
 	slotProps,
+	styleOverrides,
 	zIndex,
 	cursor,
 	rightSectionWidth,
 	onPress,
 }: {
 	readonly item: MenuActionItem;
+	readonly size: MenuSize;
 	readonly sizeStyles: MenuSizeStyles;
 	readonly slotProps: MenuProps["slotProps"];
+	readonly styleOverrides: MenuStyleOverrides | undefined;
 	readonly zIndex: React.InstanceProps<TextButton>["ZIndex"] | undefined;
 	readonly cursor: MenuProps["cursor"];
 	readonly rightSectionWidth: UDim;
@@ -135,7 +140,12 @@ function MenuActionRow({
 	});
 
 	const state: MenuItemState = press.state;
-	const visualStyles = resolveMenuItemVisualStyles(theme, item.color, state);
+	const visualStyles = applyStyleOverride(resolveMenuItemVisualStyles(theme, item.color, state), styleOverrides?.item, {
+		theme,
+		size,
+		item,
+		state,
+	});
 	const animated = useMotion({
 		values: {
 			backgroundColor: visualStyles.backgroundColor,
@@ -299,7 +309,7 @@ function MenuPanel({ props, opened, setOpened }: { readonly props: MenuProps; re
 	const theme = useTheme();
 	const { items, slotProps, closeOnItemPress = true, maxVisibleItems = 6, size = "md" } = props;
 	const sizeStyles = resolveMenuSizeStyles(theme, size);
-	const panelVisualStyles = resolveMenuPanelVisualStyles(theme);
+	const panelVisualStyles = applyStyleOverride(resolveMenuPanelVisualStyles(theme), props.styleOverrides?.panel, { theme, size });
 	const listPadding = resolveThemeSizeSafe(theme, "menu", sizeStyles.listPadding, "spacing", 0);
 	const labelPaddingX = resolveThemeSizeSafe(theme, "menu", sizeStyles.labelPaddingX, "spacing", 0);
 	const clampedMaxVisibleItems = math.max(1, maxVisibleItems);
@@ -415,8 +425,10 @@ function MenuPanel({ props, opened, setOpened }: { readonly props: MenuProps; re
 						<MenuActionRow
 							key={item.value}
 							item={item}
+							size={size}
 							sizeStyles={sizeStyles}
 							slotProps={slotProps}
+							styleOverrides={props.styleOverrides}
 							zIndex={contentZIndex}
 							cursor={props.cursor}
 							rightSectionWidth={rightSectionWidth}
@@ -483,7 +495,11 @@ const MenuBase = React.forwardRef<Frame, MenuProps>((props, ref) => {
 		},
 		[ref],
 	);
-	const panelVisualStyles = resolveMenuPanelVisualStyles(useTheme());
+	const theme = useTheme();
+	const panelVisualStyles = applyStyleOverride(resolveMenuPanelVisualStyles(theme), props.styleOverrides?.panel, {
+		theme,
+		size: props.size ?? "md",
+	});
 	const popoverPanelPaddingSlotProps = {
 		PaddingTop: new UDim(0, 0),
 		PaddingRight: new UDim(0, 0),

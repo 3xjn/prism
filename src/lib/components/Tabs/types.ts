@@ -1,9 +1,12 @@
 import type React from "@rbxts/react";
 
-import type { SemanticIntent, ThemeSize } from "@prism/theme";
+import type { SemanticIntent, Theme, ThemeSize } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
+
+import type { TabsListVisualStyles, TabsPanelVisualStyles, TabsTabState, TabsTabVisualStyles } from "./styles";
 
 export interface TabsTab {
 	readonly value: string;
@@ -43,12 +46,49 @@ export interface TabsSlots {
 
 export type TabsSlotProps = RawSlotProps<TabsSlots>;
 
+export interface TabsListStyleOverrideContext {
+	readonly theme: Theme;
+	readonly variant: TabsVariant;
+	readonly color: TabsColor;
+	readonly size: TabsSize;
+	readonly disabled: boolean;
+}
+
+export interface TabsTabStyleOverrideContext {
+	readonly theme: Theme;
+	readonly variant: TabsVariant;
+	readonly color: TabsColor;
+	readonly size: TabsSize;
+	readonly tab: TabsTab;
+	readonly state: TabsTabState;
+}
+
+export interface TabsPanelStyleOverrideContext {
+	readonly theme: Theme;
+	readonly variant: TabsVariant;
+	readonly color: TabsColor;
+	readonly size: TabsSize;
+	readonly disabled: boolean;
+}
+
+export interface TabsStyleOverrides {
+	readonly list?: StyleOverride<TabsListVisualStyles, TabsListStyleOverrideContext>;
+	readonly tab?: StyleOverride<TabsTabVisualStyles, TabsTabStyleOverrideContext>;
+	readonly panel?: StyleOverride<TabsPanelVisualStyles, TabsPanelStyleOverrideContext>;
+}
+
 export interface TabsStyleProps extends Omit<SharedStyleProps, "bg" | "bgTransparency"> {
 	readonly variant?: TabsVariant;
 	readonly color?: TabsColor;
 	readonly size?: TabsSize;
 	readonly disabled?: boolean;
 	readonly fullWidth?: boolean;
+	/**
+	 * Per-state visual values only. styleOverrides runs before motion/static visual use so values animate;
+	 * slotProps are raw post-motion/static final escapes and win. Radius, padding, font, and layout stay on existing props/slotProps.
+	 * Callbacks must be pure and inexpensive because they run on every render; the tab callback runs once per rendered tab.
+	 */
+	readonly styleOverrides?: TabsStyleOverrides;
 }
 
 export interface TabsProps extends TabsStyleProps {

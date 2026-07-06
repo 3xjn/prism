@@ -13,6 +13,7 @@ import {
 } from "../_shared/foundationDecorators";
 import { resolveMinimumHeightConstraint } from "../_shared/frameSize";
 import { composeEventMaps } from "../_shared/interaction";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveTextFontFace } from "../_shared/textFont";
 import {
 	mergeSharedStyleProps,
@@ -132,6 +133,7 @@ const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
 		disabled = false,
 		readOnly = false,
 		fullWidth = false,
+		styleOverrides,
 		placeholder,
 		maxLength,
 		value,
@@ -195,7 +197,12 @@ const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
 			: hovered
 				? "hovered"
 				: "idle";
-	const resolvedVisualStyles = resolveInputVisualStyles(theme, variant, color, interactionState, readOnly);
+	const styleOverrideContext = { theme, variant, color, size, readOnly, state: interactionState };
+	const resolvedVisualStyles = applyStyleOverride(
+		resolveInputVisualStyles(theme, variant, color, interactionState, readOnly),
+		styleOverrides,
+		styleOverrideContext,
+	);
 	const motionTransition = resolveInputMotionTransition(interactionState);
 	const animated = useMotion({
 		values: {

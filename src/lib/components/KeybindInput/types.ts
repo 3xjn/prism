@@ -1,9 +1,14 @@
 import type React from "@rbxts/react";
 
-import type { SemanticIntent, ThemeSize, Variant } from "@prism/theme";
+import type { SemanticIntent, Theme, ThemeSize, Variant } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
+
+import type { KeybindInputInteractionState, KeybindInputVisualStyles } from "./styles";
+
+export type { KeybindInputVisualStyles } from "./styles";
 
 export type KeybindInputSize = ThemeSize;
 
@@ -34,6 +39,17 @@ export interface KeybindInputSlots {
 
 export type KeybindInputSlotProps = RawSlotProps<KeybindInputSlots>;
 
+export interface KeybindInputStyleOverrideContext {
+	readonly theme: Theme;
+	readonly variant: Variant;
+	readonly color: KeybindInputColor;
+	readonly size: KeybindInputSize;
+	readonly state: KeybindInputInteractionState;
+	readonly hasValue: boolean;
+}
+
+export type KeybindInputStyleOverride = StyleOverride<KeybindInputVisualStyles, KeybindInputStyleOverrideContext>;
+
 export interface KeybindInputStyleProps extends Omit<SharedStyleProps, "bg" | "bgTransparency"> {
 	readonly variant?: Variant;
 	readonly color?: KeybindInputColor;
@@ -45,6 +61,11 @@ export interface KeybindInputStyleProps extends Omit<SharedStyleProps, "bg" | "b
 	readonly captureLabel?: string;
 	readonly clearable?: boolean;
 	readonly displayDevice?: KeybindDisplayDevice;
+	/**
+	 * Per-state visual values only. styleOverrides runs before motion/static visual use so values animate;
+	 * slotProps are raw post-motion/static final escapes and win. Radius, padding, font, and layout stay on existing props/slotProps.
+	 */
+	readonly styleOverrides?: KeybindInputStyleOverride;
 }
 
 export interface KeybindInputProps extends KeybindInputStyleProps {

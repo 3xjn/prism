@@ -1,13 +1,27 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 
 import { Checkbox } from "./Checkbox";
-import type { CheckboxProps } from "./types";
+import type { CheckboxProps, CheckboxStyleOverride, CheckboxStyleOverrideContext, CheckboxVisualStyles } from "./types";
 
 const checkboxRef = React.createRef<TextButton>();
 type ExportedCheckboxProps = React.ComponentProps<typeof Checkbox>;
 
+const checkboxStyleOverride: CheckboxStyleOverride = (_visualStyles, ctx) => {
+	if (ctx.state === "hovered") {
+		return { markStrokeTransparency: 0, markStrokeColor: ctx.theme.colors[ctx.color].main };
+	}
+
+	if (ctx.state === "pressed" && ctx.checked) {
+		return { fillColor: ctx.theme.colors[ctx.color].dark };
+	}
+
+	return {};
+};
+
 const validCheckboxProps: CheckboxProps[] = [
 	{ defaultChecked: true },
+	{ label: "Override", styleOverrides: checkboxStyleOverride },
 	{ checked: true, onChange: () => undefined },
 	{ label: "Accept mission rules", defaultChecked: true },
 	{ label: "Disabled", disabled: true, checked: false, onChange: () => undefined },
@@ -54,6 +68,35 @@ type InvalidCheckboxCheckedAllowed = string extends NonNullable<CheckboxProps["c
 type CheckboxLabelNumberAllowed = 42 extends NonNullable<CheckboxProps["label"]> ? true : false;
 type ExportedCheckboxCheckedAllowed = true extends NonNullable<ExportedCheckboxProps["checked"]> ? true : false;
 type ExportedCheckboxDefaultCheckedAllowed = true extends NonNullable<ExportedCheckboxProps["defaultChecked"]> ? true : false;
+type CheckboxStyleOverrideAssignableToProp = AssertTrue<IsAssignable<CheckboxStyleOverride, CheckboxProps["styleOverrides"]>>;
+type CheckboxStyleOverrideAssignableToExportedProp = AssertTrue<
+	IsAssignable<CheckboxStyleOverride, ExportedCheckboxProps["styleOverrides"]>
+>;
+type CheckboxStyleOverrideContextHasFields = AssertTrue<
+	IsAssignable<"theme" | "color" | "size" | "state" | "checked", keyof CheckboxStyleOverrideContext>
+>;
+type CheckboxStyleOverrideContextHasTheme = AssertTrue<HasProp<CheckboxStyleOverrideContext, "theme">>;
+type CheckboxStyleOverrideContextHasNoDisabled = AssertFalse<IsAssignable<"disabled", keyof CheckboxStyleOverrideContext>>;
+type CheckboxVisualStyleOverrideFieldsAllowed = AssertTrue<
+	IsAssignable<
+		{
+			readonly markColor: Color3;
+			readonly markStrokeTransparency: number;
+			readonly fillColor: Color3;
+			readonly glyphTransparency: number;
+			readonly labelColor: Color3;
+		},
+		Partial<CheckboxVisualStyles>
+	>
+>;
+type CheckboxVisualStylesHasNoRadius = AssertFalse<IsAssignable<"radius", keyof CheckboxVisualStyles>>;
+type CheckboxVisualStylesHasNoCornerRadius = AssertFalse<IsAssignable<"cornerRadius", keyof CheckboxVisualStyles>>;
+type CheckboxVisualStylesHasNoPadding = AssertFalse<IsAssignable<"padding", keyof CheckboxVisualStyles>>;
+type CheckboxVisualStylesHasNoFontSize = AssertFalse<IsAssignable<"fontSize", keyof CheckboxVisualStyles>>;
+type CheckboxVisualStylesHasNoLabelSize = AssertFalse<IsAssignable<"labelSize", keyof CheckboxVisualStyles>>;
+type CheckboxVisualStylesHasNoMarkWidth = AssertFalse<IsAssignable<"markWidth", keyof CheckboxVisualStyles>>;
+type CheckboxVisualStylesHasNoLayout = AssertFalse<IsAssignable<"layout", keyof CheckboxVisualStyles>>;
+type CheckboxVisualStylesHasNoSlotProps = AssertFalse<IsAssignable<"slotProps", keyof CheckboxVisualStyles>>;
 
 const checkboxHasChildrenProp: CheckboxHasChildrenProp = false;
 const invalidCheckboxColor: InvalidCheckboxColorAllowed = false;
@@ -61,6 +104,20 @@ const invalidCheckboxChecked: InvalidCheckboxCheckedAllowed = false;
 const checkboxLabelNumber: CheckboxLabelNumberAllowed = true;
 const exportedCheckboxChecked: ExportedCheckboxCheckedAllowed = true;
 const exportedCheckboxDefaultChecked: ExportedCheckboxDefaultCheckedAllowed = true;
+const checkboxStyleOverrideAssignableToProp: CheckboxStyleOverrideAssignableToProp = true;
+const checkboxStyleOverrideAssignableToExportedProp: CheckboxStyleOverrideAssignableToExportedProp = true;
+const checkboxStyleOverrideContextHasFields: CheckboxStyleOverrideContextHasFields = true;
+const checkboxStyleOverrideContextHasTheme: CheckboxStyleOverrideContextHasTheme = true;
+const checkboxStyleOverrideContextHasNoDisabled: CheckboxStyleOverrideContextHasNoDisabled = false;
+const checkboxVisualStyleOverrideFieldsAllowed: CheckboxVisualStyleOverrideFieldsAllowed = true;
+const checkboxVisualStylesHasNoRadius: CheckboxVisualStylesHasNoRadius = false;
+const checkboxVisualStylesHasNoCornerRadius: CheckboxVisualStylesHasNoCornerRadius = false;
+const checkboxVisualStylesHasNoPadding: CheckboxVisualStylesHasNoPadding = false;
+const checkboxVisualStylesHasNoFontSize: CheckboxVisualStylesHasNoFontSize = false;
+const checkboxVisualStylesHasNoLabelSize: CheckboxVisualStylesHasNoLabelSize = false;
+const checkboxVisualStylesHasNoMarkWidth: CheckboxVisualStylesHasNoMarkWidth = false;
+const checkboxVisualStylesHasNoLayout: CheckboxVisualStylesHasNoLayout = false;
+const checkboxVisualStylesHasNoSlotProps: CheckboxVisualStylesHasNoSlotProps = false;
 
 export {
 	acceptsCheckboxChildren,
@@ -68,6 +125,21 @@ export {
 	acceptsExportedCheckboxProps,
 	checkboxHasChildrenProp,
 	checkboxLabelNumber,
+	checkboxStyleOverride,
+	checkboxStyleOverrideAssignableToExportedProp,
+	checkboxStyleOverrideAssignableToProp,
+	checkboxStyleOverrideContextHasFields,
+	checkboxStyleOverrideContextHasNoDisabled,
+	checkboxStyleOverrideContextHasTheme,
+	checkboxVisualStyleOverrideFieldsAllowed,
+	checkboxVisualStylesHasNoCornerRadius,
+	checkboxVisualStylesHasNoFontSize,
+	checkboxVisualStylesHasNoLabelSize,
+	checkboxVisualStylesHasNoLayout,
+	checkboxVisualStylesHasNoMarkWidth,
+	checkboxVisualStylesHasNoPadding,
+	checkboxVisualStylesHasNoRadius,
+	checkboxVisualStylesHasNoSlotProps,
 	exportedCheckboxChecked,
 	exportedCheckboxDefaultChecked,
 	invalidCheckboxChecked,

@@ -1,9 +1,17 @@
 import type React from "@rbxts/react";
 
-import type { ThemeSize, Variant } from "@prism/theme";
+import type { Theme, ThemeSize, Variant } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
+
+import type {
+	StepperInputButtonState,
+	StepperInputButtonVisualStyles,
+	StepperInputFrameState,
+	StepperInputFrameVisualStyles,
+} from "./styles";
 
 export interface StepperInputSlots {
 	readonly root: Frame;
@@ -30,6 +38,27 @@ export type StepperInputSlotProps = RawSlotProps<StepperInputSlots>;
 
 export type StepperInputSize = ThemeSize;
 
+export interface StepperInputFrameStyleOverrideContext {
+	readonly theme: Theme;
+	readonly variant: Variant;
+	readonly size: StepperInputSize;
+	readonly state: StepperInputFrameState;
+	readonly readOnly: boolean;
+}
+
+export interface StepperInputButtonStyleOverrideContext {
+	readonly theme: Theme;
+	readonly variant: Variant;
+	readonly size: StepperInputSize;
+	readonly state: StepperInputButtonState;
+	readonly control: "decrement" | "increment";
+}
+
+export interface StepperInputStyleOverrides {
+	readonly frame?: StyleOverride<StepperInputFrameVisualStyles, StepperInputFrameStyleOverrideContext>;
+	readonly button?: StyleOverride<StepperInputButtonVisualStyles, StepperInputButtonStyleOverrideContext>;
+}
+
 export interface StepperInputStyleProps extends Omit<SharedStyleProps, "bg" | "bgTransparency"> {
 	readonly variant?: Variant;
 	readonly size?: StepperInputSize;
@@ -39,6 +68,12 @@ export interface StepperInputStyleProps extends Omit<SharedStyleProps, "bg" | "b
 	readonly min?: number;
 	readonly max?: number;
 	readonly step?: number;
+	/**
+	 * Per-state visual values only. styleOverrides runs before motion/static visual use so values animate;
+	 * slotProps are raw post-motion/static final escapes and win. Radius, padding, font, and layout stay on existing props/slotProps.
+	 * Callbacks must be pure and inexpensive because they run on every render; the button callback runs once per stepper button (decrement and increment).
+	 */
+	readonly styleOverrides?: StepperInputStyleOverrides;
 }
 
 export interface StepperInputProps extends StepperInputStyleProps {

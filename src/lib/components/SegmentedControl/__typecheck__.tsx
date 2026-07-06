@@ -1,7 +1,19 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 
 import { SegmentedControl } from "./SegmentedControl";
-import type { SegmentedControlOption, SegmentedControlProps } from "./types";
+import type {
+	SegmentedControlFrameVisualStyles,
+	SegmentedControlIndicatorVisualStyles,
+	SegmentedControlSegmentVisualStyles,
+} from "./styles";
+import type {
+	SegmentedControlFrameStyleOverrideContext,
+	SegmentedControlIndicatorStyleOverrideContext,
+	SegmentedControlOption,
+	SegmentedControlProps,
+	SegmentedControlStyleOverrides,
+} from "./types";
 
 const segmentedControlRef = React.createRef<Frame>();
 type ExportedSegmentedControlProps = React.ComponentProps<typeof SegmentedControl>;
@@ -12,8 +24,24 @@ const options: readonly SegmentedControlOption[] = [
 	{ value: "squad", label: "Squad", disabled: true },
 ];
 
+const segmentedControlStyleOverrides: SegmentedControlStyleOverrides = {
+	frame: (visualStyles, ctx) =>
+		ctx.disabled ? { strokeTransparency: 0.5 } : { backgroundColor: ctx.theme.colors[ctx.color].light, strokeTransparency: visualStyles.strokeTransparency * 0.5 },
+	segment: (_visualStyles, ctx) => {
+		if (ctx.state === "selected") {
+			return { textColor: ctx.theme.colors[ctx.color].contrast };
+		}
+
+		return ctx.state === "hovered" && ctx.option.disabled !== true && ctx.size === "md" ? { strokeTransparency: 0.2 } : {};
+	},
+	indicator: (_visualStyles, ctx) =>
+		ctx.disabled ? {} : { backgroundColor: ctx.variant === "filled" ? ctx.theme.colors[ctx.color].dark : ctx.theme.colors[ctx.color].main },
+};
+
 const validSegmentedControlProps: SegmentedControlProps[] = [
 	{ options },
+	{ options, styleOverrides: segmentedControlStyleOverrides },
+	{ options, styleOverrides: { segment: (_visualStyles, ctx) => (ctx.state === "pressed" ? { backgroundTransparency: 0 } : {}) } },
 	{ options, defaultValue: "solo" },
 	{ options, value: "duo", onChange: () => undefined },
 	{ options, disabled: true },
@@ -34,6 +62,7 @@ const validExportedSegmentedControlProps: ExportedSegmentedControlProps[] = [
 	{ options, defaultValue: "solo", cursor: "default" },
 	{ options, value: "duo", onChange: () => undefined, color: "primary", variant: "outline" },
 	{ options, size: "lg", fullWidth: true },
+	{ options, styleOverrides: segmentedControlStyleOverrides },
 ];
 
 const validSegmentedControlExamples = [
@@ -51,6 +80,7 @@ const validSegmentedControlExamples = [
 			segmentText: { Text: "Override" },
 		}}
 	/>,
+	<SegmentedControl key="overrides" options={options} styleOverrides={segmentedControlStyleOverrides} />,
 	<SegmentedControl key="ref" options={options} ref={segmentedControlRef} />,
 ];
 
@@ -63,12 +93,36 @@ type InvalidSegmentedControlColorAllowed = "palette.primary.5" extends NonNullab
 type InvalidSegmentedControlValueAllowed = number extends NonNullable<SegmentedControlProps["value"]> ? true : false;
 type SegmentedControlDisabledOptionAllowed = true extends NonNullable<SegmentedControlOption["disabled"]> ? true : false;
 type ExportedSegmentedControlValueAllowed = "solo" extends NonNullable<ExportedSegmentedControlProps["value"]> ? true : false;
+type SegmentedControlVisualStyleKey =
+	| keyof SegmentedControlFrameVisualStyles
+	| keyof SegmentedControlSegmentVisualStyles
+	| keyof SegmentedControlIndicatorVisualStyles;
+type SegmentedControlStyleOverridesAssignableToProp = AssertTrue<IsAssignable<SegmentedControlStyleOverrides, SegmentedControlProps["styleOverrides"]>>;
+type SegmentedControlStyleOverridesAssignableToExportedProp = AssertTrue<
+	IsAssignable<SegmentedControlStyleOverrides, ExportedSegmentedControlProps["styleOverrides"]>
+>;
+type SegmentedControlFrameCtxHasNoState = AssertFalse<HasProp<SegmentedControlFrameStyleOverrideContext, "state">>;
+type SegmentedControlIndicatorCtxHasNoState = AssertFalse<HasProp<SegmentedControlIndicatorStyleOverrideContext, "state">>;
+type SegmentedControlVisualStylesHaveNoRadius = AssertFalse<IsAssignable<"radius", SegmentedControlVisualStyleKey>>;
+type SegmentedControlVisualStylesHaveNoSegmentRadius = AssertFalse<IsAssignable<"segmentRadius", SegmentedControlVisualStyleKey>>;
+type SegmentedControlVisualStylesHaveNoPadding = AssertFalse<IsAssignable<"padding", SegmentedControlVisualStyleKey>>;
+type SegmentedControlVisualStylesHaveNoFontSize = AssertFalse<IsAssignable<"fontSize", SegmentedControlVisualStyleKey>>;
+type SegmentedControlVisualStylesHaveNoGap = AssertFalse<IsAssignable<"gap", SegmentedControlVisualStyleKey>>;
 
 const segmentedControlHasChildrenProp: SegmentedControlHasChildrenProp = false;
 const invalidSegmentedControlColor: InvalidSegmentedControlColorAllowed = false;
 const invalidSegmentedControlValue: InvalidSegmentedControlValueAllowed = false;
 const segmentedControlDisabledOption: SegmentedControlDisabledOptionAllowed = true;
 const exportedSegmentedControlValue: ExportedSegmentedControlValueAllowed = true;
+const segmentedControlStyleOverridesAssignableToProp: SegmentedControlStyleOverridesAssignableToProp = true;
+const segmentedControlStyleOverridesAssignableToExportedProp: SegmentedControlStyleOverridesAssignableToExportedProp = true;
+const segmentedControlFrameCtxHasNoState: SegmentedControlFrameCtxHasNoState = false;
+const segmentedControlIndicatorCtxHasNoState: SegmentedControlIndicatorCtxHasNoState = false;
+const segmentedControlVisualStylesHaveNoRadius: SegmentedControlVisualStylesHaveNoRadius = false;
+const segmentedControlVisualStylesHaveNoSegmentRadius: SegmentedControlVisualStylesHaveNoSegmentRadius = false;
+const segmentedControlVisualStylesHaveNoPadding: SegmentedControlVisualStylesHaveNoPadding = false;
+const segmentedControlVisualStylesHaveNoFontSize: SegmentedControlVisualStylesHaveNoFontSize = false;
+const segmentedControlVisualStylesHaveNoGap: SegmentedControlVisualStylesHaveNoGap = false;
 
 export {
 	acceptsExportedSegmentedControlProps,
@@ -78,5 +132,15 @@ export {
 	invalidSegmentedControlColor,
 	invalidSegmentedControlValue,
 	segmentedControlDisabledOption,
+	segmentedControlFrameCtxHasNoState,
 	segmentedControlHasChildrenProp,
+	segmentedControlIndicatorCtxHasNoState,
+	segmentedControlStyleOverrides,
+	segmentedControlStyleOverridesAssignableToExportedProp,
+	segmentedControlStyleOverridesAssignableToProp,
+	segmentedControlVisualStylesHaveNoFontSize,
+	segmentedControlVisualStylesHaveNoGap,
+	segmentedControlVisualStylesHaveNoPadding,
+	segmentedControlVisualStylesHaveNoRadius,
+	segmentedControlVisualStylesHaveNoSegmentRadius,
 };

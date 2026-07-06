@@ -1,10 +1,32 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 
 import { KeybindInput } from "./KeybindInput";
-import type { KeybindInputProps } from "./types";
+import type {
+	KeybindInputProps,
+	KeybindInputStyleOverride,
+	KeybindInputStyleOverrideContext,
+	KeybindInputVisualStyles,
+} from "./types";
 
 const keybindRef = React.createRef<TextButton>();
 type ExportedKeybindInputProps = React.ComponentProps<typeof KeybindInput>;
+
+const keybindInputStyleOverride: KeybindInputStyleOverride = (_visualStyles, ctx) => {
+	if (ctx.state === "capturing") {
+		return { strokeColor: ctx.theme.colors[ctx.color].light, strokeThickness: 2 };
+	}
+
+	if (ctx.state === "hovered" && !ctx.hasValue) {
+		return { labelTransparency: 0.2 };
+	}
+
+	if (ctx.state === "disabled") {
+		return { keycapStrokeTransparency: 0.4 };
+	}
+
+	return {};
+};
 
 const validKeybindInputProps: KeybindInputProps[] = [
 	{},
@@ -31,6 +53,7 @@ const validKeybindInputProps: KeybindInputProps[] = [
 		},
 	},
 	{ slotProps: { gamepadGlyph: { ImageTransparency: 0.1 } } },
+	{ styleOverrides: keybindInputStyleOverride },
 	{ ref: keybindRef },
 ];
 
@@ -59,10 +82,56 @@ const acceptsExportedKeybindInputProps: ExportedKeybindInputProps[] = validExpor
 type InvalidCaptureDeviceAllowed = "mouse" extends NonNullable<KeybindInputProps["captureDevice"]> ? true : false;
 type InvalidValueAllowed = string extends NonNullable<KeybindInputProps["value"]> ? true : false;
 type KeybindValueOptional = undefined extends KeybindInputProps["value"] ? true : false;
+type KeybindInputStyleOverrideAssignableToProp = AssertTrue<
+	IsAssignable<KeybindInputStyleOverride, KeybindInputProps["styleOverrides"]>
+>;
+type KeybindInputStyleOverrideAssignableToExportedProp = AssertTrue<
+	IsAssignable<KeybindInputStyleOverride, ExportedKeybindInputProps["styleOverrides"]>
+>;
+type KeybindInputStyleOverrideContextHasFields = AssertTrue<
+	IsAssignable<"theme" | "variant" | "color" | "size" | "state" | "hasValue", keyof KeybindInputStyleOverrideContext>
+>;
+type KeybindInputStyleOverrideContextHasTheme = AssertTrue<HasProp<KeybindInputStyleOverrideContext, "theme">>;
+type KeybindInputStyleOverrideContextHasNoDisabled = AssertFalse<
+	IsAssignable<"disabled", keyof KeybindInputStyleOverrideContext>
+>;
+type KeybindInputStyleOverrideContextHasNoCapturing = AssertFalse<
+	IsAssignable<"capturing", keyof KeybindInputStyleOverrideContext>
+>;
+type KeybindInputVisualStylesHasNoRadius = AssertFalse<IsAssignable<"radius", keyof KeybindInputVisualStyles>>;
+type KeybindInputVisualStylesHasNoPadding = AssertFalse<IsAssignable<"padding", keyof KeybindInputVisualStyles>>;
+type KeybindInputVisualStylesHasNoPaddingX = AssertFalse<IsAssignable<"paddingX", keyof KeybindInputVisualStyles>>;
+type KeybindInputVisualStylesHasNoFontSize = AssertFalse<IsAssignable<"fontSize", keyof KeybindInputVisualStyles>>;
+type KeybindInputVisualStylesHasNoHintFontSize = AssertFalse<
+	IsAssignable<"hintFontSize", keyof KeybindInputVisualStyles>
+>;
+type KeybindInputVisualStylesHasNoMinHeight = AssertFalse<IsAssignable<"minHeight", keyof KeybindInputVisualStyles>>;
+type KeybindInputVisualStylesHasNoDefaultWidth = AssertFalse<
+	IsAssignable<"defaultWidth", keyof KeybindInputVisualStyles>
+>;
+type KeybindInputVisualStylesHasNoGap = AssertFalse<IsAssignable<"gap", keyof KeybindInputVisualStyles>>;
+type KeybindInputVisualStylesHasNoLayout = AssertFalse<IsAssignable<"layout", keyof KeybindInputVisualStyles>>;
+type KeybindInputVisualStylesHasNoSlotProps = AssertFalse<IsAssignable<"slotProps", keyof KeybindInputVisualStyles>>;
 
 const invalidCaptureDevice: InvalidCaptureDeviceAllowed = false;
 const invalidValue: InvalidValueAllowed = false;
 const keybindValueOptional: KeybindValueOptional = true;
+const keybindInputStyleOverrideAssignableToProp: KeybindInputStyleOverrideAssignableToProp = true;
+const keybindInputStyleOverrideAssignableToExportedProp: KeybindInputStyleOverrideAssignableToExportedProp = true;
+const keybindInputStyleOverrideContextHasFields: KeybindInputStyleOverrideContextHasFields = true;
+const keybindInputStyleOverrideContextHasTheme: KeybindInputStyleOverrideContextHasTheme = true;
+const keybindInputStyleOverrideContextHasNoDisabled: KeybindInputStyleOverrideContextHasNoDisabled = false;
+const keybindInputStyleOverrideContextHasNoCapturing: KeybindInputStyleOverrideContextHasNoCapturing = false;
+const keybindInputVisualStylesHasNoRadius: KeybindInputVisualStylesHasNoRadius = false;
+const keybindInputVisualStylesHasNoPadding: KeybindInputVisualStylesHasNoPadding = false;
+const keybindInputVisualStylesHasNoPaddingX: KeybindInputVisualStylesHasNoPaddingX = false;
+const keybindInputVisualStylesHasNoFontSize: KeybindInputVisualStylesHasNoFontSize = false;
+const keybindInputVisualStylesHasNoHintFontSize: KeybindInputVisualStylesHasNoHintFontSize = false;
+const keybindInputVisualStylesHasNoMinHeight: KeybindInputVisualStylesHasNoMinHeight = false;
+const keybindInputVisualStylesHasNoDefaultWidth: KeybindInputVisualStylesHasNoDefaultWidth = false;
+const keybindInputVisualStylesHasNoGap: KeybindInputVisualStylesHasNoGap = false;
+const keybindInputVisualStylesHasNoLayout: KeybindInputVisualStylesHasNoLayout = false;
+const keybindInputVisualStylesHasNoSlotProps: KeybindInputVisualStylesHasNoSlotProps = false;
 
 export {
 	acceptsExportedKeybindInputProps,
@@ -70,5 +139,22 @@ export {
 	acceptsKeybindInputProps,
 	invalidCaptureDevice,
 	invalidValue,
+	keybindInputStyleOverride,
+	keybindInputStyleOverrideAssignableToExportedProp,
+	keybindInputStyleOverrideAssignableToProp,
+	keybindInputStyleOverrideContextHasFields,
+	keybindInputStyleOverrideContextHasNoCapturing,
+	keybindInputStyleOverrideContextHasNoDisabled,
+	keybindInputStyleOverrideContextHasTheme,
+	keybindInputVisualStylesHasNoDefaultWidth,
+	keybindInputVisualStylesHasNoFontSize,
+	keybindInputVisualStylesHasNoGap,
+	keybindInputVisualStylesHasNoHintFontSize,
+	keybindInputVisualStylesHasNoLayout,
+	keybindInputVisualStylesHasNoMinHeight,
+	keybindInputVisualStylesHasNoPadding,
+	keybindInputVisualStylesHasNoPaddingX,
+	keybindInputVisualStylesHasNoRadius,
+	keybindInputVisualStylesHasNoSlotProps,
 	keybindValueOptional,
 };

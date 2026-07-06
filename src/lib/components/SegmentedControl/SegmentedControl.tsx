@@ -12,6 +12,7 @@ import {
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
 import { assignRef, composeEventMaps, isPressInput } from "../_shared/interaction";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveTextFontFace } from "../_shared/textFont";
 import { mergeSharedStyleProps, resolveThemeSizeSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
@@ -223,6 +224,7 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 		size = "md",
 		disabled = false,
 		fullWidth = false,
+		styleOverrides,
 		value,
 		defaultValue,
 		onChange,
@@ -273,7 +275,13 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 	const segmentSlotProps = slotProps?.segment;
 	const segmentTextSlotProps = slotProps?.segmentText;
 	const segmentCount = math.max(options.size(), 1);
-	const frameVisualStyles = resolveSegmentedControlFrameVisualStyles(theme, variant, color, disabled);
+	const frameVisualStyles = applyStyleOverride(resolveSegmentedControlFrameVisualStyles(theme, variant, color, disabled), styleOverrides?.frame, {
+		theme,
+		variant,
+		color,
+		size,
+		disabled,
+	});
 	const resolvedRootZIndex = rootSlotProps?.ZIndex ?? props.zIndex;
 	const resolvedFrameZIndex = frameSlotProps?.ZIndex ?? resolvedRootZIndex;
 	const resolvedSegmentZIndex = segmentSlotProps?.ZIndex ?? resolvedFrameZIndex;
@@ -283,7 +291,11 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 	const segmentTextSize = segmentTextSlotProps?.TextSize ?? sizeStyles.fontSize;
 	const segmentLineHeight = segmentTextSlotProps?.LineHeight ?? sizeStyles.lineHeight;
 	const selectedIndex = resolveSelectedIndex(options, selectedValue);
-	const indicatorVisualStyles = resolveSegmentedControlIndicatorVisualStyles(theme, variant, color, disabled);
+	const indicatorVisualStyles = applyStyleOverride(
+		resolveSegmentedControlIndicatorVisualStyles(theme, variant, color, disabled),
+		styleOverrides?.indicator,
+		{ theme, variant, color, size, disabled },
+	);
 	const indicatorMotionValues: IndicatorMotionValues = {
 		selectedIndex,
 		backgroundColor: indicatorVisualStyles.backgroundColor,
@@ -368,7 +380,11 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 			: hoveredValue === option.value
 			? "hovered"
 			: "idle";
-		const segmentVisualStyles = resolveSegmentedControlSegmentVisualStyles(theme, variant, color, interactionState);
+		const segmentVisualStyles = applyStyleOverride(
+			resolveSegmentedControlSegmentVisualStyles(theme, variant, color, interactionState),
+			styleOverrides?.segment,
+			{ theme, variant, color, size, option, state: interactionState },
+		);
 		const segmentEvent: TextButtonEventMap = {
 			MouseEnter: () => {
 				if (!optionDisabled) {
