@@ -4,6 +4,7 @@ import { useMotion } from "@prism/motion";
 import { useTheme } from "@prism/theme";
 
 import { renderCornerDecorator, renderPaddingDecorator } from "../_shared/foundationDecorators";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
@@ -13,15 +14,17 @@ import {
 	type SelectOptionState,
 	type SelectSizeStyles,
 } from "./styles";
-import type { SelectColor, SelectOption, SelectProps, SelectSlotProps } from "./types";
+import type { SelectColor, SelectOption, SelectProps, SelectSize, SelectSlotProps, SelectStyleOverrides } from "./types";
 import { composeEventMaps, resolveTextFontFace, type GuiZIndex } from "./utils";
 
 interface SelectOptionRowProps {
 	readonly option: SelectOption;
 	readonly selected: boolean;
 	readonly color: SelectColor;
+	readonly size: SelectSize;
 	readonly sizeStyles: SelectSizeStyles;
 	readonly slotProps: SelectSlotProps | undefined;
+	readonly styleOverrides: SelectStyleOverrides | undefined;
 	readonly zIndex: GuiZIndex | undefined;
 	readonly cursor: SelectProps["cursor"];
 	readonly onSelect: (value: string) => void;
@@ -29,7 +32,7 @@ interface SelectOptionRowProps {
 
 export function SelectOptionRow(props: SelectOptionRowProps): React.ReactElement {
 	const theme = useTheme();
-	const { option, selected, color, sizeStyles, slotProps, zIndex, cursor, onSelect } = props;
+	const { option, selected, color, size, sizeStyles, slotProps, styleOverrides, zIndex, cursor, onSelect } = props;
 	const optionSlotProps = slotProps?.option;
 	const optionTextSlotProps = slotProps?.optionText;
 	const optionDisabled = option.disabled === true;
@@ -44,7 +47,13 @@ export function SelectOptionRow(props: SelectOptionRowProps): React.ReactElement
 	}, [optionDisabled]);
 
 	const visualState: SelectOptionState = optionDisabled ? "disabled" : selected ? "selected" : hovered ? "hovered" : "idle";
-	const visualStyles = resolveSelectOptionVisualStyles(theme, color, visualState);
+	const visualStyles = applyStyleOverride(resolveSelectOptionVisualStyles(theme, color, visualState), styleOverrides?.option, {
+		theme,
+		color,
+		size,
+		option,
+		state: visualState,
+	});
 	const animated = useMotion({
 		values: {
 			backgroundColor: visualStyles.backgroundColor,

@@ -6,22 +6,25 @@ import type { Variant } from "@prism/theme";
 import { renderElevationShadow } from "../_shared/elevation";
 import { renderCornerDecorator, renderPaddingDecorator, renderStrokeDecorator } from "../_shared/foundationDecorators";
 import { LayerPortal, useOverlayLocalPosition } from "../_shared/layering";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 
 import { SelectOptionRow } from "./SelectOptionRow";
 import { resolveSelectListVisualStyles, type SelectSizeStyles } from "./styles";
-import type { SelectColor, SelectOption, SelectProps, SelectSlotProps } from "./types";
+import type { SelectColor, SelectOption, SelectProps, SelectSize, SelectSlotProps, SelectStyleOverrides } from "./types";
 import { incrementZIndex, resolveVisibleOptionCount, type GuiZIndex, type SelectOverlayLayout } from "./utils";
 
 interface SelectDropdownProps {
 	readonly layout: SelectOverlayLayout;
 	readonly variant: Variant;
 	readonly color: SelectColor;
+	readonly size: SelectSize;
 	readonly options: readonly SelectOption[];
 	readonly currentValue: string | undefined;
 	readonly sizeStyles: SelectSizeStyles;
 	readonly maxVisibleOptions: number;
 	readonly slotProps: SelectSlotProps | undefined;
+	readonly styleOverrides: SelectStyleOverrides | undefined;
 	readonly cursor: SelectProps["cursor"];
 	readonly zIndex: GuiZIndex | undefined;
 	readonly onSelect: (value: string) => void;
@@ -29,12 +32,17 @@ interface SelectDropdownProps {
 
 export function SelectDropdown(props: SelectDropdownProps): React.ReactElement {
 	const theme = useTheme();
-	const { layout, variant, color, options, currentValue, sizeStyles, maxVisibleOptions, slotProps, cursor, zIndex, onSelect } = props;
+	const { layout, variant, color, size, options, currentValue, sizeStyles, maxVisibleOptions, slotProps, styleOverrides, cursor, zIndex, onSelect } = props;
 	const [overlayFrame, setOverlayFrame] = React.useState<Frame>();
 	const overlaySlotProps = slotProps?.overlay;
 	const listSlotProps = slotProps?.list;
 	const listViewportSlotProps = slotProps?.listViewport;
-	const listVisualStyles = resolveSelectListVisualStyles(theme, color, variant);
+	const listVisualStyles = applyStyleOverride(resolveSelectListVisualStyles(theme, color, variant), styleOverrides?.list, {
+		theme,
+		variant,
+		color,
+		size,
+	});
 	const listPadding = resolveThemeSizeSafe(theme, "select", sizeStyles.listPadding, "spacing", 0);
 	const visibleOptionCount = math.min(options.size(), resolveVisibleOptionCount(maxVisibleOptions));
 	const visibleListHeight =
@@ -133,8 +141,10 @@ export function SelectDropdown(props: SelectDropdownProps): React.ReactElement {
 									option={option}
 									selected={currentValue === option.value}
 									color={color}
+									size={size}
 									sizeStyles={sizeStyles}
 									slotProps={slotProps}
+									styleOverrides={styleOverrides}
 									zIndex={resolvedViewportZIndex}
 									cursor={cursor}
 									onSelect={onSelect}

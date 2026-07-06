@@ -32,3 +32,4 @@ export * from "./theme";
 export * from "./motion";
 export * from "./utils";
 export * from "./icons";
+export * from "./styled";

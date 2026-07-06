@@ -1,7 +1,7 @@
 import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Select, Stack, Text } from "@prism";
-import type { SelectColor, SelectOption, SelectSize } from "@prism";
+import type { SelectColor, SelectOption, SelectSize, SelectStyleOverrides } from "@prism";
 import type { Variant } from "@prism/theme";
 import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number, String } from "@rbxts/ui-labs";
@@ -59,9 +59,72 @@ const controls = {
 
 type SelectStoryControls = InferControls<typeof controls>;
 
+const labOverrideStyles: SelectStyleOverrides = {
+	trigger: (_styles, ctx) => {
+		if (ctx.state === "disabled") {
+			return {};
+		}
+
+		const textColor = ctx.theme.colors.secondary.contrast;
+		const placeholderColor = ctx.theme.colors.secondary.light;
+		const indicatorColor = ctx.hasValue ? textColor : placeholderColor;
+
+		if (ctx.state === "open") {
+			return {
+				backgroundColor: ctx.theme.colors.primary.dark,
+				strokeColor: ctx.theme.colors.secondary.contrast,
+				strokeTransparency: 0,
+				strokeThickness: 3,
+				textColor,
+				placeholderColor,
+				indicatorColor,
+			};
+		}
+
+		if (ctx.state === "hovered") {
+			return {
+				backgroundColor: ctx.theme.colors.secondary.dark,
+				textColor,
+				placeholderColor,
+				indicatorColor,
+			};
+		}
+
+		return {
+			backgroundColor: ctx.theme.colors.secondary.main,
+			textColor,
+			placeholderColor,
+			indicatorColor,
+		};
+	},
+	list: (_styles, ctx) => ({
+		backgroundColor: ctx.theme.colors.secondary.light,
+		strokeColor: ctx.theme.colors.secondary.main,
+		strokeTransparency: 0,
+	}),
+	option: (_styles, ctx) => {
+		if (ctx.state === "selected") {
+			return {
+				backgroundColor: ctx.theme.colors.secondary.main,
+				textColor: ctx.theme.colors.secondary.contrast,
+			};
+		}
+
+		if (ctx.state === "hovered") {
+			return {
+				backgroundColor: ctx.theme.colors.secondary.dark,
+				textColor: ctx.theme.colors.secondary.contrast,
+			};
+		}
+
+		return {};
+	},
+};
+
 function SelectStoryCanvas({ controls: currentControls }: { readonly controls: SelectStoryControls }): React.ReactElement {
 	const theme = useTheme();
 	const [previewValue, setPreviewValue] = React.useState("");
+	const [labValue, setLabValue] = React.useState("harbor");
 	const resolvedVariant = currentControls.variant as Variant;
 	const resolvedColor = currentControls.color as SelectColor;
 	const resolvedSize = currentControls.size as SelectSize;
@@ -94,6 +157,55 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 							fullWidth={currentControls.fullWidth}
 						/>
 							<Text text={currentValueLabel} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
+						</Stack>
+					</Box>
+					<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
+						<Stack width="100%" gap="sm">
+							<Text text="Style override lab" size="md" weight={700} color={themeRefs.text.primary} />
+							<Stack width="100%" direction="horizontal" gap="lg" wrap>
+								<Stack gap="xs">
+									<Select
+										selected={labValue}
+										onChange={setLabValue}
+										options={previewOptions}
+										placeholder="Pick a queue"
+										color="secondary"
+										size={resolvedSize}
+										styleOverrides={labOverrideStyles}
+									/>
+									<Text text="styleOverrides: hover, open, hasValue" size="sm" color={themeRefs.text.secondary} />
+								</Stack>
+								<Stack gap="xs">
+									<Select
+										selected={labValue}
+										options={previewOptions}
+										placeholder="Pick a queue"
+										color="secondary"
+										size={resolvedSize}
+										disabled
+										styleOverrides={labOverrideStyles}
+									/>
+									<Text text="Same overrides, stock disabled" size="sm" color={themeRefs.text.secondary} />
+								</Stack>
+								<Stack gap="xs">
+									<Select
+										selected={labValue}
+										onChange={setLabValue}
+										options={previewOptions}
+										placeholder="Pick a queue"
+										color="secondary"
+										size={resolvedSize}
+										slotProps={{
+											trigger: { BackgroundColor3: theme.colors.secondary.main },
+											triggerStroke: { Color: theme.colors.secondary.contrast, Transparency: 0, Thickness: 1 },
+											triggerText: { TextColor3: theme.colors.secondary.contrast },
+											list: { BackgroundColor3: theme.colors.secondary.light },
+											listStroke: { Color: theme.colors.secondary.main, Transparency: 0 },
+										}}
+									/>
+									<Text text="slotProps only: static, no hover/open reaction" size="sm" color={themeRefs.text.secondary} />
+								</Stack>
+							</Stack>
 						</Stack>
 					</Box>
 				</Stack>

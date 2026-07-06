@@ -13,6 +13,7 @@ import {
 } from "../_shared/foundationDecorators";
 import { resolveMinimumHeightConstraint } from "../_shared/frameSize";
 import { useTriggerOverlayLayout } from "../_shared/layering";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { usePressInteraction } from "../_shared/usePressInteraction";
 import { mergeSharedStyleProps, resolveUDimSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
@@ -53,6 +54,7 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 		defaultValue,
 		onChange,
 		maxVisibleOptions = 6,
+		styleOverrides,
 		Event,
 		Change,
 	} = props;
@@ -142,7 +144,12 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 				: press.hovered
 					? "hovered"
 					: "idle";
-	const triggerVisualStyles = resolveSelectTriggerVisualStyles(theme, variant, color, triggerState, hasSelection);
+	const triggerStyleOverrideContext = { theme, variant, color, size, state: triggerState, hasValue: hasSelection };
+	const triggerVisualStyles = applyStyleOverride(
+		resolveSelectTriggerVisualStyles(theme, variant, color, triggerState, hasSelection),
+		styleOverrides?.trigger,
+		triggerStyleOverrideContext,
+	);
 	const triggerAnimated = useMotion({
 		values: {
 			backgroundColor: triggerVisualStyles.backgroundColor,
@@ -318,11 +325,13 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 					layout={overlayLayout}
 					variant={variant}
 					color={color}
+					size={size}
 					options={options}
 					currentValue={currentValue}
 					sizeStyles={sizeStyles}
 					maxVisibleOptions={maxVisibleOptions}
 					slotProps={slotProps}
+					styleOverrides={styleOverrides}
 					cursor={mergedStyleProps.cursor}
 					zIndex={resolvedDropdownZIndex}
 					onSelect={handleSelect}
