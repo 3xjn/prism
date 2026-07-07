@@ -81,6 +81,8 @@ export const Box = React.forwardRef<Frame, BoxProps>((props, ref) => {
 	} else if (resolvedHeight !== undefined) {
 		computedSize = new UDim2(new UDim(0, 0), resolvedHeight);
 		computedAutoSize = Enum.AutomaticSize.X;
+	} else {
+		computedAutoSize = Enum.AutomaticSize.XY;
 	}
 
 	const resolvedStrokeColor = resolveColorSafe(

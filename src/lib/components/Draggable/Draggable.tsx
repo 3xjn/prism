@@ -723,38 +723,29 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 		return nextOrder;
 	}, []);
 
-	const resolveDragVisualPosition = React.useCallback((input: InputObject) => {
-		const grabOffset = dragGrabOffsetRef.current;
-		const origin = dragOriginRef.current;
-		if (grabOffset === undefined || origin === undefined) {
-			return undefined;
-		}
-
-		return clampDragPositionToListBounds(
-			resolveAxisLockedDragPosition(configRef.current.direction, resolveInputPosition(input), grabOffset, origin),
-			dragVisualSizeRef.current,
-			listInstance,
-		);
-	}, [listInstance]);
-
 	const updateDragVisualPosition = React.useCallback(
 		(input: InputObject) => {
-			const visualPosition = resolveDragVisualPosition(input);
-			if (visualPosition === undefined) {
+			const grabOffset = dragGrabOffsetRef.current;
+			const origin = dragOriginRef.current;
+			if (grabOffset === undefined || origin === undefined) {
 				return undefined;
 			}
 
+			const pointerPosition = resolveAxisLockedDragPosition(configRef.current.direction, resolveInputPosition(input), grabOffset, origin);
+			const visualPosition = clampDragPositionToListBounds(pointerPosition, dragVisualSizeRef.current, listInstance);
 			dragVisualPositionRef.current = visualPosition;
 			setDragVisualPosition(visualPosition);
-			return visualPosition;
+			// Reordering follows the unclamped pointer: the clamp caps the visual's center at the
+			// boundary slots' centers, which would make the trailing slot unreachable.
+			return pointerPosition;
 		},
-		[resolveDragVisualPosition],
+		[listInstance],
 	);
 
 	const updateOrderFromInput = React.useCallback(
-		(visualPosition: Vector2 | undefined) => {
+		(pointerPosition: Vector2 | undefined) => {
 			const activeId = draggingItemIdRef.current;
-			if (activeId === undefined || visualPosition === undefined) {
+			if (activeId === undefined || pointerPosition === undefined) {
 				return;
 			}
 
@@ -767,7 +758,7 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 				resolveReorderedOrder(
 					currentOrderRef.current,
 					activeId,
-					resolveVisualItemCenter(configRef.current.direction, visualPosition, activeInstance),
+					resolveVisualItemCenter(configRef.current.direction, pointerPosition, activeInstance),
 					itemRefs.current,
 					configRef.current.direction,
 				),
@@ -779,14 +770,14 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 	const handleDragMoveInput = React.useCallback(
 		(input: InputObject) => {
 			if (shouldHandleMouseDragMoveInput(dragKindRef.current, input)) {
-				const visualPosition = updateDragVisualPosition(input);
-				updateOrderFromInput(visualPosition);
+				const pointerPosition = updateDragVisualPosition(input);
+				updateOrderFromInput(pointerPosition);
 				return;
 			}
 
 			if (shouldHandleTouchDragMoveInput(dragKindRef.current, activeTouchRef.current, input)) {
-				const visualPosition = updateDragVisualPosition(input);
-				updateOrderFromInput(visualPosition);
+				const pointerPosition = updateDragVisualPosition(input);
+				updateOrderFromInput(pointerPosition);
 			}
 		},
 		[updateDragVisualPosition, updateOrderFromInput],
