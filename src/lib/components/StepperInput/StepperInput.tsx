@@ -691,7 +691,9 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 		Change,
 	};
 
-	return (
+	// luau: rbxtsc never reuses temp locals, so the JSX tree must compile in its own
+	// function scope — inlined in StepperInputBase it exceeds Luau's 200-register limit.
+	const renderTree = (): React.ReactElement => (
 		<>
 			<frame
 				BackgroundTransparency={1}
@@ -796,6 +798,8 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 			<CaptureOverlay active={mouseDragCaptureActive} target={portalTarget} Event={dragCaptureOverlayEvent} />
 		</>
 	);
+
+	return renderTree();
 });
 
 export const StepperInput = StepperInputBase as StepperInputComponent;
