@@ -12,6 +12,7 @@ import {
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
 import { assignRef, composeEventMaps, isPressInput } from "../_shared/interaction";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveTextFontFace } from "../_shared/textFont";
 import { mergeSharedStyleProps, resolveThemeSizeSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
@@ -281,6 +282,7 @@ const TabsBase = React.forwardRef<Frame, TabsProps>((props, ref) => {
 	const theme = useTheme();
 	const {
 		slotProps,
+		styleOverrides,
 		tabs,
 		variant = "line",
 		color = "primary",
@@ -345,8 +347,20 @@ const TabsBase = React.forwardRef<Frame, TabsProps>((props, ref) => {
 	const tabTextSlotProps = slotProps?.tabText;
 	const panelSlotProps = slotProps?.panel;
 	const tabCount = math.max(tabs.size(), 1);
-	const listVisualStyles = resolveTabsListVisualStyles(theme, variant, color, disabled);
-	const panelVisualStyles = resolveTabsPanelVisualStyles(theme, variant, color, disabled);
+	const listVisualStyles = applyStyleOverride(resolveTabsListVisualStyles(theme, variant, color, disabled), styleOverrides?.list, {
+		theme,
+		variant,
+		color,
+		size,
+		disabled,
+	});
+	const panelVisualStyles = applyStyleOverride(resolveTabsPanelVisualStyles(theme, variant, color, disabled), styleOverrides?.panel, {
+		theme,
+		variant,
+		color,
+		size,
+		disabled,
+	});
 	const resolvedRootZIndex = rootSlotProps?.ZIndex ?? props.zIndex;
 	const resolvedListZIndex = listSlotProps?.ZIndex ?? resolvedRootZIndex;
 	const resolvedTabZIndex = tabSlotProps?.ZIndex ?? offsetZIndex(resolvedListZIndex, 2);
@@ -458,7 +472,11 @@ const TabsBase = React.forwardRef<Frame, TabsProps>((props, ref) => {
 						: hoveredValue === tab.value
 							? "hovered"
 							: "idle";
-		const rawTabVisualStyles = resolveTabsTabVisualStyles(theme, variant, color, interactionState);
+		const rawTabVisualStyles = applyStyleOverride(
+			resolveTabsTabVisualStyles(theme, variant, color, interactionState),
+			styleOverrides?.tab,
+			{ theme, variant, color, size, tab, state: interactionState },
+		);
 		const tabEvent: TextButtonEventMap = {
 			MouseEnter: () => {
 				if (!tabDisabled) {

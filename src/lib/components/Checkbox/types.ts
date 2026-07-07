@@ -1,9 +1,14 @@
 import type React from "@rbxts/react";
 
-import type { SemanticIntent, ThemeSize } from "@prism/theme";
+import type { SemanticIntent, Theme, ThemeSize } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
+
+import type { CheckboxInteractionState, CheckboxVisualStyles } from "./styles";
+
+export type { CheckboxVisualStyles } from "./styles";
 
 export interface CheckboxSlots {
 	readonly root: TextButton;
@@ -25,11 +30,26 @@ export type CheckboxSize = ThemeSize;
 
 export type CheckboxColor = SemanticIntent;
 
+export interface CheckboxStyleOverrideContext {
+	readonly theme: Theme;
+	readonly color: CheckboxColor;
+	readonly size: CheckboxSize;
+	readonly state: CheckboxInteractionState;
+	readonly checked: boolean;
+}
+
+export type CheckboxStyleOverride = StyleOverride<CheckboxVisualStyles, CheckboxStyleOverrideContext>;
+
 export interface CheckboxStyleProps extends Omit<SharedStyleProps, "bg" | "bgTransparency"> {
 	readonly color?: CheckboxColor;
 	readonly size?: CheckboxSize;
 	readonly disabled?: boolean;
 	readonly label?: string | number;
+	/**
+	 * Per-state visual values only. styleOverrides runs before motion/static visual use so values animate;
+	 * slotProps are raw post-motion/static final escapes and win. Radius, padding, font, and layout stay on existing props/slotProps.
+	 */
+	readonly styleOverrides?: CheckboxStyleOverride;
 }
 
 export interface CheckboxProps extends CheckboxStyleProps {

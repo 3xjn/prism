@@ -13,6 +13,7 @@ import {
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
 import { assignRef, composeEventMaps, isPressInput } from "../_shared/interaction";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveTextFontFace } from "../_shared/textFont";
 import {
 	mergeSharedStyleProps,
@@ -748,6 +749,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 		disabled = false,
 		readOnly = false,
 		fullWidth = false,
+		styleOverrides,
 		placeholder = "—",
 		captureLabel = "Press a key...",
 		clearable = true,
@@ -967,7 +969,12 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 	const displayText = capturing ? captureLabel : hasValue ? resolveKeyCodeLabel(currentValue) : placeholder;
 	const hintText = "";
 	const interactionState = resolveKeybindInteractionState(disabled, readOnly, capturing, pressed, hovered);
-	const visualStyles = resolveKeybindInputVisualStyles(theme, variant, color, interactionState, hasValue);
+	const styleOverrideContext = { theme, variant, color, size, state: interactionState, hasValue };
+	const visualStyles = applyStyleOverride(
+		resolveKeybindInputVisualStyles(theme, variant, color, interactionState, hasValue),
+		styleOverrides,
+		styleOverrideContext,
+	);
 	const animated = useMotion({
 		values: {
 			backgroundColor: visualStyles.backgroundColor,

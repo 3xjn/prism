@@ -1,7 +1,8 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 
 import { Input } from "./Input";
-import type { InputProps } from "./types";
+import type { InputProps, InputStyleOverride, InputStyleOverrideContext, InputVisualStyles } from "./types";
 
 const inputRef = React.createRef<TextBox>();
 type InputRenderer = (props: InputProps) => React.ReactElement;
@@ -11,8 +12,25 @@ function renderInput(props: InputProps): React.ReactElement {
 	return (Input as InputRenderer)(props);
 }
 
+const inputStyleOverride: InputStyleOverride = (_visualStyles, ctx) => {
+	if (ctx.state === "focused") {
+		return { strokeColor: ctx.theme.colors[ctx.color].dark, strokeThickness: ctx.size === "xl" ? 2 : 1.5 };
+	}
+
+	if (ctx.state === "hovered") {
+		return { backgroundColor: ctx.theme.colors.background.surface, strokeTransparency: 0 };
+	}
+
+	if (ctx.readOnly) {
+		return { textColor: ctx.theme.colors.text.secondary };
+	}
+
+	return {};
+};
+
 const validInputProps: InputProps[] = [
 	{ placeholder: "Search Prism", defaultValue: "Initial" },
+	{ placeholder: "Override", styleOverrides: inputStyleOverride },
 	{ placeholder: "Max length", defaultValue: "Clamped", maxLength: 12 },
 	{ value: "Controlled", onChange: () => undefined },
 	{ placeholder: "Readonly", readOnly: true, defaultValue: "Locked" },
@@ -31,6 +49,7 @@ const validInputProps: InputProps[] = [
 
 const validExportedInputProps: ExportedInputProps[] = [
 	{ placeholder: "Search" },
+	{ placeholder: "Override", styleOverrides: inputStyleOverride },
 	{ placeholder: "Pointer", cursor: "pointer" },
 	{ value: "Prism", onChange: () => undefined, variant: "outline", color: "primary", maxLength: 20 },
 	{ defaultValue: "Theme", size: "lg", readOnly: true },
@@ -56,12 +75,60 @@ type InvalidInputColorAllowed = "palette.primary.5" extends NonNullable<InputPro
 type InvalidInputVariantAllowed = "ghost" extends NonNullable<InputProps["variant"]> ? true : false;
 type InvalidInputValueAllowed = number extends NonNullable<InputProps["value"]> ? true : false;
 type ExportedInputValueAllowed = "Prism" extends NonNullable<ExportedInputProps["value"]> ? true : false;
+type InputStyleOverrideAssignableToProp = AssertTrue<IsAssignable<InputStyleOverride, InputProps["styleOverrides"]>>;
+type InputStyleOverrideAssignableToExportedProp = AssertTrue<
+	IsAssignable<InputStyleOverride, ExportedInputProps["styleOverrides"]>
+>;
+type InputStyleOverrideContextHasFields = AssertTrue<
+	IsAssignable<"theme" | "variant" | "color" | "size" | "readOnly" | "state", keyof InputStyleOverrideContext>
+>;
+type InputStyleOverrideContextHasTheme = AssertTrue<HasProp<InputStyleOverrideContext, "theme">>;
+type InputStyleOverrideContextHasNoDisabled = AssertFalse<IsAssignable<"disabled", keyof InputStyleOverrideContext>>;
+type InputVisualStyleOverrideFieldsAllowed = AssertTrue<
+	IsAssignable<
+		{
+			readonly backgroundColor: Color3;
+			readonly strokeColor: Color3;
+			readonly strokeTransparency: number;
+			readonly strokeThickness: number;
+			readonly textColor: Color3;
+			readonly placeholderColor: Color3;
+		},
+		Partial<InputVisualStyles>
+	>
+>;
+type InputVisualStylesHasNoRadius = AssertFalse<IsAssignable<"radius", keyof InputVisualStyles>>;
+type InputVisualStylesHasNoCornerRadius = AssertFalse<IsAssignable<"cornerRadius", keyof InputVisualStyles>>;
+type InputVisualStylesHasNoPadding = AssertFalse<IsAssignable<"padding", keyof InputVisualStyles>>;
+type InputVisualStylesHasNoPaddingX = AssertFalse<IsAssignable<"paddingX", keyof InputVisualStyles>>;
+type InputVisualStylesHasNoFont = AssertFalse<IsAssignable<"font", keyof InputVisualStyles>>;
+type InputVisualStylesHasNoFontSize = AssertFalse<IsAssignable<"fontSize", keyof InputVisualStyles>>;
+type InputVisualStylesHasNoTextSize = AssertFalse<IsAssignable<"textSize", keyof InputVisualStyles>>;
+type InputVisualStylesHasNoLineHeight = AssertFalse<IsAssignable<"lineHeight", keyof InputVisualStyles>>;
+type InputVisualStylesHasNoLayout = AssertFalse<IsAssignable<"layout", keyof InputVisualStyles>>;
+type InputVisualStylesHasNoSlotProps = AssertFalse<IsAssignable<"slotProps", keyof InputVisualStyles>>;
 
 const inputHasChildrenProp: InputHasChildrenProp = false;
 const invalidInputColor: InvalidInputColorAllowed = false;
 const invalidInputVariant: InvalidInputVariantAllowed = false;
 const invalidInputValue: InvalidInputValueAllowed = false;
 const exportedInputValue: ExportedInputValueAllowed = true;
+const inputStyleOverrideAssignableToProp: InputStyleOverrideAssignableToProp = true;
+const inputStyleOverrideAssignableToExportedProp: InputStyleOverrideAssignableToExportedProp = true;
+const inputStyleOverrideContextHasFields: InputStyleOverrideContextHasFields = true;
+const inputStyleOverrideContextHasTheme: InputStyleOverrideContextHasTheme = true;
+const inputStyleOverrideContextHasNoDisabled: InputStyleOverrideContextHasNoDisabled = false;
+const inputVisualStyleOverrideFieldsAllowed: InputVisualStyleOverrideFieldsAllowed = true;
+const inputVisualStylesHasNoRadius: InputVisualStylesHasNoRadius = false;
+const inputVisualStylesHasNoCornerRadius: InputVisualStylesHasNoCornerRadius = false;
+const inputVisualStylesHasNoPadding: InputVisualStylesHasNoPadding = false;
+const inputVisualStylesHasNoPaddingX: InputVisualStylesHasNoPaddingX = false;
+const inputVisualStylesHasNoFont: InputVisualStylesHasNoFont = false;
+const inputVisualStylesHasNoFontSize: InputVisualStylesHasNoFontSize = false;
+const inputVisualStylesHasNoTextSize: InputVisualStylesHasNoTextSize = false;
+const inputVisualStylesHasNoLineHeight: InputVisualStylesHasNoLineHeight = false;
+const inputVisualStylesHasNoLayout: InputVisualStylesHasNoLayout = false;
+const inputVisualStylesHasNoSlotProps: InputVisualStylesHasNoSlotProps = false;
 
 export {
 	acceptsExportedInputProps,
@@ -69,6 +136,23 @@ export {
 	acceptsInputProps,
 	exportedInputValue,
 	inputHasChildrenProp,
+	inputStyleOverride,
+	inputStyleOverrideAssignableToExportedProp,
+	inputStyleOverrideAssignableToProp,
+	inputStyleOverrideContextHasFields,
+	inputStyleOverrideContextHasNoDisabled,
+	inputStyleOverrideContextHasTheme,
+	inputVisualStyleOverrideFieldsAllowed,
+	inputVisualStylesHasNoCornerRadius,
+	inputVisualStylesHasNoFont,
+	inputVisualStylesHasNoFontSize,
+	inputVisualStylesHasNoLayout,
+	inputVisualStylesHasNoLineHeight,
+	inputVisualStylesHasNoPadding,
+	inputVisualStylesHasNoPaddingX,
+	inputVisualStylesHasNoRadius,
+	inputVisualStylesHasNoSlotProps,
+	inputVisualStylesHasNoTextSize,
 	invalidInputColor,
 	invalidInputValue,
 	invalidInputVariant,

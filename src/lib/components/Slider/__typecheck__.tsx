@@ -1,10 +1,27 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 
 import { Slider } from "./Slider";
-import type { SliderProps } from "./types";
+import type { SliderProps, SliderStyleOverride, SliderStyleOverrideContext, SliderVisualStyles } from "./types";
 
 const sliderRef = React.createRef<TextButton>();
 type ExportedSliderProps = React.ComponentProps<typeof Slider>;
+
+const sliderStyleOverride: SliderStyleOverride = (_visualStyles, ctx) => {
+	if (ctx.state === "hovered") {
+		return { thumbStrokeTransparency: 0 };
+	}
+
+	if (ctx.state === "pressed") {
+		return { rangeColor: ctx.theme.colors[ctx.color].dark, thumbColor: ctx.theme.colors[ctx.color].dark };
+	}
+
+	if (ctx.state === "disabled") {
+		return { trackColor: ctx.theme.colors.background.surface };
+	}
+
+	return {};
+};
 
 const validSliderProps: SliderProps[] = [
 	{ defaultValue: 42 },
@@ -40,6 +57,7 @@ const validSliderProps: SliderProps[] = [
 	{ slotProps: { label: { Text: "Volume" }, valueLabel: { Text: "48" } }, defaultValue: 48 },
 	{ slotProps: { hitbox: { AutoButtonColor: true }, sizeConstraint: { MinSize: new Vector2(200, 24) } }, defaultValue: 22 },
 	{ slotProps: { hitbox: { SelectionOrder: 20, NextSelectionRight: sliderRef.current } }, defaultValue: 40 },
+	{ styleOverrides: sliderStyleOverride, defaultValue: 26 },
 	{ ref: sliderRef, defaultValue: 58 },
 ];
 
@@ -88,6 +106,34 @@ type InvalidSliderStepAllowed = string extends NonNullable<SliderProps["step"]> 
 type InvalidSliderTooltipAllowed = number extends NonNullable<SliderProps["tooltip"]> ? true : false;
 type SliderTooltipFunctionAllowed = ((value: number) => string) extends NonNullable<SliderProps["tooltip"]> ? true : false;
 type ExportedSliderValueAllowed = 42 extends NonNullable<ExportedSliderProps["value"]> ? true : false;
+type SliderStyleOverrideAssignableToProp = AssertTrue<IsAssignable<SliderStyleOverride, SliderProps["styleOverrides"]>>;
+type SliderStyleOverrideAssignableToExportedProp = AssertTrue<IsAssignable<SliderStyleOverride, ExportedSliderProps["styleOverrides"]>>;
+type SliderStyleOverrideContextHasFields = AssertTrue<
+	IsAssignable<"theme" | "color" | "size" | "state", keyof SliderStyleOverrideContext>
+>;
+type SliderStyleOverrideContextHasTheme = AssertTrue<HasProp<SliderStyleOverrideContext, "theme">>;
+type SliderStyleOverrideContextHasNoDisabled = AssertFalse<HasProp<SliderStyleOverrideContext, "disabled">>;
+type SliderVisualStyleOverrideFieldsAllowed = AssertTrue<
+	IsAssignable<
+		{
+			readonly trackColor: Color3;
+			readonly rangeColor: Color3;
+			readonly thumbColor: Color3;
+			readonly thumbStrokeTransparency: number;
+			readonly labelColor: Color3;
+		},
+		Partial<SliderVisualStyles>
+	>
+>;
+type SliderVisualStylesHasNoRadius = AssertFalse<IsAssignable<"radius", keyof SliderVisualStyles>>;
+type SliderVisualStylesHasNoCornerRadius = AssertFalse<IsAssignable<"cornerRadius", keyof SliderVisualStyles>>;
+type SliderVisualStylesHasNoPadding = AssertFalse<IsAssignable<"padding", keyof SliderVisualStyles>>;
+type SliderVisualStylesHasNoFontSize = AssertFalse<IsAssignable<"fontSize", keyof SliderVisualStyles>>;
+type SliderVisualStylesHasNoLabelSize = AssertFalse<IsAssignable<"labelSize", keyof SliderVisualStyles>>;
+type SliderVisualStylesHasNoTrackHeight = AssertFalse<IsAssignable<"trackHeight", keyof SliderVisualStyles>>;
+type SliderVisualStylesHasNoThumbDiameter = AssertFalse<IsAssignable<"thumbDiameter", keyof SliderVisualStyles>>;
+type SliderVisualStylesHasNoLayout = AssertFalse<IsAssignable<"layout", keyof SliderVisualStyles>>;
+type SliderVisualStylesHasNoSlotProps = AssertFalse<IsAssignable<"slotProps", keyof SliderVisualStyles>>;
 
 const sliderHasChildrenProp: SliderHasChildrenProp = false;
 const invalidSliderColor: InvalidSliderColorAllowed = false;
@@ -97,6 +143,21 @@ const invalidSliderStep: InvalidSliderStepAllowed = false;
 const invalidSliderTooltip: InvalidSliderTooltipAllowed = false;
 const sliderTooltipFunction: SliderTooltipFunctionAllowed = true;
 const exportedSliderValue: ExportedSliderValueAllowed = true;
+const sliderStyleOverrideAssignableToProp: SliderStyleOverrideAssignableToProp = true;
+const sliderStyleOverrideAssignableToExportedProp: SliderStyleOverrideAssignableToExportedProp = true;
+const sliderStyleOverrideContextHasFields: SliderStyleOverrideContextHasFields = true;
+const sliderStyleOverrideContextHasTheme: SliderStyleOverrideContextHasTheme = true;
+const sliderStyleOverrideContextHasNoDisabled: SliderStyleOverrideContextHasNoDisabled = false;
+const sliderVisualStyleOverrideFieldsAllowed: SliderVisualStyleOverrideFieldsAllowed = true;
+const sliderVisualStylesHasNoRadius: SliderVisualStylesHasNoRadius = false;
+const sliderVisualStylesHasNoCornerRadius: SliderVisualStylesHasNoCornerRadius = false;
+const sliderVisualStylesHasNoPadding: SliderVisualStylesHasNoPadding = false;
+const sliderVisualStylesHasNoFontSize: SliderVisualStylesHasNoFontSize = false;
+const sliderVisualStylesHasNoLabelSize: SliderVisualStylesHasNoLabelSize = false;
+const sliderVisualStylesHasNoTrackHeight: SliderVisualStylesHasNoTrackHeight = false;
+const sliderVisualStylesHasNoThumbDiameter: SliderVisualStylesHasNoThumbDiameter = false;
+const sliderVisualStylesHasNoLayout: SliderVisualStylesHasNoLayout = false;
+const sliderVisualStylesHasNoSlotProps: SliderVisualStylesHasNoSlotProps = false;
 
 export {
 	acceptsExportedSliderProps,
@@ -109,5 +170,21 @@ export {
 	invalidSliderTooltip,
 	invalidSliderValue,
 	sliderHasChildrenProp,
+	sliderStyleOverride,
+	sliderStyleOverrideAssignableToExportedProp,
+	sliderStyleOverrideAssignableToProp,
+	sliderStyleOverrideContextHasFields,
+	sliderStyleOverrideContextHasNoDisabled,
+	sliderStyleOverrideContextHasTheme,
 	sliderTooltipFunction,
+	sliderVisualStyleOverrideFieldsAllowed,
+	sliderVisualStylesHasNoCornerRadius,
+	sliderVisualStylesHasNoFontSize,
+	sliderVisualStylesHasNoLabelSize,
+	sliderVisualStylesHasNoLayout,
+	sliderVisualStylesHasNoPadding,
+	sliderVisualStylesHasNoRadius,
+	sliderVisualStylesHasNoSlotProps,
+	sliderVisualStylesHasNoThumbDiameter,
+	sliderVisualStylesHasNoTrackHeight,
 };

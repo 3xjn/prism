@@ -1,7 +1,9 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 
 import { Tabs } from "./Tabs";
-import type { TabsProps, TabsTab } from "./types";
+import type { TabsListVisualStyles, TabsPanelVisualStyles, TabsTabVisualStyles } from "./styles";
+import type { TabsListStyleOverrideContext, TabsPanelStyleOverrideContext, TabsProps, TabsStyleOverrides, TabsTab } from "./types";
 
 const tabsRef = React.createRef<Frame>();
 type ExportedTabsProps = React.ComponentProps<typeof Tabs>;
@@ -12,8 +14,26 @@ const tabs: readonly TabsTab[] = [
 	{ value: "store", label: "Store", panel: <frame />, disabled: true },
 ];
 
+const tabsStyleOverrides: TabsStyleOverrides = {
+	list: (visualStyles, ctx) =>
+		ctx.disabled ? {} : { strokeColor: ctx.theme.colors[ctx.color].dark, strokeTransparency: visualStyles.strokeTransparency * 0.5 },
+	tab: (_visualStyles, ctx) => {
+		if (ctx.state === "selected") {
+			return { indicatorColor: ctx.theme.colors[ctx.color].dark, textColor: ctx.theme.colors[ctx.color].dark };
+		}
+
+		return ctx.state === "hovered" && ctx.tab.disabled !== true && ctx.variant === "line" && ctx.size === "md"
+			? { backgroundTransparency: 0.5 }
+			: {};
+	},
+	panel: (visualStyles, ctx) =>
+		ctx.disabled ? { backgroundTransparency: visualStyles.backgroundTransparency } : { strokeColor: ctx.theme.colors[ctx.color].main },
+};
+
 const validTabsProps: TabsProps[] = [
 	{ tabs },
+	{ tabs, styleOverrides: tabsStyleOverrides },
+	{ tabs, styleOverrides: { tab: (_visualStyles, ctx) => (ctx.state === "pressed" ? { strokeTransparency: 0 } : {}) } },
 	{ tabs, defaultValue: "inventory" },
 	{ tabs, value: "overview", onChange: () => undefined },
 	{ tabs, disabled: true },
@@ -65,12 +85,27 @@ type InvalidTabsColorAllowed = "palette.primary.5" extends NonNullable<TabsProps
 type InvalidTabsValueAllowed = number extends NonNullable<TabsProps["value"]> ? true : false;
 type InvalidTabsVariantAllowed = "outline" extends NonNullable<TabsProps["variant"]> ? true : false;
 type TabsPanelAllowed = React.ReactNode extends TabsTab["panel"] ? true : false;
+type TabsVisualStyleKey = keyof TabsListVisualStyles | keyof TabsTabVisualStyles | keyof TabsPanelVisualStyles;
+type TabsStyleOverridesAssignableToProp = AssertTrue<IsAssignable<TabsStyleOverrides, TabsProps["styleOverrides"]>>;
+type TabsStyleOverridesAssignableToExportedProp = AssertTrue<IsAssignable<TabsStyleOverrides, ExportedTabsProps["styleOverrides"]>>;
+type TabsListCtxHasNoState = AssertFalse<HasProp<TabsListStyleOverrideContext, "state">>;
+type TabsPanelCtxHasNoState = AssertFalse<HasProp<TabsPanelStyleOverrideContext, "state">>;
+type TabsVisualStylesHaveNoRadius = AssertFalse<IsAssignable<"radius", TabsVisualStyleKey>>;
+type TabsVisualStylesHaveNoPadding = AssertFalse<IsAssignable<"padding", TabsVisualStyleKey>>;
+type TabsVisualStylesHaveNoFontSize = AssertFalse<IsAssignable<"fontSize", TabsVisualStyleKey>>;
 
 const tabsHasChildrenProp: TabsHasChildrenProp = false;
 const invalidTabsColor: InvalidTabsColorAllowed = false;
 const invalidTabsValue: InvalidTabsValueAllowed = false;
 const invalidTabsVariant: InvalidTabsVariantAllowed = false;
 const tabsPanelAllowed: TabsPanelAllowed = true;
+const tabsStyleOverridesAssignableToProp: TabsStyleOverridesAssignableToProp = true;
+const tabsStyleOverridesAssignableToExportedProp: TabsStyleOverridesAssignableToExportedProp = true;
+const tabsListCtxHasNoState: TabsListCtxHasNoState = false;
+const tabsPanelCtxHasNoState: TabsPanelCtxHasNoState = false;
+const tabsVisualStylesHaveNoRadius: TabsVisualStylesHaveNoRadius = false;
+const tabsVisualStylesHaveNoPadding: TabsVisualStylesHaveNoPadding = false;
+const tabsVisualStylesHaveNoFontSize: TabsVisualStylesHaveNoFontSize = false;
 
 export {
 	acceptsExportedTabsProps,
@@ -80,5 +115,13 @@ export {
 	invalidTabsValue,
 	invalidTabsVariant,
 	tabsHasChildrenProp,
+	tabsListCtxHasNoState,
 	tabsPanelAllowed,
+	tabsPanelCtxHasNoState,
+	tabsStyleOverrides,
+	tabsStyleOverridesAssignableToExportedProp,
+	tabsStyleOverridesAssignableToProp,
+	tabsVisualStylesHaveNoFontSize,
+	tabsVisualStylesHaveNoPadding,
+	tabsVisualStylesHaveNoRadius,
 };

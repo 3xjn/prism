@@ -1,9 +1,14 @@
 import type React from "@rbxts/react";
 
-import type { SemanticIntent, ThemeSize, Variant } from "@prism/theme";
+import type { SemanticIntent, Theme, ThemeSize, Variant } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
+
+import type { CircularProgressVisualStyles } from "./styles";
+
+export type { CircularProgressVisualStyles } from "./styles";
 
 export type CircularProgressMode = "determinate" | "indeterminate";
 
@@ -31,6 +36,15 @@ export interface CircularProgressSlots {
 
 export type CircularProgressSlotProps = RawSlotProps<CircularProgressSlots>;
 
+export interface CircularProgressStyleOverrideContext {
+	readonly theme: Theme;
+	readonly variant: CircularProgressVariant;
+	readonly color: CircularProgressColor;
+	readonly size: CircularProgressSize;
+}
+
+export type CircularProgressStyleOverride = StyleOverride<CircularProgressVisualStyles, CircularProgressStyleOverrideContext>;
+
 export interface CircularProgressStyleProps extends Omit<SharedStyleProps, "bg" | "bgTransparency"> {
 	readonly mode?: CircularProgressMode;
 	readonly variant?: CircularProgressVariant;
@@ -41,6 +55,11 @@ export interface CircularProgressStyleProps extends Omit<SharedStyleProps, "bg" 
 	readonly showValue?: boolean;
 	readonly startAngle?: number;
 	readonly disableAnimation?: boolean;
+	/**
+	 * Per-state visual values only. styleOverrides runs before motion/static visual use so values animate;
+	 * slotProps are raw post-motion/static final escapes and win. Radius, padding, font, and layout stay on existing props/slotProps.
+	 */
+	readonly styleOverrides?: CircularProgressStyleOverride;
 }
 
 export interface CircularProgressProps extends CircularProgressStyleProps {

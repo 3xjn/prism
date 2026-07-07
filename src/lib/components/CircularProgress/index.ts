@@ -7,6 +7,9 @@ export type {
 	CircularProgressSize,
 	CircularProgressSlotProps,
 	CircularProgressSlots,
+	CircularProgressStyleOverride,
+	CircularProgressStyleOverrideContext,
 	CircularProgressStyleProps,
 	CircularProgressVariant,
+	CircularProgressVisualStyles,
 } from "./types";

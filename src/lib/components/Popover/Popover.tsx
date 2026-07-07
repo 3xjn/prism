@@ -8,6 +8,7 @@ import { assignRef, composeEventMaps, isPressInput } from "../_shared/interactio
 import { TriggerOverlayLayer } from "../_shared/TriggerOverlayLayer";
 import type { TriggerOverlayLayout } from "../_shared/layering";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { useDelayedCallback } from "../_shared/useDelayedCallback";
 import { useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
@@ -50,7 +51,7 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 	const hasContent = content !== undefined;
 	const isOpen = !disabled && hasContent && (opened ?? uncontrolledOpened);
 	const sizeStyles = resolvePopoverSizeStyles(theme, props.gap);
-	const visualStyles = resolvePopoverVisualStyles(theme);
+	const visualStyles = applyStyleOverride(resolvePopoverVisualStyles(theme), props.styleOverrides, { theme });
 	const { resolvedWidth, resolvedHeight, resolvedSize, resolvedPosition, resolvedAnchor, resolvedConstraint } =
 		useResolvedStyleProps("popover", props);
 	const rootSlotProps = slotProps?.root;

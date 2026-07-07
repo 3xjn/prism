@@ -1,9 +1,14 @@
 import type React from "@rbxts/react";
 
-import type { SemanticIntent, ThemeSize, Variant } from "@prism/theme";
+import type { SemanticIntent, Theme, ThemeSize, Variant } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
+
+import type { ProgressVisualStyles } from "./styles";
+
+export type { ProgressVisualStyles } from "./styles";
 
 export interface ProgressSlots {
 	readonly root: Frame;
@@ -29,6 +34,15 @@ export type ProgressVariant = Variant;
 
 export type ProgressRadiusValue = ThemeSize | number | UDim;
 
+export interface ProgressStyleOverrideContext {
+	readonly theme: Theme;
+	readonly variant: ProgressVariant;
+	readonly color: ProgressColor;
+	readonly size: ProgressSize;
+}
+
+export type ProgressStyleOverride = StyleOverride<ProgressVisualStyles, ProgressStyleOverrideContext>;
+
 export interface ProgressStyleProps extends Omit<SharedStyleProps, "bg" | "bgTransparency"> {
 	readonly variant?: ProgressVariant;
 	readonly color?: ProgressColor;
@@ -37,6 +51,11 @@ export interface ProgressStyleProps extends Omit<SharedStyleProps, "bg" | "bgTra
 	readonly fullWidth?: boolean;
 	readonly label?: string | number;
 	readonly showValue?: boolean;
+	/**
+	 * Per-state visual values only. styleOverrides runs before motion/static visual use so values animate;
+	 * slotProps are raw post-motion/static final escapes and win. Radius, padding, font, and layout stay on existing props/slotProps.
+	 */
+	readonly styleOverrides?: ProgressStyleOverride;
 }
 
 export interface ProgressProps extends ProgressStyleProps {

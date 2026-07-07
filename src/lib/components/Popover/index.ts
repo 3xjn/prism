@@ -6,6 +6,9 @@ export type {
 	PopoverProps,
 	PopoverSlotProps,
 	PopoverSlots,
+	PopoverStyleOverride,
+	PopoverStyleOverrideContext,
 	PopoverStyleProps,
 	PopoverTriggerMode,
+	PopoverVisualStyles,
 } from "./types";

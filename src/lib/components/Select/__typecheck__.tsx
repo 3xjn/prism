@@ -1,7 +1,9 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 
 import { Select } from "./Select";
-import type { SelectOption, SelectProps } from "./types";
+import type { SelectListVisualStyles, SelectOptionVisualStyles, SelectTriggerVisualStyles } from "./styles";
+import type { SelectListStyleOverrideContext, SelectOption, SelectProps, SelectStyleOverrides } from "./types";
 
 const selectRef = React.createRef<TextButton>();
 type ExportedSelectProps = React.ComponentProps<typeof Select>;
@@ -23,7 +25,24 @@ const longOptions: readonly SelectOption[] = [
 	{ value: "echo", label: "Echo Terminal" },
 ];
 
+const selectStyleOverrides: SelectStyleOverrides = {
+	trigger: (_visualStyles, ctx) => {
+		if (ctx.state === "open") {
+			return { strokeTransparency: 0, indicatorRotation: 270, backgroundColor: ctx.theme.colors[ctx.color].light };
+		}
+
+		return ctx.hasValue && ctx.variant === "outline" && ctx.size === "md" ? { textColor: ctx.theme.colors[ctx.color].dark } : {};
+	},
+	list: (visualStyles, ctx) => ({ strokeColor: ctx.theme.colors[ctx.color].dark, strokeTransparency: visualStyles.strokeTransparency * 0.5 }),
+	option: (_visualStyles, ctx) =>
+		ctx.state === "selected" && ctx.option.disabled !== true
+			? { backgroundColor: ctx.theme.colors[ctx.color].dark, textColor: ctx.theme.colors[ctx.color].contrast }
+			: {},
+};
+
 const validSelectProps: SelectProps[] = [
+	{ options, styleOverrides: selectStyleOverrides },
+	{ options, styleOverrides: { trigger: (_visualStyles, ctx) => (ctx.state === "hovered" ? { strokeThickness: 2 } : {}) } },
 	{ options, placeholder: "Choose a profile" },
 	{ options, defaultValue: "aurora" },
 	{ options, selected: "aurora", onChange: () => undefined },
@@ -48,6 +67,7 @@ const validSelectProps: SelectProps[] = [
 
 const validExportedSelectProps: ExportedSelectProps[] = [
 	{ options, placeholder: "Choose" },
+	{ options, styleOverrides: selectStyleOverrides },
 	{ options, defaultValue: "aurora", cursor: "default" },
 	{ options, selected: "aurora", onChange: () => undefined },
 	{ options, value: "harbor", onChange: () => undefined, color: "primary", variant: "outline" },
@@ -91,6 +111,15 @@ type InvalidSelectMaxVisibleOptionsAllowed = string extends NonNullable<SelectPr
 type SelectDisabledOptionAllowed = true extends NonNullable<SelectOption["disabled"]> ? true : false;
 type ExportedSelectValueAllowed = "aurora" extends NonNullable<ExportedSelectProps["value"]> ? true : false;
 type ExportedSelectSelectedAllowed = "aurora" extends NonNullable<ExportedSelectProps["selected"]> ? true : false;
+type SelectVisualStyleKey = keyof SelectTriggerVisualStyles | keyof SelectListVisualStyles | keyof SelectOptionVisualStyles;
+type SelectStyleOverridesAssignableToProp = AssertTrue<IsAssignable<SelectStyleOverrides, SelectProps["styleOverrides"]>>;
+type SelectStyleOverridesAssignableToExportedProp = AssertTrue<IsAssignable<SelectStyleOverrides, ExportedSelectProps["styleOverrides"]>>;
+type SelectListCtxHasNoState = AssertFalse<HasProp<SelectListStyleOverrideContext, "state">>;
+type SelectOptionVisualStylesHaveNoIndicatorRotation = AssertFalse<IsAssignable<"indicatorRotation", keyof SelectOptionVisualStyles>>;
+type SelectOptionVisualStylesHaveNoStrokeThickness = AssertFalse<IsAssignable<"strokeThickness", keyof SelectOptionVisualStyles>>;
+type SelectVisualStylesHaveNoRadius = AssertFalse<IsAssignable<"radius", SelectVisualStyleKey>>;
+type SelectVisualStylesHaveNoPadding = AssertFalse<IsAssignable<"padding", SelectVisualStyleKey>>;
+type SelectVisualStylesHaveNoFontSize = AssertFalse<IsAssignable<"fontSize", SelectVisualStyleKey>>;
 
 const selectHasChildrenProp: SelectHasChildrenProp = false;
 const invalidSelectColor: InvalidSelectColorAllowed = false;
@@ -100,6 +129,14 @@ const invalidSelectMaxVisibleOptions: InvalidSelectMaxVisibleOptionsAllowed = fa
 const selectDisabledOption: SelectDisabledOptionAllowed = true;
 const exportedSelectValue: ExportedSelectValueAllowed = true;
 const exportedSelectSelected: ExportedSelectSelectedAllowed = true;
+const selectStyleOverridesAssignableToProp: SelectStyleOverridesAssignableToProp = true;
+const selectStyleOverridesAssignableToExportedProp: SelectStyleOverridesAssignableToExportedProp = true;
+const selectListCtxHasNoState: SelectListCtxHasNoState = false;
+const selectOptionVisualStylesHaveNoIndicatorRotation: SelectOptionVisualStylesHaveNoIndicatorRotation = false;
+const selectOptionVisualStylesHaveNoStrokeThickness: SelectOptionVisualStylesHaveNoStrokeThickness = false;
+const selectVisualStylesHaveNoRadius: SelectVisualStylesHaveNoRadius = false;
+const selectVisualStylesHaveNoPadding: SelectVisualStylesHaveNoPadding = false;
+const selectVisualStylesHaveNoFontSize: SelectVisualStylesHaveNoFontSize = false;
 
 export {
 	acceptsExportedSelectProps,
@@ -113,4 +150,13 @@ export {
 	invalidSelectValue,
 	selectDisabledOption,
 	selectHasChildrenProp,
+	selectListCtxHasNoState,
+	selectOptionVisualStylesHaveNoIndicatorRotation,
+	selectOptionVisualStylesHaveNoStrokeThickness,
+	selectStyleOverrides,
+	selectStyleOverridesAssignableToExportedProp,
+	selectStyleOverridesAssignableToProp,
+	selectVisualStylesHaveNoFontSize,
+	selectVisualStylesHaveNoPadding,
+	selectVisualStylesHaveNoRadius,
 };

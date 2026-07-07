@@ -1,10 +1,28 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 
 import { CircularProgress } from "./CircularProgress";
-import type { CircularProgressProps } from "./types";
+import type {
+	CircularProgressProps,
+	CircularProgressStyleOverride,
+	CircularProgressStyleOverrideContext,
+	CircularProgressVisualStyles,
+} from "./types";
 
 const circularProgressRef = React.createRef<Frame>();
 type ExportedCircularProgressProps = React.ComponentProps<typeof CircularProgress>;
+
+const circularProgressStyleOverride: CircularProgressStyleOverride = (_visualStyles, ctx) => {
+	if (ctx.variant === "subtle") {
+		return { trackTransparency: 0.3 };
+	}
+
+	if (ctx.color === "error") {
+		return { fillColor: ctx.theme.colors.error.dark, fillTailColor: ctx.theme.colors.error.light };
+	}
+
+	return {};
+};
 
 const validCircularProgressProps: CircularProgressProps[] = [
 	{},
@@ -16,6 +34,7 @@ const validCircularProgressProps: CircularProgressProps[] = [
 	{ variant: "subtle", color: "success", size: "sm", cap: "round" },
 	{ variant: "light", color: "warning", size: "lg", cap: "butt" },
 	{ startAngle: 0, disableAnimation: true },
+	{ value: 40, styleOverrides: circularProgressStyleOverride },
 	{ width: 72, height: 72, layoutOrder: 2, p: "xs" },
 	{ slotProps: { root: { BackgroundTransparency: 0.5 } } },
 	{ slotProps: { center: { BackgroundTransparency: 1 }, label: { Text: "Override" }, valueLabel: { Text: "Ready" } } },
@@ -52,18 +71,67 @@ type InvalidCircularProgressColorAllowed = "palette.primary.5" extends NonNullab
 type InvalidCircularProgressValueAllowed = string extends NonNullable<CircularProgressProps["value"]> ? true : false;
 type InvalidCircularProgressModeAllowed = "buffer" extends NonNullable<CircularProgressProps["mode"]> ? true : false;
 type ExportedCircularProgressValueAllowed = 42 extends NonNullable<ExportedCircularProgressProps["value"]> ? true : false;
+type CircularProgressStyleOverrideAssignableToProp = AssertTrue<
+	IsAssignable<CircularProgressStyleOverride, CircularProgressProps["styleOverrides"]>
+>;
+type CircularProgressStyleOverrideAssignableToExportedProp = AssertTrue<
+	IsAssignable<CircularProgressStyleOverride, ExportedCircularProgressProps["styleOverrides"]>
+>;
+type CircularProgressStyleOverrideContextHasFields = AssertTrue<
+	IsAssignable<"theme" | "variant" | "color" | "size", keyof CircularProgressStyleOverrideContext>
+>;
+type CircularProgressStyleOverrideContextHasNoState = AssertFalse<HasProp<CircularProgressStyleOverrideContext, "state">>;
+type CircularProgressVisualStylesHasNoDiameter = AssertFalse<IsAssignable<"diameter", keyof CircularProgressVisualStyles>>;
+type CircularProgressVisualStylesHasNoThickness = AssertFalse<IsAssignable<"thickness", keyof CircularProgressVisualStyles>>;
+type CircularProgressVisualStylesHasNoSegmentLength = AssertFalse<IsAssignable<"segmentLength", keyof CircularProgressVisualStyles>>;
+type CircularProgressVisualStylesHasNoRadius = AssertFalse<IsAssignable<"radius", keyof CircularProgressVisualStyles>>;
+type CircularProgressVisualStylesHasNoPadding = AssertFalse<IsAssignable<"padding", keyof CircularProgressVisualStyles>>;
+type CircularProgressVisualStylesHasNoFontSize = AssertFalse<IsAssignable<"fontSize", keyof CircularProgressVisualStyles>>;
+type CircularProgressVisualStylesHasNoLabelSize = AssertFalse<IsAssignable<"labelSize", keyof CircularProgressVisualStyles>>;
+type CircularProgressVisualStylesHasNoLineHeight = AssertFalse<IsAssignable<"lineHeight", keyof CircularProgressVisualStyles>>;
+type CircularProgressVisualStylesHasNoLayout = AssertFalse<IsAssignable<"layout", keyof CircularProgressVisualStyles>>;
+type CircularProgressVisualStylesHasNoSlotProps = AssertFalse<IsAssignable<"slotProps", keyof CircularProgressVisualStyles>>;
 
 const circularProgressHasChildrenProp: CircularProgressHasChildrenProp = false;
 const invalidCircularProgressColor: InvalidCircularProgressColorAllowed = false;
 const invalidCircularProgressValue: InvalidCircularProgressValueAllowed = false;
 const invalidCircularProgressMode: InvalidCircularProgressModeAllowed = false;
 const exportedCircularProgressValue: ExportedCircularProgressValueAllowed = true;
+const circularProgressStyleOverrideAssignableToProp: CircularProgressStyleOverrideAssignableToProp = true;
+const circularProgressStyleOverrideAssignableToExportedProp: CircularProgressStyleOverrideAssignableToExportedProp = true;
+const circularProgressStyleOverrideContextHasFields: CircularProgressStyleOverrideContextHasFields = true;
+const circularProgressStyleOverrideContextHasNoState: CircularProgressStyleOverrideContextHasNoState = false;
+const circularProgressVisualStylesHasNoDiameter: CircularProgressVisualStylesHasNoDiameter = false;
+const circularProgressVisualStylesHasNoThickness: CircularProgressVisualStylesHasNoThickness = false;
+const circularProgressVisualStylesHasNoSegmentLength: CircularProgressVisualStylesHasNoSegmentLength = false;
+const circularProgressVisualStylesHasNoRadius: CircularProgressVisualStylesHasNoRadius = false;
+const circularProgressVisualStylesHasNoPadding: CircularProgressVisualStylesHasNoPadding = false;
+const circularProgressVisualStylesHasNoFontSize: CircularProgressVisualStylesHasNoFontSize = false;
+const circularProgressVisualStylesHasNoLabelSize: CircularProgressVisualStylesHasNoLabelSize = false;
+const circularProgressVisualStylesHasNoLineHeight: CircularProgressVisualStylesHasNoLineHeight = false;
+const circularProgressVisualStylesHasNoLayout: CircularProgressVisualStylesHasNoLayout = false;
+const circularProgressVisualStylesHasNoSlotProps: CircularProgressVisualStylesHasNoSlotProps = false;
 
 export {
 	acceptsCircularProgressChildren,
 	acceptsCircularProgressProps,
 	acceptsExportedCircularProgressProps,
 	circularProgressHasChildrenProp,
+	circularProgressStyleOverride,
+	circularProgressStyleOverrideAssignableToExportedProp,
+	circularProgressStyleOverrideAssignableToProp,
+	circularProgressStyleOverrideContextHasFields,
+	circularProgressStyleOverrideContextHasNoState,
+	circularProgressVisualStylesHasNoDiameter,
+	circularProgressVisualStylesHasNoFontSize,
+	circularProgressVisualStylesHasNoLabelSize,
+	circularProgressVisualStylesHasNoLayout,
+	circularProgressVisualStylesHasNoLineHeight,
+	circularProgressVisualStylesHasNoPadding,
+	circularProgressVisualStylesHasNoRadius,
+	circularProgressVisualStylesHasNoSegmentLength,
+	circularProgressVisualStylesHasNoSlotProps,
+	circularProgressVisualStylesHasNoThickness,
 	exportedCircularProgressValue,
 	invalidCircularProgressColor,
 	invalidCircularProgressMode,

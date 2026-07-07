@@ -1,9 +1,9 @@
 import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
-import {Box, Button, Icon, Stack, Text} from "@prism";
-import type { ButtonColor, ButtonSize } from "@prism";
+import { Box, Button, Icon, Stack, styled, Text } from "@prism";
+import type { ButtonColor, ButtonSize, ButtonStyleOverride } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme , theme as themeRefs } from "@prism/theme";
+import { theme as themeRefs, useTheme } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -46,6 +46,37 @@ const controls = {
 };
 
 type ButtonStoryControls = InferControls<typeof controls>;
+
+const brandOverrideStyles: ButtonStyleOverride = (_styles, ctx) => {
+	if (ctx.state === "disabled") {
+		return {};
+	}
+
+	if (ctx.state === "hovered") {
+		return {
+			backgroundColor: ctx.theme.colors.secondary.dark,
+			shouldRenderStroke: true,
+			strokeColor: ctx.theme.colors.secondary.contrast,
+			strokeTransparency: 0,
+		};
+	}
+
+	if (ctx.state === "pressed") {
+		return {
+			backgroundColor: ctx.theme.colors.primary.dark,
+			scale: 0.94,
+		};
+	}
+
+	return {
+		backgroundColor: ctx.theme.colors.secondary.main,
+	};
+};
+
+const BrandButton = styled(Button)({
+	color: "secondary",
+	styleOverrides: brandOverrideStyles,
+});
 
 function VariantGallery({ size }: { readonly size: ButtonSize }): React.ReactElement {
 	const variants: Variant[] = ["filled", "light", "outline", "subtle"];
@@ -124,6 +155,46 @@ function ButtonStoryCanvas({ controls: currentControls }: { readonly controls: B
 								wrap
 								width="100%"
 							/>
+						</Stack>
+					</Box>
+					<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
+						<Stack width="100%" gap="sm">
+							<Text text="Style override lab" size="md" weight={700} color={themeRefs.text.primary} />
+							<Stack width="100%" direction="horizontal" gap="sm" align="center" wrap>
+								<Button
+									label="Brand override"
+									color="secondary"
+									size={size}
+									styleOverrides={brandOverrideStyles}
+								/>
+								<Button
+									label="Brand disabled"
+									color="secondary"
+									size={size}
+									disabled
+									styleOverrides={brandOverrideStyles}
+								/>
+								<BrandButton label="BrandButton" size={size} />
+								<BrandButton label="Caller error" color="error" size={size} />
+								<Button
+									label="SlotProps static"
+									variant="outline"
+									color="secondary"
+									size={size}
+									slotProps={{
+										root: {
+											BackgroundColor3: theme.colors.secondary.main,
+											BackgroundTransparency: 0,
+											TextColor3: theme.colors.secondary.contrast,
+										},
+										stroke: {
+											Color: theme.colors.secondary.dark,
+											Transparency: 0,
+											Thickness: 1,
+										},
+									}}
+								/>
+							</Stack>
 						</Stack>
 					</Box>
 					<VariantGallery size={size} />

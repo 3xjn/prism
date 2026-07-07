@@ -1,2 +1,12 @@
 export { Checkbox } from "./Checkbox";
-export type { CheckboxColor, CheckboxProps, CheckboxSize, CheckboxSlotProps, CheckboxSlots, CheckboxStyleProps } from "./types";
+export type {
+	CheckboxColor,
+	CheckboxProps,
+	CheckboxSize,
+	CheckboxSlotProps,
+	CheckboxSlots,
+	CheckboxStyleOverride,
+	CheckboxStyleOverrideContext,
+	CheckboxStyleProps,
+	CheckboxVisualStyles,
+} from "./types";

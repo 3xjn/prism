@@ -1,11 +1,12 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 import { theme as themeRefs } from "@prism/theme";
 
 import { Box } from "../Box";
 import { Text } from "../Text";
 
 import { Popover } from "./Popover";
-import type { PopoverProps } from "./types";
+import type { PopoverProps, PopoverStyleOverride, PopoverStyleOverrideContext, PopoverVisualStyles } from "./types";
 
 const popoverRef = React.createRef<Frame>();
 type ExportedPopoverProps = React.ComponentProps<typeof Popover>;
@@ -13,8 +14,17 @@ type ExportedPopoverProps = React.ComponentProps<typeof Popover>;
 const trigger = <Box width={160} height={36} bg={themeRefs.background.surface} radius="sm" />;
 const content = <Text text="Inspect loadout details" />;
 
+const popoverStyleOverride: PopoverStyleOverride = (visualStyles, ctx) => {
+	if (visualStyles.strokeTransparency > 0.5) {
+		return { strokeTransparency: 0.5 };
+	}
+
+	return { backgroundColor: ctx.theme.colors.background.default, strokeColor: ctx.theme.colors.border.strong };
+};
+
 const validPopoverProps: PopoverProps[] = [
 	{ content, children: trigger },
+	{ content, styleOverrides: popoverStyleOverride, children: trigger },
 	{ content: "Simple content", children: trigger },
 	{ content, opened: true, children: trigger },
 	{ content, defaultOpened: true, children: trigger },
@@ -53,11 +63,33 @@ type PopoverHasChildrenProp = "children" extends keyof PopoverProps ? true : fal
 type InvalidPopoverPlacementAllowed = "center" extends NonNullable<PopoverProps["placement"]> ? true : false;
 type InvalidPopoverTriggerModeAllowed = "focus" extends NonNullable<PopoverProps["triggerMode"]> ? true : false;
 type ExportedPopoverContentAllowed = React.ReactElement extends NonNullable<ExportedPopoverProps["content"]> ? true : false;
+type PopoverStyleOverrideAssignableToProp = AssertTrue<IsAssignable<PopoverStyleOverride, PopoverProps["styleOverrides"]>>;
+type PopoverStyleOverrideAssignableToExportedProp = AssertTrue<IsAssignable<PopoverStyleOverride, ExportedPopoverProps["styleOverrides"]>>;
+type PopoverStyleOverrideContextHasTheme = AssertTrue<HasProp<PopoverStyleOverrideContext, "theme">>;
+type PopoverStyleOverrideContextHasNoState = AssertFalse<HasProp<PopoverStyleOverrideContext, "state">>;
+type PopoverVisualStylesHasNoRadius = AssertFalse<IsAssignable<"radius", keyof PopoverVisualStyles>>;
+type PopoverVisualStylesHasNoPadding = AssertFalse<IsAssignable<"padding", keyof PopoverVisualStyles>>;
+type PopoverVisualStylesHasNoPaddingX = AssertFalse<IsAssignable<"paddingX", keyof PopoverVisualStyles>>;
+type PopoverVisualStylesHasNoFontSize = AssertFalse<IsAssignable<"fontSize", keyof PopoverVisualStyles>>;
+type PopoverVisualStylesHasNoLineHeight = AssertFalse<IsAssignable<"lineHeight", keyof PopoverVisualStyles>>;
+type PopoverVisualStylesHasNoGap = AssertFalse<IsAssignable<"gap", keyof PopoverVisualStyles>>;
+type PopoverVisualStylesHasNoLayout = AssertFalse<IsAssignable<"layout", keyof PopoverVisualStyles>>;
 
 const popoverHasChildrenProp: PopoverHasChildrenProp = true;
 const invalidPopoverPlacement: InvalidPopoverPlacementAllowed = false;
 const invalidPopoverTriggerMode: InvalidPopoverTriggerModeAllowed = false;
 const exportedPopoverContentAllowed: ExportedPopoverContentAllowed = true;
+const popoverStyleOverrideAssignableToProp: PopoverStyleOverrideAssignableToProp = true;
+const popoverStyleOverrideAssignableToExportedProp: PopoverStyleOverrideAssignableToExportedProp = true;
+const popoverStyleOverrideContextHasTheme: PopoverStyleOverrideContextHasTheme = true;
+const popoverStyleOverrideContextHasNoState: PopoverStyleOverrideContextHasNoState = false;
+const popoverVisualStylesHasNoRadius: PopoverVisualStylesHasNoRadius = false;
+const popoverVisualStylesHasNoPadding: PopoverVisualStylesHasNoPadding = false;
+const popoverVisualStylesHasNoPaddingX: PopoverVisualStylesHasNoPaddingX = false;
+const popoverVisualStylesHasNoFontSize: PopoverVisualStylesHasNoFontSize = false;
+const popoverVisualStylesHasNoLineHeight: PopoverVisualStylesHasNoLineHeight = false;
+const popoverVisualStylesHasNoGap: PopoverVisualStylesHasNoGap = false;
+const popoverVisualStylesHasNoLayout: PopoverVisualStylesHasNoLayout = false;
 
 export {
 	acceptsExportedPopoverProps,
@@ -67,4 +99,16 @@ export {
 	invalidPopoverPlacement,
 	invalidPopoverTriggerMode,
 	popoverHasChildrenProp,
+	popoverStyleOverride,
+	popoverStyleOverrideAssignableToExportedProp,
+	popoverStyleOverrideAssignableToProp,
+	popoverStyleOverrideContextHasNoState,
+	popoverStyleOverrideContextHasTheme,
+	popoverVisualStylesHasNoFontSize,
+	popoverVisualStylesHasNoGap,
+	popoverVisualStylesHasNoLayout,
+	popoverVisualStylesHasNoLineHeight,
+	popoverVisualStylesHasNoPadding,
+	popoverVisualStylesHasNoPaddingX,
+	popoverVisualStylesHasNoRadius,
 };

@@ -1,11 +1,13 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 import { theme as themeRefs } from "@prism/theme";
 
 import { Box } from "../Box";
 import { Text } from "../Text";
 
 import { Menu } from "./Menu";
-import type { MenuItem, MenuProps } from "./types";
+import type { MenuItemVisualStyles, MenuPanelVisualStyles } from "./styles";
+import type { MenuItem, MenuPanelStyleOverrideContext, MenuProps, MenuStyleOverrides } from "./types";
 
 const menuRef = React.createRef<Frame>();
 type ExportedMenuProps = React.ComponentProps<typeof Menu>;
@@ -19,8 +21,24 @@ const items: readonly MenuItem[] = [
 	{ value: "drop", label: "Drop", color: "error", disabled: true },
 ];
 
+const menuStyleOverrides: MenuStyleOverrides = {
+	panel: (visualStyles, ctx) =>
+		ctx.size === "lg"
+			? { strokeColor: ctx.theme.colors.primary.dark, dividerTransparency: visualStyles.dividerTransparency * 0.5 }
+			: {},
+	item: (_visualStyles, ctx) => {
+		if (ctx.state === "pressed") {
+			return { backgroundColor: ctx.theme.colors.primary.dark, textColor: ctx.theme.colors.primary.contrast };
+		}
+
+		return ctx.state === "hovered" && ctx.item.color === "error" ? { textColor: ctx.theme.colors.error.dark } : {};
+	},
+};
+
 const validMenuProps: MenuProps[] = [
 	{ items, children: trigger },
+	{ items, children: trigger, styleOverrides: menuStyleOverrides },
+	{ items, children: trigger, styleOverrides: { item: (_visualStyles, ctx) => (ctx.state === "disabled" ? { textTransparency: 0.4 } : {}) } },
 	{ items, children: trigger, opened: true },
 	{ items, children: trigger, defaultOpened: true },
 	{ items, children: trigger, disabled: true },
@@ -54,6 +72,25 @@ const acceptsMenuChildren: React.ReactNode = validMenuExamples;
 const acceptsMenuProps: MenuProps[] = validMenuProps;
 const acceptsExportedMenuProps: ExportedMenuProps[] = validExportedMenuProps;
 
+type MenuVisualStyleKey = keyof MenuPanelVisualStyles | keyof MenuItemVisualStyles;
+type MenuStyleOverridesAssignableToProp = AssertTrue<IsAssignable<MenuStyleOverrides, MenuProps["styleOverrides"]>>;
+type MenuStyleOverridesAssignableToExportedProp = AssertTrue<IsAssignable<MenuStyleOverrides, ExportedMenuProps["styleOverrides"]>>;
+type MenuPanelCtxHasNoState = AssertFalse<HasProp<MenuPanelStyleOverrideContext, "state">>;
+type MenuVisualStylesHaveNoRadius = AssertFalse<IsAssignable<"radius", MenuVisualStyleKey>>;
+type MenuVisualStylesHaveNoItemRadius = AssertFalse<IsAssignable<"itemRadius", MenuVisualStyleKey>>;
+type MenuVisualStylesHaveNoPadding = AssertFalse<IsAssignable<"padding", MenuVisualStyleKey>>;
+type MenuVisualStylesHaveNoFontSize = AssertFalse<IsAssignable<"fontSize", MenuVisualStyleKey>>;
+type MenuVisualStylesHaveNoItemHeight = AssertFalse<IsAssignable<"itemHeight", MenuVisualStyleKey>>;
+
+const menuStyleOverridesAssignableToProp: MenuStyleOverridesAssignableToProp = true;
+const menuStyleOverridesAssignableToExportedProp: MenuStyleOverridesAssignableToExportedProp = true;
+const menuPanelCtxHasNoState: MenuPanelCtxHasNoState = false;
+const menuVisualStylesHaveNoRadius: MenuVisualStylesHaveNoRadius = false;
+const menuVisualStylesHaveNoItemRadius: MenuVisualStylesHaveNoItemRadius = false;
+const menuVisualStylesHaveNoPadding: MenuVisualStylesHaveNoPadding = false;
+const menuVisualStylesHaveNoFontSize: MenuVisualStylesHaveNoFontSize = false;
+const menuVisualStylesHaveNoItemHeight: MenuVisualStylesHaveNoItemHeight = false;
+
 type MenuHasChildrenProp = "children" extends keyof MenuProps ? true : false;
 type InvalidMenuPlacementAllowed = "center" extends NonNullable<MenuProps["placement"]> ? true : false;
 type InvalidMenuTriggerModeAllowed = "focus" extends NonNullable<MenuProps["triggerMode"]> ? true : false;
@@ -72,4 +109,13 @@ export {
 	invalidMenuTriggerMode,
 	menuHasChildrenProp,
 	menuItemsRequired,
+	menuPanelCtxHasNoState,
+	menuStyleOverrides,
+	menuStyleOverridesAssignableToExportedProp,
+	menuStyleOverridesAssignableToProp,
+	menuVisualStylesHaveNoFontSize,
+	menuVisualStylesHaveNoItemHeight,
+	menuVisualStylesHaveNoItemRadius,
+	menuVisualStylesHaveNoPadding,
+	menuVisualStylesHaveNoRadius,
 };

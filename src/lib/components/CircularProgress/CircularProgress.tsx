@@ -2,7 +2,6 @@ import React from "@rbxts/react";
 
 import { useMotion } from "@prism/motion";
 import { useTheme } from "@prism/theme";
-import type { Theme } from "@prism/theme";
 
 import {
 	pushDecorator,
@@ -10,6 +9,7 @@ import {
 	renderPaddingDecorator,
 	renderSizeConstraintDecorator,
 } from "../_shared/foundationDecorators";
+import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveTextFontFace } from "../_shared/textFont";
 import {
 	mergeSharedStyleProps,
@@ -17,14 +17,12 @@ import {
 } from "../_shared/useResolvedStyleProps";
 import { mixColor } from "../_shared/visual";
 
-import type {
-	CircularProgressCap,
-	CircularProgressColor,
-	CircularProgressMode,
-	CircularProgressProps,
-	CircularProgressSize,
-	CircularProgressVariant,
-} from "./types";
+import {
+	resolveCircularProgressMotionTransition,
+	resolveCircularProgressSizeStyles,
+	resolveCircularProgressVisualStyles,
+} from "./styles";
+import type { CircularProgressMode, CircularProgressProps } from "./types";
 
 const RunService = game.GetService("RunService");
 
@@ -32,27 +30,9 @@ const SEGMENT_COUNT = 36;
 const INDETERMINATE_ROTATION_SECONDS = 0.9;
 const INDETERMINATE_VISIBLE_SEGMENTS = 9;
 
-interface CircularProgressSizeStyles {
-	readonly diameter: number;
-	readonly thickness: number;
-	readonly segmentLength: number;
-	readonly labelSize: number;
-	readonly valueLabelSize: number;
-	readonly lineHeight: number;
-}
-
 interface CircularProgressRange {
 	readonly min: number;
 	readonly max: number;
-}
-
-interface CircularProgressVisualStyles {
-	readonly trackColor: Color3;
-	readonly trackTransparency: number;
-	readonly fillColor: Color3;
-	readonly fillTailColor: Color3;
-	readonly labelColor: Color3;
-	readonly valueLabelColor: Color3;
 }
 
 function createSegmentIndices(): number[] {
@@ -66,57 +46,6 @@ function createSegmentIndices(): number[] {
 }
 
 const SEGMENT_INDICES = createSegmentIndices();
-
-function resolveCircularProgressSizeStyles(theme: Theme, size: CircularProgressSize): CircularProgressSizeStyles {
-	switch (size) {
-		case "xs":
-			return {
-				diameter: 28,
-				thickness: 3,
-				segmentLength: 4,
-				labelSize: theme.fontSizes.xs,
-				valueLabelSize: theme.fontSizes.xs,
-				lineHeight: theme.lineHeights.xs,
-			};
-		case "sm":
-			return {
-				diameter: 36,
-				thickness: 4,
-				segmentLength: 5,
-				labelSize: theme.fontSizes.xs,
-				valueLabelSize: theme.fontSizes.sm,
-				lineHeight: theme.lineHeights.sm,
-			};
-		case "lg":
-			return {
-				diameter: 64,
-				thickness: 6,
-				segmentLength: 8,
-				labelSize: theme.fontSizes.sm,
-				valueLabelSize: theme.fontSizes.lg,
-				lineHeight: theme.lineHeights.lg,
-			};
-		case "xl":
-			return {
-				diameter: 80,
-				thickness: 7,
-				segmentLength: 10,
-				labelSize: theme.fontSizes.md,
-				valueLabelSize: theme.fontSizes.xl,
-				lineHeight: theme.lineHeights.xl,
-			};
-		case "md":
-		default:
-			return {
-				diameter: 48,
-				thickness: 5,
-				segmentLength: 6,
-				labelSize: theme.fontSizes.xs,
-				valueLabelSize: theme.fontSizes.md,
-				lineHeight: theme.lineHeights.md,
-			};
-	}
-}
 
 function resolveCircularProgressRange(min: number | undefined, max: number | undefined): CircularProgressRange {
 	const resolvedMin = min ?? 0;
@@ -147,62 +76,6 @@ function resolveVisibleSegmentCount(percent: number): number {
 	}
 
 	return math.clamp(math.ceil(percent * SEGMENT_COUNT), 1, SEGMENT_COUNT);
-}
-
-function resolveCircularProgressVisualStyles(
-	theme: Theme,
-	variant: CircularProgressVariant,
-	color: CircularProgressColor,
-): CircularProgressVisualStyles {
-	const intentColors = theme.colors[color];
-	const neutralTrack = mixColor(theme.colors.background.default, theme.colors.border.default, 0.22);
-	const softTrack = mixColor(theme.colors.background.surface, intentColors.light, 0.16);
-
-	switch (variant) {
-		case "filled":
-			return {
-				trackColor: neutralTrack,
-				trackTransparency: 0.04,
-				fillColor: intentColors.main,
-				fillTailColor: intentColors.light,
-				labelColor: theme.colors.text.secondary,
-				valueLabelColor: theme.colors.text.primary,
-			};
-		case "light":
-			return {
-				trackColor: softTrack,
-				trackTransparency: 0.1,
-				fillColor: mixColor(intentColors.main, theme.colors.background.surface, 0.06),
-				fillTailColor: intentColors.light,
-				labelColor: theme.colors.text.secondary,
-				valueLabelColor: intentColors.dark,
-			};
-		case "subtle":
-			return {
-				trackColor: mixColor(theme.colors.background.default, intentColors.light, 0.08),
-				trackTransparency: 0.18,
-				fillColor: mixColor(intentColors.main, theme.colors.background.surface, 0.16),
-				fillTailColor: mixColor(intentColors.light, theme.colors.background.surface, 0.08),
-				labelColor: theme.colors.text.secondary,
-				valueLabelColor: theme.colors.text.primary,
-			};
-		case "outline":
-		default:
-			return {
-				trackColor: neutralTrack,
-				trackTransparency: 0.08,
-				fillColor: intentColors.main,
-				fillTailColor: mixColor(intentColors.light, intentColors.main, 0.18),
-				labelColor: theme.colors.text.secondary,
-				valueLabelColor: theme.colors.text.primary,
-			};
-	}
-}
-
-function resolveCircularProgressMotionTransition() {
-	return {
-		percent: { duration: "normal", easing: "out" },
-	} as const;
 }
 
 function resolveMode(mode: CircularProgressMode | undefined, value: number | undefined): CircularProgressMode {
@@ -251,6 +124,7 @@ const CircularProgressBase = React.forwardRef<Frame, CircularProgressProps>((pro
 		showValue = false,
 		startAngle = -90,
 		disableAnimation = false,
+		styleOverrides,
 		value,
 		min,
 		max,
@@ -261,7 +135,12 @@ const CircularProgressBase = React.forwardRef<Frame, CircularProgressProps>((pro
 	const resolvedMode = resolveMode(mode, value);
 	const indeterminateRotation = useIndeterminateRotation(resolvedMode === "indeterminate" && !disableAnimation);
 	const sizeStyles = resolveCircularProgressSizeStyles(theme, size);
-	const visualStyles = resolveCircularProgressVisualStyles(theme, variant, color);
+	const styleOverrideContext = { theme, variant, color, size };
+	const visualStyles = applyStyleOverride(
+		resolveCircularProgressVisualStyles(theme, variant, color),
+		styleOverrides,
+		styleOverrideContext,
+	);
 	const mergedStyleProps = mergeSharedStyleProps({}, props);
 	const {
 		resolvedWidth,

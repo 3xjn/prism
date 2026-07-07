@@ -7,5 +7,8 @@ export type {
 	KeybindInputSize,
 	KeybindInputSlotProps,
 	KeybindInputSlots,
+	KeybindInputStyleOverride,
+	KeybindInputStyleOverrideContext,
 	KeybindInputStyleProps,
+	KeybindInputVisualStyles,
 } from "./types";

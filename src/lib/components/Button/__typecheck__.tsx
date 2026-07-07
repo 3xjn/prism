@@ -1,8 +1,9 @@
 import React from "@rbxts/react";
+import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/testing/typeContracts";
 import { theme } from "@prism/theme";
 
 import { Button } from "./Button";
-import type { ButtonProps } from "./types";
+import type { ButtonProps, ButtonStyleOverride, ButtonStyleOverrideContext, ButtonVisualStyles } from "./types";
 
 const buttonRef = React.createRef<TextButton>();
 type ButtonStoryRenderer = (props: ButtonProps) => React.ReactElement;
@@ -15,6 +16,18 @@ function ButtonAdornment(): React.ReactElement {
 function renderButton(props: ButtonProps): React.ReactElement {
 	return (Button as ButtonStoryRenderer)(props);
 }
+
+const buttonStyleOverride: ButtonStyleOverride = (_visualStyles, ctx) => {
+	if (ctx.state === "hovered") {
+		return { shouldRenderStroke: true, strokeTransparency: 0 };
+	}
+
+	if (ctx.state === "pressed") {
+		return { backgroundColor: ctx.theme.colors[ctx.color].dark, scale: ctx.size === "xl" ? 1.02 : 0.98 };
+	}
+
+	return {};
+};
 
 // Direct `<Button>Save</Button>` JSX still stays blocked by the current @rbxts/react typings.
 // `label` is the preferred public copy prop, while primitive `children` remains as an explicit
@@ -29,6 +42,7 @@ const validButtonProps: ButtonProps[] = [
 	{ label: "Cursor default", cursor: "default" },
 	{ label: "Cursor raw", cursor: "rbxasset://SystemCursors/PointingHand" },
 	{ label: "Wide", fullWidth: true },
+	{ label: "Override", styleOverrides: buttonStyleOverride },
 	{ label: "Layout", position: { x: "50%", y: 0 }, p: "md", zIndex: 3 },
 	{ label: "Root slot", slotProps: { root: { AutoButtonColor: true, TextTransparency: 0.1 } } },
 	{ label: "Cursor event override", slotProps: { root: { Event: { MouseEnter: () => undefined, MouseLeave: () => undefined } } } },
@@ -48,6 +62,7 @@ const validExportedButtonProps: ExportedButtonProps[] = [
 	{ children: "Save", variant: "light", color: "secondary" },
 	{ children: 42 },
 	{ label: 42 },
+	{ label: "Override", styleOverrides: buttonStyleOverride },
 	{ label: "Apply", children: <ButtonAdornment key="exported-left" /> },
 ];
 
@@ -57,6 +72,7 @@ const validButtonExamples = [
 	renderButton({ color: "success", variant: "light", label: "Saved" }),
 	renderButton({ color: "warning", variant: "outline", label: "Review" }),
 	renderButton({ color: "secondary", variant: "subtle", label: "Secondary" }),
+	renderButton({ label: "Override", styleOverrides: buttonStyleOverride }),
 	renderButton({ disabled: true, onPress: () => undefined, label: "Disabled" }),
 	renderButton({ children: "Legacy child label" }),
 	renderButton({ children: <ButtonAdornment key="example-icon-only" /> }),
@@ -79,6 +95,34 @@ type ExportedButtonStringChildAllowed = "Save" extends NonNullable<ExportedButto
 type ExportedButtonNumberChildAllowed = 42 extends NonNullable<ExportedButtonProps["children"]> ? true : false;
 type ExportedButtonLabelStringAllowed = "Save" extends NonNullable<ExportedButtonProps["label"]> ? true : false;
 type ReactAttributesStringChildAllowed = "Save" extends NonNullable<React.Attributes["children"]> ? true : false;
+type ButtonStyleOverrideAssignableToProp = AssertTrue<IsAssignable<ButtonStyleOverride, ButtonProps["styleOverrides"]>>;
+type ButtonStyleOverrideAssignableToExportedProp = AssertTrue<IsAssignable<ButtonStyleOverride, ExportedButtonProps["styleOverrides"]>>;
+type ButtonStyleOverrideContextHasFields = AssertTrue<
+	IsAssignable<"theme" | "variant" | "color" | "size" | "state", keyof ButtonStyleOverrideContext>
+>;
+type ButtonStyleOverrideContextHasTheme = AssertTrue<HasProp<ButtonStyleOverrideContext, "theme">>;
+type ButtonVisualStyleOverrideFieldsAllowed = AssertTrue<
+	IsAssignable<
+		{
+			readonly backgroundColor: Color3;
+			readonly textColor: Color3;
+			readonly strokeTransparency: number;
+			readonly scale: number;
+			readonly shouldRenderStroke: boolean;
+		},
+		Partial<ButtonVisualStyles>
+	>
+>;
+type ButtonVisualStylesHasNoRadius = AssertFalse<IsAssignable<"radius", keyof ButtonVisualStyles>>;
+type ButtonVisualStylesHasNoCornerRadius = AssertFalse<IsAssignable<"cornerRadius", keyof ButtonVisualStyles>>;
+type ButtonVisualStylesHasNoPadding = AssertFalse<IsAssignable<"padding", keyof ButtonVisualStyles>>;
+type ButtonVisualStylesHasNoPaddingX = AssertFalse<IsAssignable<"paddingX", keyof ButtonVisualStyles>>;
+type ButtonVisualStylesHasNoFont = AssertFalse<IsAssignable<"font", keyof ButtonVisualStyles>>;
+type ButtonVisualStylesHasNoFontSize = AssertFalse<IsAssignable<"fontSize", keyof ButtonVisualStyles>>;
+type ButtonVisualStylesHasNoTextSize = AssertFalse<IsAssignable<"textSize", keyof ButtonVisualStyles>>;
+type ButtonVisualStylesHasNoLineHeight = AssertFalse<IsAssignable<"lineHeight", keyof ButtonVisualStyles>>;
+type ButtonVisualStylesHasNoLayout = AssertFalse<IsAssignable<"layout", keyof ButtonVisualStyles>>;
+type ButtonVisualStylesHasNoSlotProps = AssertFalse<IsAssignable<"slotProps", keyof ButtonVisualStyles>>;
 
 const invalidButtonColor: InvalidButtonColorAllowed = false;
 const buttonRawColorAllowed: ButtonRawColorAllowed = false;
@@ -91,14 +135,45 @@ const exportedButtonStringChild: ExportedButtonStringChildAllowed = true;
 const exportedButtonNumberChild: ExportedButtonNumberChildAllowed = true;
 const exportedButtonLabelString: ExportedButtonLabelStringAllowed = true;
 const reactAttributesStringChild: ReactAttributesStringChildAllowed = false;
+const buttonStyleOverrideAssignableToProp: ButtonStyleOverrideAssignableToProp = true;
+const buttonStyleOverrideAssignableToExportedProp: ButtonStyleOverrideAssignableToExportedProp = true;
+const buttonStyleOverrideContextHasFields: ButtonStyleOverrideContextHasFields = true;
+const buttonStyleOverrideContextHasTheme: ButtonStyleOverrideContextHasTheme = true;
+const buttonVisualStyleOverrideFieldsAllowed: ButtonVisualStyleOverrideFieldsAllowed = true;
+const buttonVisualStylesHasNoRadius: ButtonVisualStylesHasNoRadius = false;
+const buttonVisualStylesHasNoCornerRadius: ButtonVisualStylesHasNoCornerRadius = false;
+const buttonVisualStylesHasNoPadding: ButtonVisualStylesHasNoPadding = false;
+const buttonVisualStylesHasNoPaddingX: ButtonVisualStylesHasNoPaddingX = false;
+const buttonVisualStylesHasNoFont: ButtonVisualStylesHasNoFont = false;
+const buttonVisualStylesHasNoFontSize: ButtonVisualStylesHasNoFontSize = false;
+const buttonVisualStylesHasNoTextSize: ButtonVisualStylesHasNoTextSize = false;
+const buttonVisualStylesHasNoLineHeight: ButtonVisualStylesHasNoLineHeight = false;
+const buttonVisualStylesHasNoLayout: ButtonVisualStylesHasNoLayout = false;
+const buttonVisualStylesHasNoSlotProps: ButtonVisualStylesHasNoSlotProps = false;
 
 export {
 	acceptsButtonChildren,
 	acceptsButtonProps,
 	acceptsExportedButtonProps,
 	buttonRawColorAllowed,
+	buttonStyleOverride,
+	buttonStyleOverrideAssignableToExportedProp,
+	buttonStyleOverrideAssignableToProp,
+	buttonStyleOverrideContextHasFields,
+	buttonStyleOverrideContextHasTheme,
 	buttonThemeRefAllowed,
 	buttonLabelNumber,
+	buttonVisualStyleOverrideFieldsAllowed,
+	buttonVisualStylesHasNoCornerRadius,
+	buttonVisualStylesHasNoFont,
+	buttonVisualStylesHasNoFontSize,
+	buttonVisualStylesHasNoLayout,
+	buttonVisualStylesHasNoLineHeight,
+	buttonVisualStylesHasNoPadding,
+	buttonVisualStylesHasNoPaddingX,
+	buttonVisualStylesHasNoRadius,
+	buttonVisualStylesHasNoSlotProps,
+	buttonVisualStylesHasNoTextSize,
 	exportedButtonNumberChild,
 	exportedButtonLabelString,
 	exportedButtonStringChild,
