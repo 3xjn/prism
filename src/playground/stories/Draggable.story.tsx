@@ -21,6 +21,11 @@ const abilities: readonly AbilityItem[] = [
 	{ id: "focus", label: "Focus", icon: "rbxassetid://125807330222658", cooldown: "15s" },
 ];
 
+const abilityLabelById: Record<string, string> = {};
+for (const ability of abilities) {
+	abilityLabelById[ability.id] = ability.label;
+}
+
 const controls = {
 	theme: storyThemeControl,
 	disabled: Boolean(false),
@@ -119,16 +124,18 @@ function DraggableStoryCanvas({ controls: currentControls }: { readonly controls
 					<Text
 						text="A headless reorderable list primitive. Drag an ability to change its hotbar slot -- Prism animates the pickup, the reorder shifts, and the drop settle while your render function owns the visuals."
 						color={themeRefs.text.secondary}
+						align="left"
 						wrap
 						width="100%"
 					/>
 					<Box width="100%" bg={themeRefs.background.default} radius="md" p="lg">
-						<Stack width="100%" gap="sm">
+						<Stack width="100%" gap="md">
 							<Text text="Ability loadout" weight={700} color={themeRefs.text.primary} />
 							<Text
 								text="Keybind slots follow the order: whatever sits first casts on 1, and so on. Try dropping an ability far from its slot to see the settle animation."
 								size="sm"
 								color={themeRefs.text.secondary}
+								align="left"
 								wrap
 								width="100%"
 							/>
@@ -136,6 +143,7 @@ function DraggableStoryCanvas({ controls: currentControls }: { readonly controls
 								width={direction === "horizontal" ? undefined : "100%"}
 								bg={direction === "horizontal" ? themeRefs.palette.gray["9"] : undefined}
 								bgTransparency={direction === "horizontal" ? 0 : 1}
+								borderColor={direction === "horizontal" ? themeRefs.palette.gray["7"] : undefined}
 								radius="lg"
 								p={direction === "horizontal" ? "sm" : undefined}
 							>
@@ -164,6 +172,13 @@ function DraggableStoryCanvas({ controls: currentControls }: { readonly controls
 									}}
 								/>
 							</Box>
+							<Text
+								text={`Cast order: ${order.map((id, index) => `${index + 1} ${abilityLabelById[id]}`).join("   ")}`}
+								size="sm"
+								color={themeRefs.text.secondary}
+								align="left"
+								width="100%"
+							/>
 						</Stack>
 					</Box>
 				</Stack>
