@@ -1,0 +1,8 @@
+{
+  "services": {
+    "rojo": {
+      "command": "rojo serve --port 34873",
+      "description": "Serve the Prism project through Rojo on port 34873"
+    }
+  }
+}
