@@ -1,4 +1,4 @@
-export { DEFAULT_THEME } from "./defaults";
+export { DARK_THEME, DEFAULT_THEME } from "./defaults";
 export { theme } from "./refs";
 export { ThemeProvider, useTheme } from "./ThemeProvider";
 export { resolveColor, resolveSize } from "./resolveToken";

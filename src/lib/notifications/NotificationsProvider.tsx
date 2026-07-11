@@ -15,6 +15,7 @@ export function NotificationsProvider({
 	children,
 	defaultDuration = DEFAULT_DURATION,
 	maxVisible = DEFAULT_MAX_VISIBLE,
+	portal = true,
 	position = "top-right",
 	zIndex = DEFAULT_NOTIFICATION_OVERLAY_Z_INDEX,
 }: NotificationsProviderProps): React.ReactElement {
@@ -45,7 +46,7 @@ export function NotificationsProvider({
 		<NotificationsApiContext.Provider value={api}>
 			<NotificationSnapshotContext.Provider value={snapshotContextValue}>
 				{children}
-				<NotificationStack position={position} zIndex={zIndex} />
+				<NotificationStack portal={portal} position={position} zIndex={zIndex} />
 			</NotificationSnapshotContext.Provider>
 		</NotificationsApiContext.Provider>
 	);

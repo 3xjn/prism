@@ -56,6 +56,8 @@ export interface NotificationsProviderProps {
 	readonly children?: React.ReactNode;
 	readonly defaultDuration?: NotificationDuration;
 	readonly maxVisible?: number;
+	/** Set false to contain the stack in the provider's current GUI parent instead of the root LayerCollector. */
+	readonly portal?: boolean;
 	readonly position?: NotificationPosition;
 	readonly zIndex?: number;
 }

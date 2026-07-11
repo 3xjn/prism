@@ -25,6 +25,7 @@ import {
 	useResolvedStyleProps,
 } from "../_shared/useResolvedStyleProps";
 import { usePresence } from "../_shared/usePresence";
+import { useOverlaySelectionLifecycle } from "../_shared/useOverlaySelectionLifecycle";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
 import type { ModalProps, ModalSize } from "./types";
@@ -196,6 +197,11 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 	const closeIconSize = UDim2.fromOffset(sizeStyles.titleSize, sizeStyles.titleSize);
 	const closeIconAsset = getLucideIconAsset("x", sizeStyles.titleSize);
 	const presence = usePresence(opened, { exitDuration: MODAL_EXIT_DURATION });
+	useOverlaySelectionLifecycle({
+		opened,
+		container: contentLayerInstance,
+		entryPolicy: "always",
+	});
 	const closeButtonScale = closePressed ? MODAL_CLOSE_PRESS_SCALE : closeHovered ? MODAL_CLOSE_HOVER_SCALE : 1;
 	const closeButtonMotionDuration = closePressed ? 0.045 : closeHovered ? 0.09 : 0.1;
 	const animated = useMotion({
@@ -537,6 +543,11 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 				ClipsDescendants={false}
 				Active={false}
 				Selectable={false}
+				SelectionGroup={true}
+				SelectionBehaviorUp={Enum.SelectionBehavior.Stop}
+				SelectionBehaviorDown={Enum.SelectionBehavior.Stop}
+				SelectionBehaviorLeft={Enum.SelectionBehavior.Stop}
+				SelectionBehaviorRight={Enum.SelectionBehavior.Stop}
 				ZIndex={contentLayerZIndex}
 				ref={contentLayerRef}
 				{...slotProps?.contentLayer}

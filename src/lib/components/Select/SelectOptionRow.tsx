@@ -27,12 +27,27 @@ interface SelectOptionRowProps {
 	readonly styleOverrides: SelectStyleOverrides | undefined;
 	readonly zIndex: GuiZIndex | undefined;
 	readonly cursor: SelectProps["cursor"];
+	readonly selectionOrder: number;
+	readonly onInstanceChange: (option: SelectOption, instance: TextButton | undefined) => void;
 	readonly onSelect: (value: string) => void;
 }
 
 export function SelectOptionRow(props: SelectOptionRowProps): React.ReactElement {
 	const theme = useTheme();
-	const { option, selected, color, size, sizeStyles, slotProps, styleOverrides, zIndex, cursor, onSelect } = props;
+	const {
+		option,
+		selected,
+		color,
+		size,
+		sizeStyles,
+		slotProps,
+		styleOverrides,
+		zIndex,
+		cursor,
+		selectionOrder,
+		onInstanceChange,
+		onSelect,
+	} = props;
 	const optionSlotProps = slotProps?.option;
 	const optionTextSlotProps = slotProps?.optionText;
 	const optionDisabled = option.disabled === true;
@@ -93,6 +108,12 @@ export function SelectOptionRow(props: SelectOptionRowProps): React.ReactElement
 		optionSlotProps?.Event === undefined ? cursor : undefined,
 		optionDisabled,
 	);
+	const rootRef = React.useCallback(
+		(instance: TextButton | undefined) => {
+			onInstanceChange(option, instance);
+		},
+		[onInstanceChange, option],
+	);
 
 	return (
 		<textbutton
@@ -103,12 +124,14 @@ export function SelectOptionRow(props: SelectOptionRowProps): React.ReactElement
 			BackgroundTransparency={animated.backgroundTransparency}
 			BorderSizePixel={0}
 			Size={new UDim2(1, 0, 0, sizeStyles.optionHeight)}
+			SelectionOrder={selectionOrder}
 			Text=""
 			TextTransparency={1}
 			TextStrokeTransparency={1}
 			ZIndex={resolvedButtonZIndex}
 			Event={rootEvent}
 			{...optionSlotProps}
+			ref={rootRef}
 		>
 			{renderCornerDecorator({ radius: sizeStyles.optionRadius, slotProps: slotProps?.optionCorner })}
 			{renderPaddingDecorator({

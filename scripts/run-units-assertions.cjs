@@ -46,6 +46,87 @@ class Vector2 {
 	}
 }
 
+class Color3 {
+	constructor(red = 0, green = 0, blue = 0) {
+		this.R = red;
+		this.G = green;
+		this.B = blue;
+	}
+
+	static fromRGB(red, green, blue) {
+		return new Color3(red / 255, green / 255, blue / 255);
+	}
+
+	static fromHSV(hue, saturation, value) {
+		const wrappedHue = ((hue % 1) + 1) % 1;
+		const sector = wrappedHue * 6;
+		const index = Math.floor(sector);
+		const fraction = sector - index;
+		const p = value * (1 - saturation);
+		const q = value * (1 - saturation * fraction);
+		const t = value * (1 - saturation * (1 - fraction));
+		switch (index % 6) {
+			case 0:
+				return new Color3(value, t, p);
+			case 1:
+				return new Color3(q, value, p);
+			case 2:
+				return new Color3(p, value, t);
+			case 3:
+				return new Color3(p, q, value);
+			case 4:
+				return new Color3(t, p, value);
+			default:
+				return new Color3(value, p, q);
+		}
+	}
+
+	ToHSV() {
+		const maximum = Math.max(this.R, this.G, this.B);
+		const minimum = Math.min(this.R, this.G, this.B);
+		const delta = maximum - minimum;
+		let hue = 0;
+		if (delta > 0) {
+			if (maximum === this.R) hue = ((this.G - this.B) / delta) % 6;
+			else if (maximum === this.G) hue = (this.B - this.R) / delta + 2;
+			else hue = (this.R - this.G) / delta + 4;
+			hue /= 6;
+			if (hue < 0) hue += 1;
+		}
+		return [hue, maximum === 0 ? 0 : delta / maximum, maximum];
+	}
+}
+
+function enumItem(name) {
+	return Object.freeze({ Name: name });
+}
+
+const themeEnum = Object.freeze({
+	Font: Object.freeze({ BuilderSans: enumItem("BuilderSans"), Gotham: enumItem("Gotham") }),
+	EasingStyle: Object.freeze({
+		Linear: enumItem("Linear"),
+		Cubic: enumItem("Cubic"),
+		Quint: enumItem("Quint"),
+	}),
+	EasingDirection: Object.freeze({
+		Out: enumItem("Out"),
+		In: enumItem("In"),
+		InOut: enumItem("InOut"),
+	}),
+});
+
+const themeMath = Object.freeze({
+	abs: Math.abs,
+	clamp: mathClamp,
+	floor: Math.floor,
+	huge: Infinity,
+	max: Math.max,
+	min: Math.min,
+	round: Math.round,
+});
+
+const luaTable = Object.freeze({ freeze: Object.freeze });
+
 function luaSub(value, start, finish) {
 	const size = value.length;
 	const normalizedStart = start >= 0 ? start : size + start + 1;
@@ -81,7 +162,7 @@ function luaFind(value, search, init = 1, plain = false) {
 	return index >= 0 ? [index + 1, index + search.length] : [undefined, undefined];
 }
 
-function tonumber(value) {
+function tonumber(value, radix) {
 	if (typeof value === "number") {
 		return value;
 	}
@@ -90,7 +171,7 @@ function tonumber(value) {
 		return undefined;
 	}
 
-	const parsed = Number(value);
+	const parsed = radix === undefined ? Number(value) : Number.parseInt(value, radix);
 	return Number.isFinite(parsed) ? parsed : undefined;
 }
 
@@ -224,10 +305,166 @@ function loadFixedVirtualGeometryModule() {
 	});
 }
 
+function loadFixedVirtualCollectionModule(fixedVirtualGeometryModule) {
+	const filePath = path.join(process.cwd(), "src/lib/virtualization/fixedVirtualCollection.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(
+		filePath,
+		source,
+		{
+			math: {
+				clamp: mathClamp,
+				floor: Math.floor,
+				huge: Infinity,
+				max: Math.max,
+				min: Math.min,
+			},
+			string: {
+				rep: (value, count) => value.repeat(count),
+			},
+			typeIs,
+			require: (moduleName) => {
+				if (moduleName === "./_internal/fixedVirtualGeometry") {
+					return fixedVirtualGeometryModule;
+				}
+
+				return require(moduleName);
+			},
+		},
+		"Array.prototype.size = function () { return this.length; }; String.prototype.size = function () { return this.length; };",
+	);
+}
+
+function loadFixedVirtualGridLayoutModule(fixedVirtualGeometryModule) {
+	const filePath = path.join(process.cwd(), "src/lib/virtualization/fixedVirtualGridLayout.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(filePath, source, {
+		math: {
+			floor: Math.floor,
+			huge: Infinity,
+			max: Math.max,
+		},
+		require: (moduleName) => {
+			if (moduleName === "./_internal/fixedVirtualGeometry") {
+				return fixedVirtualGeometryModule;
+			}
+
+			return require(moduleName);
+		},
+	});
+}
+
 function loadSelectionModule() {
 	const filePath = path.join(process.cwd(), "src/lib/components/_shared/selection.ts");
 	const source = fs.readFileSync(filePath, "utf8");
 	return evaluateTypeScriptModule(filePath, source);
+}
+
+function loadOverlaySelectionLifecyclePolicyModule() {
+	const filePath = path.join(process.cwd(), "src/lib/components/_shared/useOverlaySelectionLifecycle.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	const policyStart = source.indexOf("export type OverlaySelectionEntryPolicy");
+	const policyEnd = source.indexOf("function isInSubtree");
+
+	if (policyStart < 0 || policyEnd < 0) {
+		throw new Error("Overlay selection lifecycle policies could not be found.");
+	}
+
+	return evaluateTypeScriptModule(filePath, source.slice(policyStart, policyEnd), {
+		Enum: {
+			PreferredInput: {
+				Gamepad: "Gamepad",
+				MouseAndKeyboard: "MouseAndKeyboard",
+				Touch: "Touch",
+			},
+		},
+	});
+}
+
+function loadThemeDefaultsModule() {
+	const filePath = path.join(process.cwd(), "src/lib/theme/defaults.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(filePath, source, {
+		Color3,
+		Enum: themeEnum,
+		table: luaTable,
+	});
+}
+
+function loadColorContrastModule() {
+	const filePath = path.join(process.cwd(), "src/lib/theme/contrast.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(filePath, source, { math: themeMath });
+}
+
+function loadColorPickerUtilsModule() {
+	const filePath = path.join(process.cwd(), "src/lib/components/ColorPicker/utils.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(
+		filePath,
+		source,
+		{
+			Color3,
+			Vector2,
+			math: themeMath,
+			string: {
+				format: (template, ...values) => {
+					let valueIndex = 0;
+					return template.replace(/%02X/g, () =>
+						Math.round(values[valueIndex++]).toString(16).toUpperCase().padStart(2, "0"),
+					);
+				},
+				lower: (value) => value.toLowerCase(),
+				sub: luaSub,
+				upper: (value) => value.toUpperCase(),
+			},
+			tonumber,
+		},
+		"Array.prototype.size = function () { return this.length; }; String.prototype.size = function () { return this.length; };",
+	);
+}
+
+function loadWorkbenchModelModule() {
+	const filePath = path.join(process.cwd(), "src/playground/theme-workbench/model.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(
+		filePath,
+		source,
+		{
+			Color3,
+			math: themeMath,
+			table: luaTable,
+			tonumber,
+		},
+		"Array.prototype.size = function () { return this.length; }; String.prototype.size = function () { return this.length; };",
+	);
+}
+
+function loadWorkbenchSerializerModule(defaultTheme, modelModule) {
+	const filePath = path.join(process.cwd(), "src/playground/theme-workbench/serialize.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	const moduleRequire = (moduleName) => {
+		if (moduleName === "@prism/theme") {
+			return { DEFAULT_THEME: defaultTheme };
+		}
+		if (moduleName === "./model") {
+			return modelModule;
+		}
+		return require(moduleName);
+	};
+	return evaluateTypeScriptModule(
+		filePath,
+		source,
+		{
+			math: themeMath,
+			require: moduleRequire,
+			string: { rep: (value, count) => value.repeat(count) },
+			table: luaTable,
+			tostring: String,
+			typeIs,
+		},
+		"Array.prototype.size = function () { return this.length; };",
+	);
 }
 
 function loadOutsidePressModule() {
@@ -711,6 +948,239 @@ function runFixedVirtualGeometryAssertions() {
 	}
 
 	console.log("fixed virtual geometry: PASS");
+}
+
+function runFixedVirtualCollectionAssertions() {
+	const fixedVirtualGeometry = loadFixedVirtualGeometryModule();
+	const {
+		areVirtualItemRangesEqual,
+		findVirtualItemIndexByKey,
+		resolveFixedVirtualCanvasExtent,
+		resolveFixedVirtualViewportRange,
+		resolveFixedVirtualViewportScrollOffset,
+		resolveVirtualItemKeyIndex,
+		resolveVirtualItemReactKey,
+	} = loadFixedVirtualCollectionModule(fixedVirtualGeometry);
+	const { resolveFixedVirtualGeometry } = fixedVirtualGeometry;
+	const items = [{ id: "alpha" }, { id: "beta" }, { id: "gamma" }];
+	items.size = () => items.length;
+	const getKey = (item) => item.id;
+	const uniqueIndex = resolveVirtualItemKeyIndex(items, getKey);
+
+	assertCondition(uniqueIndex.keys.length === 3, "virtual key index preserves every positional key");
+	assertCondition(uniqueIndex.indexByKey.get("beta") === 1, "virtual key index resolves a stable consumer key");
+	assertCondition(uniqueIndex.duplicateKeys.size === 0, "unique virtual keys produce no duplicate diagnostics");
+	assertCondition(
+		findVirtualItemIndexByKey(items, getKey, "gamma") === 2,
+		"virtual key lookup resolves an unambiguous key",
+	);
+
+	const duplicateItems = [{ id: "same" }, { id: "same" }, { id: "unique" }];
+	duplicateItems.size = () => duplicateItems.length;
+	const duplicateIndex = resolveVirtualItemKeyIndex(duplicateItems, getKey);
+	assertCondition(duplicateIndex.duplicateKeys.has("same"), "duplicate virtual keys are diagnosed");
+	assertCondition(!duplicateIndex.indexByKey.has("same"), "duplicate virtual keys are excluded from imperative lookup");
+	assertCondition(
+		findVirtualItemIndexByKey(duplicateItems, getKey, "same") === undefined,
+		"ambiguous virtual key lookup deliberately fails",
+	);
+	const collisionItems = [{ id: "same" }, { id: "same" }, { id: "virtual-list-duplicate-same-0" }];
+	collisionItems.size = () => collisionItems.length;
+	const collisionIndex = resolveVirtualItemKeyIndex(collisionItems, getKey);
+	const resolvedReactKeys = collisionItems.map((_item, index) => resolveVirtualItemReactKey(collisionIndex, index));
+	assertCondition(
+		new Set(resolvedReactKeys).size === collisionItems.length,
+		"duplicate fallback React keys cannot collide with a valid consumer key",
+	);
+	assertCondition(
+		String(resolvedReactKeys[0]).length > "virtual-list-duplicate-same-0".length,
+		"duplicate fallback keys use a namespace longer than every consumer string key",
+	);
+
+	const geometry = resolveFixedVirtualGeometry({ itemCount: 3, itemExtent: 20, lineGap: 4 });
+	assertCondition(
+		resolveFixedVirtualCanvasExtent(geometry, 10, 6) === 84,
+		"virtual canvas extent includes normalized leading and trailing padding",
+	);
+	assertCondition(
+		resolveFixedVirtualCanvasExtent(geometry, -10, Number.NaN) === 68,
+		"virtual canvas extent ignores invalid padding",
+	);
+
+	const leadingPaddingRange = resolveFixedVirtualViewportRange(geometry, {
+		scrollOffset: 0,
+		viewportExtent: 20,
+		leadingInset: 30,
+		trailingInset: 10,
+		overscanLines: 4,
+	});
+	assertVirtualItemRange(
+		leadingPaddingRange.visibleItemRange,
+		0,
+		0,
+		"a viewport entirely inside leading padding has no visible items",
+	);
+	assertVirtualItemRange(
+		leadingPaddingRange.renderedItemRange,
+		0,
+		0,
+		"a viewport entirely inside leading padding does not mount overscan",
+	);
+
+	const paddedFirstRange = resolveFixedVirtualViewportRange(geometry, {
+		scrollOffset: 0,
+		viewportExtent: 40,
+		leadingInset: 10,
+		trailingInset: 6,
+		overscanLines: 1,
+	});
+	assertVirtualItemRange(paddedFirstRange.visibleItemRange, 0, 2, "padded viewport intersects the first two rows");
+	assertVirtualItemRange(paddedFirstRange.renderedItemRange, 0, 3, "padded viewport overscans by a full row");
+
+	const paddedLastRange = resolveFixedVirtualViewportRange(geometry, {
+		scrollOffset: Number.POSITIVE_INFINITY,
+		viewportExtent: 20,
+		leadingInset: 10,
+		trailingInset: 6,
+	});
+	assertCondition(paddedLastRange.scrollOffset === 64, "padded virtual range clamps to its physical canvas maximum");
+	assertVirtualItemRange(paddedLastRange.visibleItemRange, 2, 3, "maximum padded scroll reaches the final row");
+
+	const startTarget = resolveFixedVirtualViewportScrollOffset(geometry, {
+		index: 1,
+		viewportExtent: 20,
+		currentScrollOffset: 0,
+		alignment: "start",
+		leadingInset: 10,
+		trailingInset: 6,
+	});
+	assertCondition(startTarget === 34, "imperative start alignment preserves leading padding");
+	assertCondition(
+		resolveFixedVirtualViewportScrollOffset(geometry, {
+			index: 99,
+			viewportExtent: 20,
+			currentScrollOffset: 0,
+			leadingInset: 10,
+			trailingInset: 6,
+		}) === undefined,
+		"imperative collection scrolling rejects an invalid item index",
+	);
+
+	const shrunkGeometry = resolveFixedVirtualGeometry({ itemCount: 1, itemExtent: 20, lineGap: 4 });
+	const shrunkRange = resolveFixedVirtualViewportRange(shrunkGeometry, {
+		scrollOffset: 10_000,
+		viewportExtent: 20,
+		leadingInset: 10,
+		trailingInset: 6,
+	});
+	assertCondition(shrunkRange.scrollOffset === 16, "dataset shrink clamps a stale scroll offset to the new canvas");
+	assertVirtualItemRange(shrunkRange.visibleItemRange, 0, 1, "dataset shrink keeps the remaining row reachable");
+	assertCondition(
+		areVirtualItemRangesEqual({ startIndex: 2, endIndex: 5 }, { startIndex: 2, endIndex: 5 }),
+		"equal virtual ranges compare by half-open bounds",
+	);
+	assertCondition(
+		!areVirtualItemRangesEqual({ startIndex: 2, endIndex: 5 }, { startIndex: 2, endIndex: 6 }),
+		"different virtual ranges do not compare equal",
+	);
+
+	console.log("fixed virtual collection: PASS");
+}
+
+function runFixedVirtualGridLayoutAssertions() {
+	const fixedVirtualGeometry = loadFixedVirtualGeometryModule();
+	const { resolveFixedVirtualGridCellLayout, resolveFixedVirtualGridLayout } =
+		loadFixedVirtualGridLayoutModule(fixedVirtualGeometry);
+	const { resolveFixedVirtualGeometry, resolveFixedVirtualRange } = fixedVirtualGeometry;
+
+	const explicitLayout = resolveFixedVirtualGridLayout({
+		availableWidth: 440,
+		columnGap: 10,
+		columns: 4,
+		minimumCellWidth: 300,
+		maxColumns: 2,
+	});
+	assertCondition(explicitLayout.laneCount === 4, "explicit virtual grid columns override responsive inputs");
+	assertCondition(explicitLayout.cellWidth === 102.5, "explicit virtual grid columns divide the available width");
+
+	const exactResponsiveLayout = resolveFixedVirtualGridLayout({
+		availableWidth: 320,
+		columnGap: 10,
+		minimumCellWidth: 100,
+	});
+	assertCondition(exactResponsiveLayout.laneCount === 3, "responsive virtual grid includes an exact three-column fit");
+	assertCondition(exactResponsiveLayout.cellWidth === 100, "responsive virtual grid preserves its exact minimum width");
+
+	const thresholdLayout = resolveFixedVirtualGridLayout({
+		availableWidth: 319,
+		columnGap: 10,
+		minimumCellWidth: 100,
+	});
+	assertCondition(thresholdLayout.laneCount === 2, "responsive virtual grid drops a lane below the width threshold");
+	assertCondition(thresholdLayout.cellWidth === 154.5, "responsive virtual grid redistributes remaining width fluidly");
+
+	const cappedLayout = resolveFixedVirtualGridLayout({
+		availableWidth: 1_000,
+		columnGap: 10,
+		minimumCellWidth: 100,
+		maxColumns: 4,
+	});
+	assertCondition(cappedLayout.laneCount === 4, "responsive virtual grid respects maxColumns");
+	assertCondition(cappedLayout.cellWidth === 242.5, "capped virtual grid cells expand to fill the row");
+
+	const invalidLayout = resolveFixedVirtualGridLayout({
+		availableWidth: Number.NaN,
+		minimumCellWidth: 100,
+	});
+	assertCondition(invalidLayout.laneCount === 1, "invalid virtual grid widths retain one lane");
+	assertCondition(invalidLayout.cellWidth === 0, "invalid virtual grid widths produce a safe zero-width cell");
+
+	const geometry = resolveFixedVirtualGeometry({
+		itemCount: 10,
+		itemExtent: 72,
+		lineGap: 8,
+		laneCount: exactResponsiveLayout.laneCount,
+	});
+	const cell = resolveFixedVirtualGridCellLayout(5, geometry, exactResponsiveLayout);
+	assertCondition(cell.row === 1 && cell.column === 2, "virtual grid cell layout resolves row and column");
+	assertCondition(cell.x === 220 && cell.y === 80, "virtual grid cell layout resolves sparse absolute position");
+	assertCondition(cell.width === 100 && cell.height === 72, "virtual grid cell layout resolves fixed cell size");
+	assertCondition(
+		resolveFixedVirtualGridCellLayout(-1, geometry, exactResponsiveLayout) === undefined &&
+			resolveFixedVirtualGridCellLayout(10, geometry, exactResponsiveLayout) === undefined,
+		"virtual grid cell layout rejects invalid indices",
+	);
+
+	const narrowLayout = resolveFixedVirtualGridLayout({
+		availableWidth: 260,
+		columnGap: 8,
+		minimumCellWidth: 120,
+	});
+	const wideLayout = resolveFixedVirtualGridLayout({
+		availableWidth: 500,
+		columnGap: 8,
+		minimumCellWidth: 120,
+	});
+	assertCondition(narrowLayout.laneCount === 2 && wideLayout.laneCount === 3, "virtual grid resize recomputes lanes");
+	for (const layout of [narrowLayout, wideLayout]) {
+		const resizedGeometry = resolveFixedVirtualGeometry({
+			itemCount: 63,
+			itemExtent: 72,
+			lineGap: 8,
+			laneCount: layout.laneCount,
+		});
+		const resizedRange = resolveFixedVirtualRange(resizedGeometry, {
+			scrollOffset: Number.POSITIVE_INFINITY,
+			viewportExtent: 220,
+			overscanLines: 2,
+		});
+		assertCondition(
+			resizedRange.renderedItemRange.startIndex >= 0 && resizedRange.renderedItemRange.endIndex <= 63,
+			"virtual grid resize keeps the rendered range clamped to the dataset",
+		);
+	}
+
+	console.log("fixed virtual grid layout: PASS");
 }
 
 function runOutsidePressAssertions() {
@@ -1202,7 +1672,10 @@ function runNotificationsApiAssertions() {
 		"independent notification providers can generate the same local ID",
 	);
 	assertCondition(primaryDefault?.duration === 8, "notification API applies numeric provider durations");
-	assertCondition(secondaryDefault?.duration === undefined, "notification API maps false provider durations to persistent");
+	assertCondition(
+		secondaryDefault?.duration === undefined,
+		"notification API maps false provider durations to persistent",
+	);
 	assertCondition(primaryDefault?.data.message === "Primary default", "notification API preserves required messages");
 	assertCondition(primaryDefault?.data.color === "info", "notification API defaults colors to info");
 	assertCondition(primaryDefault?.data.withCloseButton === true, "notification API enables close buttons by default");
@@ -1222,7 +1695,10 @@ function runNotificationsApiAssertions() {
 		withCloseButton: false,
 		duration: 12,
 	});
-	assertCondition(primaryApi.update(preservedId, { message: "Updated message" }), "notification API updates open records");
+	assertCondition(
+		primaryApi.update(preservedId, { message: "Updated message" }),
+		"notification API updates open records",
+	);
 
 	const partiallyUpdated = getNotificationRecord(primaryStore, preservedId);
 	assertCondition(partiallyUpdated?.data.message === "Updated message", "notification API applies supplied patches");
@@ -1284,6 +1760,20 @@ function run() {
 	const { alphaToValue, normalizeSliderValue, resolveSliderRange, valueToAlpha } = loadSliderRangeModule();
 	const { resolveBreakpoint, resolveResponsiveValue } = loadResponsiveModule();
 	const { resolveSelectionGroupProps, resolveSelectionProps } = loadSelectionModule();
+	const {
+		resolveOverlaySelectionLocation,
+		shouldManageOverlaySelection,
+		shouldRepairOverlaySelection,
+		shouldRestoreOverlaySelection,
+	} = loadOverlaySelectionLifecyclePolicyModule();
+	const { DEFAULT_THEME, DARK_THEME } = loadThemeDefaultsModule();
+	const { getColorContrastRatio, resolveHigherContrastColor, resolveReadableColor } = loadColorContrastModule();
+	const colorPickerUtils = loadColorPickerUtilsModule();
+	const workbenchModel = loadWorkbenchModelModule();
+	const { countChangedThemeTokens, serializeWorkbenchThemeOverride } = loadWorkbenchSerializerModule(
+		DEFAULT_THEME,
+		workbenchModel,
+	);
 	const passthrough1D = new UDim(0.3, 5);
 	const passthrough2D = new UDim2(0.25, 8, 0.75, 16);
 
@@ -1431,7 +1921,272 @@ function run() {
 	assertCondition(selectionGroup.SelectionBehaviorRight === "Stop", "selection preserves native group behavior");
 
 	console.log("selection: PASS");
+
+	assertCondition(
+		shouldManageOverlaySelection("Gamepad", "always", false),
+		"overlay selection enters an always-managed modal from gamepad input",
+	);
+	assertCondition(
+		shouldManageOverlaySelection("Gamepad", "trigger", true),
+		"overlay selection enters a trigger overlay captured from its trigger subtree",
+	);
+	assertCondition(
+		!shouldManageOverlaySelection("Gamepad", "trigger", false),
+		"overlay selection does not steal a gamepad selection outside the trigger subtree",
+	);
+	assertCondition(
+		!shouldManageOverlaySelection("MouseAndKeyboard", "always", true),
+		"overlay selection leaves mouse and keyboard openings unmanaged",
+	);
+	assertCondition(
+		!shouldManageOverlaySelection("Touch", "always", true),
+		"overlay selection leaves touch openings unmanaged",
+	);
+	assertCondition(
+		shouldRestoreOverlaySelection(true, "overlay"),
+		"overlay selection restores while Prism still owns an overlay target",
+	);
+	assertCondition(
+		shouldRestoreOverlaySelection(true, "missing"),
+		"overlay selection repairs a missing owned target during close",
+	);
+	assertCondition(
+		!shouldRestoreOverlaySelection(true, "outside"),
+		"overlay selection preserves a target moved outside before close",
+	);
+	assertCondition(
+		!shouldRestoreOverlaySelection(false, "overlay"),
+		"overlay selection does not restore after ownership is released",
+	);
+	assertCondition(
+		shouldRepairOverlaySelection(true, "overlay", false),
+		"overlay selection repairs an owned target whose identity stayed stable while it became invalid",
+	);
+	assertCondition(
+		shouldRepairOverlaySelection(true, "missing", false),
+		"overlay selection repairs an owned target that was unmounted",
+	);
+	assertCondition(
+		!shouldRepairOverlaySelection(true, "outside", false),
+		"overlay selection does not repair over a target moved outside",
+	);
+	assertCondition(
+		!shouldRepairOverlaySelection(true, "overlay", true),
+		"overlay selection leaves an eligible owned target unchanged",
+	);
+	assertCondition(
+		resolveOverlaySelectionLocation(true, false, true, false) === "outside",
+		"overlay selection releases a last-owned target reparented outside",
+	);
+	assertCondition(
+		resolveOverlaySelectionLocation(true, false, true, true) === "missing",
+		"overlay selection treats a detached last-owned target as missing",
+	);
+
+	console.log("overlay selection lifecycle: PASS");
+
+	const pickerColor = Color3.fromRGB(12, 34, 56);
+	assertCondition(
+		colorPickerUtils.formatHexColor(pickerColor) === "#0C2238",
+		"color picker formats canonical uppercase hex",
+	);
+	assertCondition(
+		colorPickerUtils.colorsEqual(colorPickerUtils.parseHexColor("#0c2238"), pickerColor),
+		"color picker parses six-digit hex",
+	);
+	assertCondition(
+		colorPickerUtils.colorsEqual(colorPickerUtils.parseHexColor("#0F8"), Color3.fromRGB(0, 255, 136)),
+		"color picker expands three-digit hex",
+	);
+	assertCondition(colorPickerUtils.parseHexColor("#12FG00") === undefined, "color picker rejects invalid hex");
+	assertCondition(
+		colorPickerUtils.colorsEqual(colorPickerUtils.parseRgbColor("rgb(12, 34, 56)"), pickerColor),
+		"color picker parses wrapped RGB input",
+	);
+	assertCondition(
+		colorPickerUtils.parseRgbColor("256, 0, 0") === undefined,
+		"color picker rejects out-of-range RGB input",
+	);
+	const pickerHsv = colorPickerUtils.color3ToHsv(pickerColor);
+	assertCondition(
+		colorPickerUtils.colorsEqual(colorPickerUtils.hsvToColor3(pickerHsv), pickerColor),
+		"color picker HSV conversion round-trips Color3 values",
+	);
+	const pickerSaturationValue = colorPickerUtils.resolveSaturationValueFromPoint(
+		{ position: new Vector2(10, 20), size: new Vector2(100, 50) },
+		new Vector2(60, 45),
+	);
+	assertCondition(
+		pickerSaturationValue.saturation === 0.5 && pickerSaturationValue.value === 0.5,
+		"color picker resolves saturation/value from local pointer geometry",
+	);
+	assertCondition(
+		colorPickerUtils.resolveHueFromPoint(
+			{ position: new Vector2(100, 0), size: new Vector2(200, 10) },
+			new Vector2(150, 5),
+		) === 0.25,
+		"color picker resolves hue from rail geometry",
+	);
+	const fieldLeftStep = colorPickerUtils.resolveColorFieldControllerStep("DPadLeft");
+	const fieldRightStep = colorPickerUtils.resolveColorFieldControllerStep("Right");
+	const fieldValueDownStep = colorPickerUtils.resolveColorFieldControllerStep("ButtonL1");
+	const fieldValueUpStep = colorPickerUtils.resolveColorFieldControllerStep("ButtonR1");
+	assertCondition(
+		fieldLeftStep?.channel === "saturation" && fieldLeftStep.direction === -1,
+		"color picker maps D-pad Left to saturation decrement",
+	);
+	assertCondition(
+		fieldRightStep?.channel === "saturation" && fieldRightStep.direction === 1,
+		"color picker maps Right to saturation increment",
+	);
+	assertCondition(
+		fieldValueDownStep?.channel === "value" && fieldValueDownStep.direction === -1,
+		"color picker maps L1 to value decrement",
+	);
+	assertCondition(
+		fieldValueUpStep?.channel === "value" && fieldValueUpStep.direction === 1,
+		"color picker maps R1 to value increment",
+	);
+	assertCondition(
+		colorPickerUtils.resolveColorFieldControllerStep("DPadUp") === undefined &&
+			colorPickerUtils.resolveColorFieldControllerStep("Down") === undefined,
+		"color picker leaves Up/Down available for native navigation",
+	);
+	assertCondition(
+		colorPickerUtils.resolveColorHueControllerStep("Left") === -1 &&
+			colorPickerUtils.resolveColorHueControllerStep("DPadRight") === 1 &&
+			colorPickerUtils.resolveColorHueControllerStep("ButtonR1") === undefined,
+		"color picker limits hue controller adjustment to horizontal input",
+	);
+	const controlledPickerColor = Color3.fromRGB(59, 130, 246);
+	const candidatePickerColor = Color3.fromRGB(255, 0, 170);
+	assertCondition(
+		colorPickerUtils.resolvePrecisionCommitColor(candidatePickerColor, controlledPickerColor, true) ===
+			controlledPickerColor,
+		"color picker rejected controlled commits retain the resolved prop color",
+	);
+	assertCondition(
+		colorPickerUtils.resolvePrecisionCommitColor(candidatePickerColor, controlledPickerColor, false) ===
+			candidatePickerColor,
+		"color picker uncontrolled commits retain the candidate color",
+	);
+
+	console.log("color picker: PASS");
+
+	for (const theme of [DEFAULT_THEME, DARK_THEME]) {
+		for (const intent of ["primary", "secondary", "error", "warning", "info", "success"]) {
+			assertCondition(
+				getColorContrastRatio(theme.colors[intent].main, theme.colors[intent].contrast) >= 4.5,
+				`${theme === DEFAULT_THEME ? "default" : "dark"} ${intent} main/contrast meets WCAG AA`,
+			);
+		}
+	}
+	const defaultTooltipSurface = resolveHigherContrastColor(
+		DEFAULT_THEME.colors.text.inverse,
+		DEFAULT_THEME.colors.palette.gray["9"],
+		DEFAULT_THEME.colors.palette.gray["0"],
+	);
+	const darkTooltipSurface = resolveHigherContrastColor(
+		DARK_THEME.colors.text.inverse,
+		DARK_THEME.colors.palette.gray["9"],
+		DARK_THEME.colors.palette.gray["0"],
+	);
+	assertCondition(
+		defaultTooltipSurface === DEFAULT_THEME.colors.palette.gray["9"],
+		"default tooltip chooses the dark inverse surface",
+	);
+	assertCondition(
+		darkTooltipSurface === DARK_THEME.colors.palette.gray["0"],
+		"dark tooltip chooses the light inverse surface",
+	);
+	assertCondition(
+		getColorContrastRatio(DEFAULT_THEME.colors.text.inverse, defaultTooltipSurface) >= 4.5,
+		"default tooltip text/surface meets WCAG AA",
+	);
+	assertCondition(
+		getColorContrastRatio(DARK_THEME.colors.text.inverse, darkTooltipSurface) >= 4.5,
+		"dark tooltip text/surface meets WCAG AA",
+	);
+	const defaultPrimaryPressedSurface = new Color3(
+		DEFAULT_THEME.colors.primary.dark.R +
+			(DEFAULT_THEME.colors.action.pressed.R - DEFAULT_THEME.colors.primary.dark.R) * 0.14,
+		DEFAULT_THEME.colors.primary.dark.G +
+			(DEFAULT_THEME.colors.action.pressed.G - DEFAULT_THEME.colors.primary.dark.G) * 0.14,
+		DEFAULT_THEME.colors.primary.dark.B +
+			(DEFAULT_THEME.colors.action.pressed.B - DEFAULT_THEME.colors.primary.dark.B) * 0.14,
+	);
+	const defaultPrimaryPressedGlyph = resolveReadableColor(
+		defaultPrimaryPressedSurface,
+		DEFAULT_THEME.colors.primary.contrast,
+		DEFAULT_THEME.colors.text.inverse,
+	);
+	assertCondition(
+		getColorContrastRatio(defaultPrimaryPressedSurface, defaultPrimaryPressedGlyph) >= 4.5,
+		"default pressed primary checkbox chooses a readable glyph fallback",
+	);
+
+	console.log("theme contrast: PASS");
+
+	const workbenchDraft = workbenchModel.createWorkbenchThemeOverride(DEFAULT_THEME);
+	assertCondition(Object.isFrozen(workbenchDraft), "workbench draft root is immutable");
+	assertCondition(Object.isFrozen(workbenchDraft.colors), "workbench color draft is immutable");
+	assertCondition(Object.isFrozen(workbenchDraft.motion.easing.standard), "workbench easing draft is immutable");
+	const editedWorkbenchDraft = workbenchModel.updateFoundationScale(workbenchDraft, "spacing", "md", 37);
+	assertCondition(workbenchDraft.spacing.md === 12, "workbench edits preserve the previous draft");
+	assertCondition(editedWorkbenchDraft.spacing.md === 37, "workbench edits create the requested token value");
+	assertCondition(
+		editedWorkbenchDraft.colors === workbenchDraft.colors,
+		"workbench edits retain untouched branch identity",
+	);
+	const orderedWorkbenchDraft = workbenchModel.updateBreakpoint(workbenchDraft, "sm", 4_000);
+	assertCondition(
+		orderedWorkbenchDraft.breakpoints.sm === workbenchDraft.breakpoints.md,
+		"workbench breakpoint edits cannot pass the next breakpoint",
+	);
+	const coloredWorkbenchDraft = workbenchModel.updateSemanticIntentColor(
+		editedWorkbenchDraft,
+		"primary",
+		"main",
+		Color3.fromRGB(12, 34, 56),
+	);
+	assertCondition(countChangedThemeTokens(coloredWorkbenchDraft) === 2, "workbench counts only changed leaf tokens");
+	const fontWorkbenchDraft = workbenchModel.updateFontFamily(coloredWorkbenchDraft, themeEnum.Font.Gotham);
+	const completeWorkbenchDraft = workbenchModel.updateMotionEasing(fontWorkbenchDraft, "standard", {
+		style: themeEnum.EasingStyle.Linear,
+	});
+	assertCondition(
+		completeWorkbenchDraft.motion.easing.standard.style === themeEnum.EasingStyle.Linear,
+		"workbench edits motion easing without mutating the previous draft",
+	);
+	assertCondition(
+		fontWorkbenchDraft.motion.easing.standard.style === themeEnum.EasingStyle.Cubic,
+		"workbench keeps prior easing immutable",
+	);
+	assertCondition(
+		countChangedThemeTokens(completeWorkbenchDraft) === 4,
+		"workbench counts color, scale, font, and easing leaves",
+	);
+	const typescriptThemeExport = serializeWorkbenchThemeOverride(completeWorkbenchDraft, "typescript");
+	const luauThemeExport = serializeWorkbenchThemeOverride(completeWorkbenchDraft, "luau");
+	assertCondition(typescriptThemeExport.includes("primary"), "workbench TypeScript export includes edited colors");
+	assertCondition(typescriptThemeExport.includes("spacing"), "workbench TypeScript export includes edited scales");
+	assertCondition(!typescriptThemeExport.includes("radius"), "workbench TypeScript export omits unchanged sections");
+	assertCondition(
+		typescriptThemeExport.includes("fontFamily"),
+		"workbench TypeScript export includes font family edits",
+	);
+	assertCondition(typescriptThemeExport.includes("easing"), "workbench TypeScript export includes easing edits");
+	assertCondition(
+		typescriptThemeExport.indexOf("colors") < typescriptThemeExport.indexOf("spacing"),
+		"workbench TypeScript export uses deterministic section order",
+	);
+	assertCondition(luauThemeExport.includes("colors ="), "workbench Luau export uses assignment syntax");
+	assertCondition(luauThemeExport.endsWith("return themeOverride"), "workbench Luau export is a complete ModuleScript");
+
+	console.log("theme workbench: PASS");
 	runFixedVirtualGeometryAssertions();
+	runFixedVirtualCollectionAssertions();
+	runFixedVirtualGridLayoutAssertions();
 	runOutsidePressAssertions();
 
 	runNotificationStoreAssertions();

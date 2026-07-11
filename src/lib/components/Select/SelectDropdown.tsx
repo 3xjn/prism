@@ -29,6 +29,8 @@ interface SelectDropdownProps {
 	readonly styleOverrides: SelectStyleOverrides | undefined;
 	readonly cursor: SelectProps["cursor"];
 	readonly closeOnOutsidePress: boolean;
+	readonly setListInstance: (instance: Frame | undefined) => void;
+	readonly setPreferredOptionInstance: (instance: TextButton | undefined) => void;
 	readonly onOutsidePress: () => void;
 	readonly onSelect: (value: string) => void;
 }
@@ -50,10 +52,13 @@ export function SelectDropdown(props: SelectDropdownProps): React.ReactElement {
 		styleOverrides,
 		cursor,
 		closeOnOutsidePress,
+		setListInstance: setExternalListInstance,
+		setPreferredOptionInstance,
 		onOutsidePress,
 		onSelect,
 	} = props;
-	const [listInstance, setListInstance] = React.useState<Frame>();
+	const [listInstance, setListInstanceState] = React.useState<Frame>();
+	const optionInstancesRef = React.useRef(new Map<string, TextButton>());
 	const outsideCaptureSlotProps = slotProps?.outsideCapture;
 	const listSlotProps = slotProps?.list;
 	const listViewportSlotProps = slotProps?.listViewport;
@@ -71,6 +76,60 @@ export function SelectDropdown(props: SelectDropdownProps): React.ReactElement {
 	const resolvedOutsideCaptureZIndex = outsideCaptureSlotProps?.ZIndex ?? overlayZIndex;
 	const resolvedListZIndex = listSlotProps?.ZIndex ?? incrementZIndex(resolvedOutsideCaptureZIndex, 1);
 	const resolvedViewportZIndex = listViewportSlotProps?.ZIndex ?? resolvedListZIndex;
+	const resolvePreferredOptionInstance = React.useCallback(() => {
+		if (currentValue !== undefined) {
+			const selectedOption = options.find((option) => option.value === currentValue && option.disabled !== true);
+			if (selectedOption !== undefined) {
+				const selectedInstance = optionInstancesRef.current.get(selectedOption.value);
+				if (selectedInstance !== undefined) {
+					return selectedInstance;
+				}
+			}
+		}
+
+		for (const option of options) {
+			if (option.disabled !== true) {
+				const optionInstance = optionInstancesRef.current.get(option.value);
+				if (optionInstance !== undefined) {
+					return optionInstance;
+				}
+			}
+		}
+
+		return undefined;
+	}, [currentValue, options]);
+	const syncPreferredOptionInstance = React.useCallback(() => {
+		setPreferredOptionInstance(resolvePreferredOptionInstance());
+	}, [resolvePreferredOptionInstance, setPreferredOptionInstance]);
+	const handleOptionInstance = React.useCallback(
+		(option: SelectOption, instance: TextButton | undefined) => {
+			if (instance === undefined) {
+				optionInstancesRef.current.delete(option.value);
+			} else {
+				optionInstancesRef.current.set(option.value, instance);
+			}
+
+			syncPreferredOptionInstance();
+		},
+		[syncPreferredOptionInstance],
+	);
+	const listRef = React.useCallback(
+		(instance: Frame | undefined) => {
+			setListInstanceState((currentInstance) => (currentInstance === instance ? currentInstance : instance));
+			setExternalListInstance(instance);
+		},
+		[setExternalListInstance],
+	);
+
+	React.useEffect(() => {
+		syncPreferredOptionInstance();
+	}, [syncPreferredOptionInstance]);
+
+	React.useEffect(() => {
+		return () => {
+			setPreferredOptionInstance(undefined);
+		};
+	}, [setPreferredOptionInstance]);
 
 	return (
 		<>
@@ -95,7 +154,6 @@ export function SelectDropdown(props: SelectDropdownProps): React.ReactElement {
 				{renderElevationShadow({ shadow: theme.shadows.md, radius: sizeStyles.radius })}
 			</frame>
 			<frame
-				ref={setListInstance}
 				BackgroundColor3={listVisualStyles.backgroundColor}
 				BackgroundTransparency={0}
 				BorderSizePixel={0}
@@ -103,8 +161,14 @@ export function SelectDropdown(props: SelectDropdownProps): React.ReactElement {
 				ClipsDescendants={true}
 				Position={new UDim2(0, localAnchorPosition.X, 0, localAnchorPosition.Y)}
 				Size={new UDim2(0, placement.dropdownSize.X, 0, visibleListHeight)}
+				SelectionGroup={true}
+				SelectionBehaviorUp={Enum.SelectionBehavior.Stop}
+				SelectionBehaviorDown={Enum.SelectionBehavior.Stop}
+				SelectionBehaviorLeft={Enum.SelectionBehavior.Stop}
+				SelectionBehaviorRight={Enum.SelectionBehavior.Stop}
 				ZIndex={resolvedListZIndex}
 				{...listSlotProps}
+				ref={listRef}
 			>
 				{renderCornerDecorator({ radius: sizeStyles.radius, slotProps: slotProps?.listCorner })}
 				{renderStrokeDecorator({
@@ -147,7 +211,7 @@ export function SelectDropdown(props: SelectDropdownProps): React.ReactElement {
 						Padding={new UDim(0, sizeStyles.optionGap)}
 						{...slotProps?.optionsLayout}
 					/>
-					{options.map((option) => (
+					{options.map((option, index) => (
 						<SelectOptionRow
 							key={option.value}
 							option={option}
@@ -159,6 +223,8 @@ export function SelectDropdown(props: SelectDropdownProps): React.ReactElement {
 							styleOverrides={styleOverrides}
 							zIndex={resolvedViewportZIndex}
 							cursor={cursor}
+							selectionOrder={index + 1}
+							onInstanceChange={handleOptionInstance}
 							onSelect={onSelect}
 						/>
 					))}

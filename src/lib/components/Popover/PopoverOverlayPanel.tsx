@@ -83,6 +83,11 @@ export function PopoverOverlayPanel({
 				Size={panelSlotProps?.Size ?? UDim2.fromOffset(0, 0)}
 				AutomaticSize={panelSlotProps?.AutomaticSize ?? Enum.AutomaticSize.XY}
 				ClipsDescendants={panelSlotProps?.ClipsDescendants ?? false}
+				SelectionGroup={true}
+				SelectionBehaviorUp={Enum.SelectionBehavior.Stop}
+				SelectionBehaviorDown={Enum.SelectionBehavior.Stop}
+				SelectionBehaviorLeft={Enum.SelectionBehavior.Stop}
+				SelectionBehaviorRight={Enum.SelectionBehavior.Stop}
 				ZIndex={resolvedPanelZIndex}
 				{...panelSlotProps}
 				ref={setPanelInstance}

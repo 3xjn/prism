@@ -115,6 +115,7 @@ function MenuActionRow({
 	zIndex,
 	cursor,
 	rightSectionWidth,
+	selectionOrder,
 	onPress,
 }: {
 	readonly item: MenuActionItem;
@@ -125,6 +126,7 @@ function MenuActionRow({
 	readonly zIndex: React.InstanceProps<TextButton>["ZIndex"] | undefined;
 	readonly cursor: MenuProps["cursor"];
 	readonly rightSectionWidth: UDim;
+	readonly selectionOrder: number;
 	readonly onPress: (item: MenuActionItem) => void;
 }): React.ReactElement {
 	const theme = useTheme();
@@ -205,6 +207,7 @@ function MenuActionRow({
 			BackgroundTransparency={animated.backgroundTransparency}
 			BorderSizePixel={0}
 			Size={new UDim2(1, 0, 0, sizeStyles.itemHeight)}
+			SelectionOrder={selectionOrder}
 			Text=""
 			TextTransparency={1}
 			TextStrokeTransparency={1}
@@ -432,6 +435,7 @@ function MenuPanel({ props, opened, setOpened }: { readonly props: MenuProps; re
 							zIndex={contentZIndex}
 							cursor={props.cursor}
 							rightSectionWidth={rightSectionWidth}
+							selectionOrder={index + 1}
 							onPress={onItemPress}
 						/>
 					);

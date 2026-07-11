@@ -77,7 +77,7 @@ function AbilitySlot({
 				<Box
 					width={18}
 					height={16}
-					bg={themeRefs.palette.gray["9"]}
+					bg={themeRefs.secondary.main}
 					radius="sm"
 					position={{ x: "100%", y: "100%" }}
 					anchor={new Vector2(1, 1)}
@@ -86,7 +86,7 @@ function AbilitySlot({
 						text={`${slotNumber}`}
 						size="xs"
 						weight={700}
-						color={themeRefs.text.inverse}
+						color={themeRefs.secondary.contrast}
 						width="100%"
 						height="100%"
 						align="center"

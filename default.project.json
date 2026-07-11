@@ -7,6 +7,9 @@
 			"Prism": {
 				"$path": "out/lib"
 			},
+			"PrismBenchmarks": {
+				"$path": "out/benchmarks"
+			},
 			"rbxts_include": {
 				"$path": "include",
 					"node_modules": {

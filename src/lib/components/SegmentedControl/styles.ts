@@ -179,7 +179,7 @@ export function resolveSegmentedControlSegmentVisualStyles(
 ): SegmentedControlSegmentVisualStyles {
 	const intentColors = theme.colors[color];
 	const idleText = theme.colors.text.secondary;
-	const selectedText = variant === "filled" ? theme.colors.text.inverse : theme.colors.text.primary;
+	const selectedText = variant === "filled" ? intentColors.contrast : theme.colors.text.primary;
 	const selectedSurface = variant === "filled"
 		? intentColors.main
 		: variant === "light"

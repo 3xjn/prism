@@ -7,6 +7,7 @@ import { theme as themeRefs, useTheme } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { useSelectedObjectLabel } from "./_selectionStoryUtils";
 
 const previewOptions: readonly SelectOption[] = [
 	{ value: "aurora", label: "Aurora Watch" },
@@ -54,6 +55,8 @@ const controls = {
 	),
 	maxVisibleOptions: Number(6, 1, 8, 1),
 	closeOnOutsidePress: Boolean(true),
+	disableHarbor: Boolean(false),
+	removeHarbor: Boolean(false),
 	disabled: Boolean(false),
 	fullWidth: Boolean(false),
 };
@@ -124,15 +127,21 @@ const labOverrideStyles: SelectStyleOverrides = {
 
 function SelectStoryCanvas({ controls: currentControls }: { readonly controls: SelectStoryControls }): React.ReactElement {
 	const theme = useTheme();
-	const [previewValue, setPreviewValue] = React.useState("");
+	const [previewValue, setPreviewValue] = React.useState("harbor");
 	const [labValue, setLabValue] = React.useState("harbor");
 	const [observedOpen, setObservedOpen] = React.useState(false);
 	const [triggerActivations, setTriggerActivations] = React.useState(0);
 	const [outsideDismissals, setOutsideDismissals] = React.useState(0);
 	const [selectionChanges, setSelectionChanges] = React.useState(0);
+	const selectedObjectLabel = useSelectedObjectLabel();
 	const resolvedVariant = currentControls.variant as Variant;
 	const resolvedColor = currentControls.color as SelectColor;
 	const resolvedSize = currentControls.size as SelectSize;
+	const repairProbeOptions = previewOptions
+		.filter((option) => !currentControls.removeHarbor || option.value !== "harbor")
+		.map((option) =>
+			option.value === "harbor" && currentControls.disableHarbor ? { ...option, disabled: true } : option,
+		);
 	const currentOption = previewOptions.find((option) => option.value === previewValue);
 	const currentValueLabel = currentOption === undefined ? "Current value: (none)" : `Current value: ${currentOption.label}`;
 	const dismissalLabel = currentControls.closeOnOutsidePress
@@ -156,7 +165,7 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 				<Stack width="100%" gap="md">
 					<Text text="Select" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="Open the live Select, choose an option, or press the surrounding panel to inspect trigger anchoring, scrolling, selection, and outside dismissal."
+						text="With a gamepad, select the trigger and press A: selection enters Harbor Shift. While it is highlighted, toggle Disable Harbor or Remove Harbor in UI Labs to verify native selection repairs to another enabled row without closing. Choose or dismiss, then confirm selection returns to the trigger."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
@@ -166,7 +175,7 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 							<Select
 								selected={previewValue}
 								onChange={handlePreviewChange}
-								options={previewOptions}
+								options={repairProbeOptions}
 								placeholder={currentControls.placeholder}
 								variant={resolvedVariant}
 								color={resolvedColor}
@@ -195,6 +204,7 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 							<Text text={currentValueLabel} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 							<Text text={dismissalLabel} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 							<Text text={observedBehavior} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
+							<Text text={selectedObjectLabel} size="sm" weight={600} color={themeRefs.primary.main} wrap width="100%" />
 						</Stack>
 					</Box>
 					<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">

@@ -1,5 +1,6 @@
 import type { Theme } from "@prism/theme";
 
+import { resolveHigherContrastColor, resolveReadableColor } from "../../theme/contrast";
 import type { InteractionState } from "../_shared/usePressInteraction";
 import { mixColor } from "../_shared/visual";
 
@@ -100,6 +101,13 @@ export function resolveCheckboxVisualStyles(
 	const checkedFill = mixColor(intentColors.main, theme.colors.background.surface, 0.04);
 	const checkedHoverFill = mixColor(intentColors.main, intentColors.dark, 0.14);
 	const checkedPressedFill = mixColor(intentColors.dark, theme.colors.action.pressed, 0.14);
+	const checkedStateFill = state === "pressed" ? checkedPressedFill : state === "hovered" ? checkedHoverFill : checkedFill;
+	const alternateGlyphColor = resolveHigherContrastColor(
+		checkedStateFill,
+		theme.colors.text.primary,
+		theme.colors.text.inverse,
+	);
+	const checkedGlyphColor = resolveReadableColor(checkedStateFill, intentColors.contrast, alternateGlyphColor);
 
 	if (state === "disabled") {
 		return {
@@ -118,15 +126,9 @@ export function resolveCheckboxVisualStyles(
 		markColor: checked ? checkedFill : state === "pressed" ? pressedMark : state === "hovered" ? hoverMark : idleMark,
 		markStrokeColor: checked ? checkedStroke : state === "hovered" || state === "pressed" ? uncheckedInteractiveStroke : uncheckedStroke,
 		markStrokeTransparency: checked ? (state === "pressed" ? 0.08 : 0.14) : state === "hovered" ? 0.06 : 0.12,
-		fillColor: checked
-			? state === "pressed"
-				? checkedPressedFill
-				: state === "hovered"
-				? checkedHoverFill
-				: checkedFill
-			: intentColors.main,
+		fillColor: checked ? checkedStateFill : intentColors.main,
 		fillTransparency: checked ? 0 : 1,
-		glyphColor: checked ? theme.colors.text.inverse : intentColors.main,
+		glyphColor: checked ? checkedGlyphColor : intentColors.main,
 		glyphTransparency: checked ? 0 : 1,
 		labelColor: theme.colors.text.primary,
 	};

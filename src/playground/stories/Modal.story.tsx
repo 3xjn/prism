@@ -6,6 +6,7 @@ import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { useSelectedObjectLabel } from "./_selectionStoryUtils";
 
 const controls = {
 	theme: storyThemeControl,
@@ -28,6 +29,7 @@ type ModalStoryControls = InferControls<typeof controls>;
 function ModalStoryCanvas({ controls: currentControls }: { readonly controls: ModalStoryControls }): React.ReactElement {
 	const theme = useTheme();
 	const [opened, setOpened] = React.useState(false);
+	const selectedObjectLabel = useSelectedObjectLabel();
 	const resolvedSize = currentControls.size as ModalSize;
 	const closeModal = React.useCallback(() => {
 		setOpened(false);
@@ -42,14 +44,15 @@ function ModalStoryCanvas({ controls: currentControls }: { readonly controls: Mo
 				<Stack width="100%" gap="md">
 					<Text text="Modal" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="Open one bounded dialog and use the controls to inspect width presets, full-width behavior, and the scrolling body model that keeps the panel centered and on-screen in Studio."
+						text="Select Open modal and press A. The modal asks Roblox to choose its smallest native SelectionOrder, keeps directional navigation inside the content group, and restores the exact opening control as soon as the modal closes. Mouse and touch do not enter selection."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
 					/>
 					<Box width="100%" bg={theme.colors.action.hover} radius="md" p="lg">
 						<Stack align="center" width="100%" gap="sm">
-							<Button label="Open modal" onPress={openModal} />
+							<Button label="Open modal" onPress={openModal} selectionOrder={10} />
+							<Text text={selectedObjectLabel} size="sm" weight={600} color={themeRefs.primary.main} wrap width="100%" />
 						</Stack>
 					</Box>
 				</Stack>
@@ -76,7 +79,8 @@ function ModalStoryCanvas({ controls: currentControls }: { readonly controls: Mo
 						wrap
 						width="100%"
 					/>
-					<Button label="Close modal" onPress={closeModal} />
+					<Text text={selectedObjectLabel} size="sm" weight={600} color={themeRefs.primary.main} wrap width="100%" />
+					<Button label="Close modal" onPress={closeModal} selectionOrder={20} />
 				</Stack>
 			</Modal>
 		</StoryCanvas>

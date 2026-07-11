@@ -130,7 +130,11 @@ Prism's first controller-navigation layer is native-first and deliberately small
 4. Raw `slotProps` remain last-write-wins, including for selection properties. This is the same explicit low-level escape policy used throughout Prism.
 5. Explicit neighbors should be held in callback state. Updating `ref.current` alone does not schedule a render, so a neighbor read during the first render would otherwise remain `undefined`.
 6. Prism does not require a `SelectionScope`, provider, custom graph solver, or global `GuiService` configuration.
-7. Roblox owns navigation and the focus visual in this slice. A styled `SelectionImageObject`, overlay entry/restoration, and topmost back dismissal are separate follow-up layers.
+7. Roblox owns directional navigation and the focus visual. Prism does not build a parallel graph or require a `SelectionScope`.
+8. Overlay entry is session-scoped and gamepad-gated. Trigger overlays manage selection only when the captured opening target belongs to the trigger subtree; Modal may enter unconditionally when the preferred input is gamepad.
+9. Entry uses a valid preferred target when one exists (for Select, the current enabled option followed by the first enabled option) and otherwise calls native `GuiService.Select`, allowing `SelectionOrder` to decide. Native `SelectionGroup` plus `Stop` boundaries contain the owned overlay route while raw slot overrides remain final.
+10. Closing restores the exact captured target when it remains valid, then the trigger or its first native descendant. If selection moved outside the overlay, Prism releases ownership and leaves it alone. A nil, hidden, disabled, or unmounted owned target is repaired while the overlay remains open.
+11. A styled `SelectionImageObject` and topmost controller-back dismissal remain separate follow-up layers.
 
 This boundary keeps selection composable: ordinary controls expose the native graph where precision is needed, while `Box`, `Stack`, and `ScrollArea` can define native group boundaries without becoming stateful navigation coordinators.
 
@@ -145,7 +149,7 @@ Notifications are provider-local screen feedback, not a global imperative servic
 3. Public placement is a closed six-value screen-position union. The default is `top-right`; `zIndex` coordinates the stack with other app layers without exposing the stack itself.
 4. `duration: false` means persistent. On partial updates, omitted presentation values are preserved while `icon: false` and `action: false` are explicit clear sentinels for Luau callers.
 5. Notification actions dismiss with a user reason after `onPress` by default. `closeOnPress: false` keeps the record open for repeatable actions.
-6. The stack portals through the shared screen overlay layer and stays at most 360 pixels wide while shrinking naturally in narrower hosts.
+6. The stack portals through the shared screen overlay layer by default and stays at most 360 pixels wide while shrinking naturally in narrower hosts. `portal={false}` deliberately contains embedded previews in their current GUI parent.
 7. The nearest host `ScreenGui.ScreenInsets` defines device and Core UI safe bounds. Prism adds theme edge spacing inside those bounds and never creates a competing `ScreenGui` or guesses raw inset values.
 8. Motion observes `GuiService.ReducedMotionEnabled`. Entry and exit animate only group transparency and scale; native list layout owns reflow, so width, height, and absolute position are never animated.
 
@@ -228,7 +232,7 @@ Shipped today in this repo:
 - unit conversion helpers and `isDevMode` under `@prism/utils`
 - the Lucide icon atlas under `@prism/icons`
 - shared component plumbing under `components/_shared` (interaction hooks, style resolution, decorators, overlay layering, presence, cursor claims)
-- roughly thirty components from the top-level `@prism` entrypoint: layout primitives (`Box`, `Text`, `Stack`, `Divider`, `Card`, `ScrollArea`), interaction primitives (`Pressable`, `Button`, `Draggable`), form controls (`Checkbox`, `Switch`, `Input`, `Select`, `Slider`, `StepperInput`, `SegmentedControl`, `KeybindInput`, `Tabs`), overlays (`Modal`, `Menu`, `Popover`, `Tooltip`, `Backdrop`), display (`Avatar`, `Icon`, `Image`, `Progress`, `CircularProgress`), and world integration (`WorldPortal`)
+- more than thirty components from the top-level `@prism` entrypoint: layout primitives (`Box`, `Text`, `Stack`, `Divider`, `Card`, `ScrollArea`), interaction primitives (`Pressable`, `Button`, `Draggable`), form controls (`Checkbox`, `Switch`, `Input`, `Select`, `Slider`, `StepperInput`, `SegmentedControl`, `KeybindInput`, `ColorPicker`, `Tabs`), virtual collections (`VirtualList`, `VirtualGrid`), overlays (`Modal`, `Menu`, `Popover`, `Tooltip`, `Backdrop`), display (`Avatar`, `Icon`, `Image`, `Progress`, `CircularProgress`), and world integration (`WorldPortal`)
 - provider-local screen notifications with six placements, queueing, actions, persistent durations, reduced-motion handling, and host-owned safe bounds
 - a Luau interop bridge (`mountPrism` under `@prism`'s `bridge`) that renders a plain data tree of Prism components for non-TypeScript callers
 - playground stories for the public component surface under `src/playground/stories`
@@ -236,7 +240,9 @@ Shipped today in this repo:
 
 The current ui-labs integration is file-discovery based. `index.storybook.ts` exports the `Storybook` config and points `storyRoots` at the stories folder, while `src/playground/stories/index.ts` imports each story module so they are emitted and discoverable. Prism does not mount a separate PlayerGui playground app at runtime.
 
-The internal Virtualization Benchmark story is a proof harness, not public API. Its local fixed-window strategy uses manual `CanvasSize`, direct `CanvasPosition`/`AbsoluteWindowSize` observation, and absolutely positioned item wrappers; sparse virtual cells must not use `AutomaticCanvasSize`, `UIListLayout`, or `UIGridLayout`, because those mechanisms assume every layout sibling is mounted. The pure engine works in lines and lanes so both lists and uniform grids share O(1) range math while keeping public adapters separate.
+The internal Virtualization Benchmark story remains a visual proof harness rather than public API. The measured strategy now underpins public `VirtualList` and `VirtualGrid` adapters: manual `CanvasSize`, direct `CanvasPosition`/`AbsoluteWindowSize` observation, and absolutely positioned item wrappers. Sparse virtual cells must not use `AutomaticCanvasSize`, `UIListLayout`, or `UIGridLayout`, because those mechanisms assume every layout sibling is mounted. The pure engine works in lines and lanes so lists and uniform grids share O(1) range math while preserving separate public props. Consumer keys own row/cell identity; duplicate keys are diagnostic failures and are excluded from ambiguous `scrollToKey` lookup. A dedicated Play Solo runner under `src/benchmarks` mounts eager/window strategies directly under `PlayerGui`, counts actual instances at or under `ContentRoot` (including `ContentRoot`), samples client Stats frame/memory values, and checks expected visible item-root presence without using the UI Labs plugin for timing.
+
+The Theme Workbench is likewise playground-only tooling. It edits deeply cloned, frozen `ThemeOverride` drafts rather than either official preset, keeps token updates immutable and breakpoint ordering valid, serializes only values that differ from `DEFAULT_THEME`, and previews real Prism compositions against explicit host/compact/tablet/wide targets. `DEFAULT_THEME` and `DARK_THEME` are the only official preset sources; stories do not carry a private dark override.
 
 ### Known debts and follow-ups
 

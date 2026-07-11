@@ -4,15 +4,16 @@ A Roblox TypeScript UI kit for `rbxts-react` — typed components, theme tokens,
 
 ## Components
 
-| | |
-| --- | --- |
-| Layout | `Box`, `Stack`, `Divider`, `Card`, `ScrollArea` |
-| Text and media | `Text`, `Icon`, `Image`, `Avatar` |
-| Inputs and forms | `Button`, `Pressable`, `Input`, `KeybindInput`, `Checkbox`, `Switch`, `StepperInput`, `Slider` |
-| Feedback | `Progress`, `CircularProgress`, `Backdrop`, `NotificationsProvider` |
-| Navigation | `SegmentedControl`, `Tabs`, `Menu`, `Select` |
-| Overlays | `WorldPortal`, `Popover`, `Modal`, `Tooltip` |
-| Utility | `Draggable` |
+|                  |                                                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| Layout           | `Box`, `Stack`, `Divider`, `Card`, `ScrollArea`                                                               |
+| Text and media   | `Text`, `Icon`, `Image`, `Avatar`                                                                             |
+| Inputs and forms | `Button`, `Pressable`, `Input`, `KeybindInput`, `ColorPicker`, `Checkbox`, `Switch`, `StepperInput`, `Slider` |
+| Feedback         | `Progress`, `CircularProgress`, `Backdrop`, `NotificationsProvider`                                           |
+| Navigation       | `SegmentedControl`, `Tabs`, `Menu`, `Select`                                                                  |
+| Overlays         | `WorldPortal`, `Popover`, `Modal`, `Tooltip`                                                                  |
+| Collections      | `VirtualList`, `VirtualGrid`                                                                                  |
+| Utility          | `Draggable`                                                                                                   |
 
 Also: `@prism/theme` (ThemeProvider, tokens), `@prism/motion` (motion hooks), `@prism/utils` (unit helpers), `bridge` (`mountPrism` — Luau interop).
 
@@ -53,7 +54,7 @@ Controlled inputs are plain React state:
 ```tsx
 const [query, setQuery] = React.useState("");
 
-<Input value={query} onChange={setQuery} placeholder="Search" variant="outline" fullWidth />
+<Input value={query} onChange={setQuery} placeholder="Search" variant="outline" fullWidth />;
 ```
 
 ## Overlay behavior
@@ -109,6 +110,28 @@ Use `usePreferredInput()` separately when presentation should respond to Roblox'
 
 The first responsive release is hook-driven; ordinary component props do not accept responsive objects. Roblox `StyleQuery` remains available for stylesheet and native container-query use cases.
 
+## Virtual collections
+
+`VirtualList` and `VirtualGrid` keep mounted GUI instances proportional to the viewport instead of the dataset. Both require fixed geometry and stable consumer keys, expose visible half-open ranges, and keep the normal `ref` for the root `ScrollingFrame` separate from the imperative `apiRef` used for index/key jumps.
+
+```tsx
+const listApi = React.useRef<VirtualListApi<string>>();
+
+<VirtualList
+	items={missions}
+	itemHeight={48}
+	gap="sm"
+	getKey={(mission) => mission.id}
+	renderItem={({ item }) => <Button label={item.name} fullWidth />}
+	height={320}
+	apiRef={listApi}
+/>;
+
+listApi.current?.scrollToKey("harbor-defense", "center");
+```
+
+`VirtualGrid` accepts exactly one lane strategy: `columns={4}` for an explicit count, or `minimumCellWidth={128}` with optional `maxColumns` for a viewport-derived count. `rowGap` and `columnGap` can differ. Variable-size items, masonry, and true instance recycling remain outside this fixed-geometry API.
+
 ## Controller selection
 
 Prism exposes Roblox's native selection surface instead of requiring a `SelectionScope`, provider, or custom navigation graph. Interactive controls accept `selectable`, `selectionOrder`, and the four `nextSelection*` neighbors. `Box`, `Stack`, and `ScrollArea` independently expose `selectionGroup` and the four `selectionBehavior*` boundary rules.
@@ -125,7 +148,19 @@ const [secondary, setSecondary] = React.useState<TextButton>();
 
 Assigning only to `ref.current` does not trigger a React render. Callback state does, so the neighboring control receives the native instance after mount. Disabled controls resolve to `Selectable={false}`; as elsewhere in Prism, a raw `slotProps` override remains the final escape hatch.
 
-This slice delegates directional navigation and focus visuals to Roblox. Prism does not mutate `GuiService.SelectedObject`, install a global selection coordinator, or replace the native `SelectionImageObject`.
+Ordinary directional navigation and focus visuals still belong to Roblox. When a gamepad opens a Prism-owned Select, Menu, Modal, or eligible Popover, Prism briefly manages `GuiService.SelectedObject` only for that overlay session: it enters through the preferred/native eligible target, uses native selection-group boundaries, repairs an invalid owned target, and restores the opening target on close. If selection moves outside the overlay, Prism releases ownership and does not pull it back. There is no `SelectionScope`, global coordinator, custom graph solver, or replacement `SelectionImageObject`.
+
+## Color picking
+
+`ColorPicker` is an inline, controlled or uncontrolled HSV editor with mouse/touch drag surfaces and precise hex/RGB entry. Because it is inline, it can live in a settings panel directly or inside an app-owned `Popover`.
+
+```tsx
+const [accent, setAccent] = React.useState(Color3.fromRGB(59, 130, 246));
+
+<ColorPicker value={accent} onChange={setAccent} size="md" fullWidth />;
+```
+
+It supports the shared `xs` through `xl` size scale, disabled styling, native selection properties, typed slots, and visual style overrides. Use `onChangeEnd` when persistence or undo history should commit once after a drag, controller step, or precise text edit.
 
 ## Notifications
 
@@ -152,10 +187,10 @@ function SaveLoadoutButton() {
 
 <NotificationsProvider position="top-right" defaultDuration={5} maxVisible={3}>
 	<SaveLoadoutButton />
-</NotificationsProvider>
+</NotificationsProvider>;
 ```
 
-`position` accepts `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, and `bottom-right`; `zIndex` is available when the stack needs to coordinate with an app's other screen layers. Notification actions dismiss their notification after `onPress` by default. Set `closeOnPress: false` when an action should leave it open.
+`position` accepts `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, and `bottom-right`; `zIndex` is available when the stack needs to coordinate with an app's other screen layers. Stacks portal to the host `LayerCollector` by default; use `portal={false}` for an intentionally contained preview or embedded surface. Notification actions dismiss their notification after `onPress` by default. Set `closeOnPress: false` when an action should leave it open.
 
 Use `duration: false` for a persistent notification. In updates, `icon: false` and `action: false` explicitly clear those values; omission preserves the current value because Luau cannot distinguish an omitted table key from `nil`.
 

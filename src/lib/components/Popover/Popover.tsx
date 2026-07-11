@@ -10,6 +10,7 @@ import type { TriggerOverlayLayout } from "../_shared/layering";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
 import { applyStyleOverride } from "../_shared/styleOverride";
 import { useDelayedCallback } from "../_shared/useDelayedCallback";
+import { useOverlaySelectionLifecycle } from "../_shared/useOverlaySelectionLifecycle";
 import { useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
@@ -50,6 +51,12 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 	const pressArmedRef = React.useRef(false);
 	const hasContent = content !== undefined;
 	const isOpen = !disabled && hasContent && (opened ?? uncontrolledOpened);
+	useOverlaySelectionLifecycle({
+		opened: isOpen,
+		container: panelInstance,
+		entryPolicy: "trigger",
+		trigger: rootInstance,
+	});
 	const sizeStyles = resolvePopoverSizeStyles(theme, props.gap);
 	const visualStyles = applyStyleOverride(resolvePopoverVisualStyles(theme), props.styleOverrides, { theme });
 	const { resolvedWidth, resolvedHeight, resolvedSize, resolvedPosition, resolvedAnchor, resolvedConstraint } =

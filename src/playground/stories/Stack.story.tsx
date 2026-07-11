@@ -66,12 +66,14 @@ type OptionalGapValue = ThemeSize | number | "none";
 
 function Swatch({
 	color,
+	textColor,
 	width = 80,
 	height = 40,
 	label,
 	layoutOrder,
 }: {
 	readonly color: Color3;
+	readonly textColor: Color3;
 	readonly width?: number;
 	readonly height?: number;
 	readonly label: string;
@@ -81,7 +83,7 @@ function Swatch({
 		<Box layoutOrder={layoutOrder} width={width} height={height} bg={color} p="xs">
 			<Text
 				size="xs"
-				color={themeRefs.text.inverse}
+				color={textColor}
 				align="center"
 				valign="middle"
 				weight={500}
@@ -100,25 +102,27 @@ function InteractivePreview({ controls: currentControls }: { readonly controls: 
 	const resolvedJustify = currentControls.justify as StackJustify;
 	const resolvedWrap = (currentControls.wrap as string) === "on";
 	const gapProp = resolvedGap === "none" ? undefined : (resolvedGap as StackGapValue);
-	const swatchColors = [
-		theme.colors.primary.main,
-		theme.colors.info.main,
-		theme.colors.success.main,
-		theme.colors.warning.main,
-		theme.colors.error.main,
+	const swatches = [
+		theme.colors.primary,
+		theme.colors.info,
+		theme.colors.success,
+		theme.colors.warning,
+		theme.colors.error,
 	];
 	const swatchWidths = [80, 120, 60, 100, 80];
 	const swatchHeights = [40, 48, 60, 36, 40];
 	const children = new Array<React.ReactElement>();
 
 	for (let index = 0; index < currentControls.childCount; index++) {
-		const patternIndex = index % swatchColors.size();
+		const patternIndex = index % swatches.size();
+		const swatch = swatches[patternIndex];
 
 		children.push(
 			<Swatch
 				key={tostring(index)}
 				layoutOrder={index + 1}
-				color={swatchColors[patternIndex]}
+				color={swatch.main}
+				textColor={swatch.contrast}
 				label={tostring(index + 1)}
 				width={swatchWidths[patternIndex]}
 				height={swatchHeights[patternIndex]}

@@ -1,5 +1,6 @@
 import type { Theme, ThemeShadow } from "@prism/theme";
 
+import { resolveHigherContrastColor } from "../../theme/contrast";
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 
 export interface TooltipSizeStyles {
@@ -40,9 +41,13 @@ export function resolveTooltipSizeStyles(theme: Theme, gap: number | undefined):
 }
 
 export function resolveTooltipVisualStyles(theme: Theme): TooltipVisualStyles {
-	// Tooltips render inverse (dark on light themes) so they separate from
-	// the content they float over instead of blending into light surfaces.
-	const inverseSurface = theme.colors.palette.gray["9"];
+	// Preserve the inverse treatment across both light and dark themes by
+	// selecting the palette endpoint that best contrasts inverse text.
+	const inverseSurface = resolveHigherContrastColor(
+		theme.colors.text.inverse,
+		theme.colors.palette.gray["9"],
+		theme.colors.palette.gray["0"],
+	);
 
 	return {
 		backgroundColor: inverseSurface,

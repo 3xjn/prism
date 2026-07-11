@@ -213,7 +213,7 @@ export function resolveStepperInputButtonVisualStyles(
 		: mixColor(theme.colors.background.default, theme.colors.border.default, 0.26);
 	const hoverSurface = variant === "filled" ? mixColor(idleSurface, theme.colors.text.primary, 0.08) : mixColor(idleSurface, theme.colors.action.hover, 0.44);
 	const pressedSurface = variant === "filled" ? mixColor(idleSurface, theme.colors.action.pressed, 0.28) : mixColor(idleSurface, theme.colors.action.pressed, 0.72);
-	const idleText = variant === "filled" ? theme.colors.text.inverse : theme.colors.text.primary;
+	const idleText = theme.colors.text.primary;
 
 	if (state === "disabled") {
 		return {

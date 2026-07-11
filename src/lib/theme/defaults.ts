@@ -96,7 +96,12 @@ function createBorderColors(subtle: Color3, defaultColor: Color3, strong: Color3
 	});
 }
 
-function createActionColors(hover: Color3, pressed: Color3, disabled: Color3, disabledBackground: Color3): ActionColors {
+function createActionColors(
+	hover: Color3,
+	pressed: Color3,
+	disabled: Color3,
+	disabledBackground: Color3,
+): ActionColors {
 	return table.freeze({
 		hover,
 		pressed,
@@ -105,12 +110,7 @@ function createActionColors(hover: Color3, pressed: Color3, disabled: Color3, di
 	});
 }
 
-function createThemeMotionDurations(
-	instant: number,
-	fast: number,
-	normal: number,
-	slow: number,
-): ThemeMotionDurations {
+function createThemeMotionDurations(instant: number, fast: number, normal: number, slow: number): ThemeMotionDurations {
 	return table.freeze({
 		instant,
 		fast,
@@ -216,15 +216,27 @@ const PALETTE: PaletteColors = table.freeze({
 	),
 });
 
+const HIGH_CONTRAST_DARK = Color3.fromRGB(13, 17, 23);
+
 export const DEFAULT_THEME: Theme = table.freeze({
 	colors: table.freeze({
 		palette: PALETTE,
-		primary: createSemanticIntentColors(PALETTE.primary["5"], PALETTE.primary["3"], PALETTE.primary["7"], PALETTE.gray["0"]),
+		primary: createSemanticIntentColors(
+			PALETTE.primary["5"],
+			PALETTE.primary["3"],
+			PALETTE.primary["7"],
+			HIGH_CONTRAST_DARK,
+		),
 		secondary: createSemanticIntentColors(PALETTE.gray["7"], PALETTE.gray["2"], PALETTE.gray["9"], PALETTE.gray["0"]),
-		error: createSemanticIntentColors(PALETTE.red["5"], PALETTE.red["3"], PALETTE.red["7"], PALETTE.gray["0"]),
-		warning: createSemanticIntentColors(PALETTE.yellow["5"], PALETTE.yellow["3"], PALETTE.yellow["7"], PALETTE.gray["9"]),
-		info: createSemanticIntentColors(PALETTE.blue["5"], PALETTE.blue["3"], PALETTE.blue["7"], PALETTE.gray["0"]),
-		success: createSemanticIntentColors(PALETTE.green["5"], PALETTE.green["3"], PALETTE.green["7"], PALETTE.gray["0"]),
+		error: createSemanticIntentColors(PALETTE.red["5"], PALETTE.red["3"], PALETTE.red["7"], HIGH_CONTRAST_DARK),
+		warning: createSemanticIntentColors(
+			PALETTE.yellow["5"],
+			PALETTE.yellow["3"],
+			PALETTE.yellow["7"],
+			HIGH_CONTRAST_DARK,
+		),
+		info: createSemanticIntentColors(PALETTE.blue["5"], PALETTE.blue["3"], PALETTE.blue["7"], HIGH_CONTRAST_DARK),
+		success: createSemanticIntentColors(PALETTE.green["5"], PALETTE.green["3"], PALETTE.green["7"], HIGH_CONTRAST_DARK),
 		text: createTextColors(PALETTE.gray["9"], PALETTE.gray["7"], PALETTE.gray["5"], PALETTE.gray["0"]),
 		background: createBackgroundColors(PALETTE.gray["0"], Color3.fromRGB(255, 255, 255)),
 		border: createBorderColors(PALETTE.gray["2"], PALETTE.gray["4"], PALETTE.gray["6"]),
@@ -244,4 +256,71 @@ export const DEFAULT_THEME: Theme = table.freeze({
 		createShadow(Color3.fromRGB(15, 23, 42), 4, 0.74),
 	),
 	motion: createThemeMotion(DEFAULT_MOTION_DURATIONS),
+});
+
+const DARK_BACKGROUND = HIGH_CONTRAST_DARK;
+const DARK_SHADOW = Color3.fromRGB(0, 0, 0);
+
+export const DARK_THEME: Theme = table.freeze({
+	...DEFAULT_THEME,
+	colors: table.freeze({
+		palette: PALETTE,
+		primary: createSemanticIntentColors(
+			Color3.fromRGB(88, 166, 255),
+			Color3.fromRGB(20, 61, 103),
+			Color3.fromRGB(121, 192, 255),
+			DARK_BACKGROUND,
+		),
+		secondary: createSemanticIntentColors(
+			Color3.fromRGB(188, 140, 255),
+			Color3.fromRGB(56, 37, 95),
+			Color3.fromRGB(210, 168, 255),
+			DARK_BACKGROUND,
+		),
+		error: createSemanticIntentColors(
+			Color3.fromRGB(248, 81, 73),
+			Color3.fromRGB(90, 30, 27),
+			Color3.fromRGB(255, 161, 152),
+			DARK_BACKGROUND,
+		),
+		warning: createSemanticIntentColors(
+			Color3.fromRGB(210, 153, 34),
+			Color3.fromRGB(77, 53, 8),
+			Color3.fromRGB(227, 179, 65),
+			DARK_BACKGROUND,
+		),
+		info: createSemanticIntentColors(
+			Color3.fromRGB(121, 192, 255),
+			Color3.fromRGB(18, 58, 90),
+			Color3.fromRGB(165, 214, 255),
+			DARK_BACKGROUND,
+		),
+		success: createSemanticIntentColors(
+			Color3.fromRGB(63, 185, 80),
+			Color3.fromRGB(20, 61, 32),
+			Color3.fromRGB(86, 211, 100),
+			DARK_BACKGROUND,
+		),
+		text: createTextColors(
+			Color3.fromRGB(240, 246, 252),
+			Color3.fromRGB(183, 189, 200),
+			Color3.fromRGB(125, 133, 144),
+			DARK_BACKGROUND,
+		),
+		background: createBackgroundColors(DARK_BACKGROUND, Color3.fromRGB(21, 27, 35)),
+		border: createBorderColors(Color3.fromRGB(47, 55, 66), Color3.fromRGB(61, 68, 77), Color3.fromRGB(125, 133, 144)),
+		action: createActionColors(
+			Color3.fromRGB(42, 49, 60),
+			Color3.fromRGB(47, 55, 66),
+			Color3.fromRGB(125, 133, 144),
+			Color3.fromRGB(33, 40, 48),
+		),
+	}),
+	shadows: createThemeScale(
+		createShadow(DARK_SHADOW, 1, 0.72),
+		createShadow(DARK_SHADOW, 1, 0.64),
+		createShadow(DARK_SHADOW, 2, 0.58),
+		createShadow(DARK_SHADOW, 3, 0.52),
+		createShadow(DARK_SHADOW, 4, 0.46),
+	),
 });

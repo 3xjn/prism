@@ -385,7 +385,7 @@ function VirtualizationBenchmarkCanvas({ controls: currentControls }: { readonly
 				<Stack width="100%" gap="md">
 					<Text text="Virtualization benchmark · internal" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="Compare eager mounting with Prism's local fixed-window proof. The window strategy mounts only visible plus overscanned lines; this story records geometry and supplies a repeatable scroll path, but timing and memory still require a Studio MicroProfiler capture."
+						text="This story visualizes the fixed-range engine and exercises eager/local scrolling. It is not the timing source; recorded timing, memory, mounted-count, and correctness results come from the dedicated Play Solo runner documented in the benchmark decision."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
@@ -408,9 +408,9 @@ function VirtualizationBenchmarkCanvas({ controls: currentControls }: { readonly
 						scriptedSpeed={scriptedSpeed}
 					/>
 					<Text
-						text="Measurement status: UNMEASURED. Use a fresh story mount and the protocol in docs/benchmarks/2026-07-10-fixed-virtual-range.md; do not compare editor impressions as benchmark results."
+						text="Measurement status: STORY UNMEASURED - RUNNER CAPTURE ACCEPTED. See docs/benchmarks/2026-07-10-fixed-virtual-range.md; do not compare editor impressions as benchmark results."
 						size="sm"
-						color={themeRefs.warning.main}
+						color={themeRefs.success.main}
 						wrap
 						width="100%"
 					/>
@@ -423,7 +423,7 @@ function VirtualizationBenchmarkCanvas({ controls: currentControls }: { readonly
 const story = CreateReactStory(
 	{
 		name: "Virtualization Benchmark",
-		summary: "Internal fixed-geometry proof comparing eager and sparse-window list/grid mounting without publishing a public virtual collection API.",
+		summary: "Measured fixed-geometry proof comparing eager and sparse-window list/grid mounting before the public virtual collection API.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,

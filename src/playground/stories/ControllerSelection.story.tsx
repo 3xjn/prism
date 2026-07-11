@@ -4,6 +4,7 @@ import { Box, Button, Input, Slider, Stack, Text } from "@prism";
 import { theme as themeRefs, useTheme } from "@prism/theme";
 import { CreateReactStory } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { useSelectedObjectLabel } from "./_selectionStoryUtils";
 
 const controls = {
 	theme: storyThemeControl,
@@ -31,6 +32,7 @@ function ControllerSelectionStoryCanvas(): React.ReactElement {
 	const [privacyInstance, bindPrivacyInstance] = useInstanceState<TextButton>();
 	const [volumeInstance, bindVolumeInstance] = useInstanceState<TextButton>();
 	const [queueInstance, bindQueueInstance] = useInstanceState<TextButton>();
+	const selectedObjectLabel = useSelectedObjectLabel();
 	const columnWidth = new UDim(0.5, -theme.spacing.sm / 2);
 	const privacyLabel = friendsOnly ? "Friends only" : "Open squad";
 
@@ -42,7 +44,7 @@ function ControllerSelectionStoryCanvas(): React.ReactElement {
 						<Text text="NATIVE CONTROLLER ROUTE" size="xs" weight={700} color={themeRefs.primary.main} />
 						<Text text="Match setup" size="xl" weight={700} color={themeRefs.text.primary} />
 						<Text
-							text="Use a D-pad or arrow keys to move through the two-column setup. On Squad volume, Left/Right adjusts the value and Down continues to Queue squad. Prism forwards the route to Roblox and keeps each control's native input behavior."
+							text="Press a D-pad direction to enter Roblox selection, then move through the two-column setup. On Squad volume, Left/Right adjusts the value and Down continues to Queue squad. The live label below shows the exact native object Roblox owns."
 							color={themeRefs.text.secondary}
 							wrap
 							width="100%"
@@ -153,6 +155,7 @@ function ControllerSelectionStoryCanvas(): React.ReactElement {
 
 					<Stack width="100%" gap="xs">
 						<Text text={status} size="sm" weight={600} color={themeRefs.text.primary} />
+						<Text text={selectedObjectLabel} size="sm" weight={600} color={themeRefs.primary.main} wrap width="100%" />
 						<Text
 							text="The right-hand route intentionally skips Ranked locked: disabled controls remain non-selectable even when selectable is requested."
 							size="sm"

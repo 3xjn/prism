@@ -1,8 +1,8 @@
 # Fixed virtual range decision
 
-**Status:** Pure geometry accepted; Roblox Studio performance measurements pending.
+**Status:** Accepted; deterministic geometry and the full Roblox Studio Play Solo matrix are captured.
 
-**Decision:** Continue with the Prism-native fixed-geometry engine as the basis for the internal benchmark prototype. Do not add a third-party virtualization dependency, and do not publish `VirtualList` or `VirtualGrid` until the Studio comparison below is captured.
+**Decision:** Proceed with Prism-native `VirtualList` and `VirtualGrid` adapters over the fixed-geometry engine. Do not add a third-party virtualization dependency. The local window keeps mounted work bounded, has materially better high-count mount and frame results, and produced zero detected blank frames across its 2,400 correctness checks in this run.
 
 ## Scope
 
@@ -73,73 +73,83 @@ No package is added. This decision can be revisited if a candidate demonstrates 
 
 Fill every field from the machine and Studio session used for the capture.
 
-| Field                                         | Recorded value |
-| --------------------------------------------- | -------------- |
-| Git commit                                    | `0c7923e` baseline plus uncommitted benchmark source |
-| Date/time and timezone                        | 2026-07-11 01:18 -05:00 (America/Chicago) |
-| Roblox Studio version/channel                 | `0.729.0.7290838`; channel not exposed in the session UI |
-| Run mode (`Play Solo`, device emulator, etc.) | UI Labs 1.6.0 edit-mode story preview; not Play Solo |
-| OS version                                    | Windows 11 Home `10.0.26200` |
-| CPU                                           | AMD Ryzen 7 9800X3D 8-Core Processor |
+| Field                                         | Recorded value                                                       |
+| --------------------------------------------- | -------------------------------------------------------------------- |
+| Git commit                                    | `3450e2d` baseline plus the benchmark runner in this change          |
+| Date/time and timezone                        | 2026-07-11 01:35-01:39 -05:00 (America/Chicago)                      |
+| Roblox Studio version/channel                 | `0.729.0.7290838`, production channel                                |
+| Run mode (`Play Solo`, device emulator, etc.) | Studio Play Solo client                                              |
+| OS version                                    | Windows 11 Home `10.0.26200`                                         |
+| CPU                                           | AMD Ryzen 7 9800X3D 8-Core Processor                                 |
 | GPU                                           | NVIDIA GeForce RTX 5070; AMD Radeon integrated graphics also present |
-| System RAM                                    | 31.1 GiB reported by Windows |
-| Viewport size and scale                       | UI Labs story panel approximately 945 x 252 px; desktop scale not recorded |
-| Studio quality level                          | Not applicable to the edit-mode plugin preview |
-| `@rbxts/react` / `react-roblox` versions      | `17.3.7-ts.1` / `17.3.7-ts.1` |
-| MicroProfiler capture duration                | **UNMEASURED** |
+| System RAM                                    | 31.1 GiB reported by Windows                                         |
+| Viewport size and scale                       | Fixed `680 x 320` benchmark viewport; desktop scale not recorded     |
+| Studio quality level                          | Studio automatic/default; exact level not recorded                   |
+| `@rbxts/react` / `react-roblox` versions      | `17.3.7-ts.1` / `17.3.7-ts.1`                                        |
+| MicroProfiler capture duration                | No HTML dump; Stats samples cover 5 x 120 measured frames per row    |
 
 ### Studio smoke observations
 
 These are screenshot-sampled functional observations from the session above, not timing or memory measurements. The scripted `6x viewport/s` control remained enabled long enough to move through multiple windows. No empty viewport region was visible in the sampled frames, but the story does not yet count every continuously rendered frame, so this is not a formal zero-blank-frame result.
 
-| Strategy | Shape | Items | Sample | Visible range | Rendered range | Mounted roots | Theoretical bound | Observation |
-| -------- | ----- | ----: | ------ | ------------- | -------------- | ------------: | ----------------: | ----------- |
-| Local window | Grid | 10,000 | Initial | `[0, 15)` | `[0, 25)` | 25 | 40 | Five lanes rendered normally. |
-| Local window | Grid | 10,000 | Fast scroll | `[1045, 1065)` | `[1035, 1075)` | 40 | 40 | Mounted count reached, but did not exceed, the bound. |
-| Local window | Grid | 10,000 | Later fast scroll | `[1945, 1960)` | `[1935, 1970)` | 35 | 40 | No empty region was visible in the sampled viewport. |
-| Local window | List | 10,000 | Initial | `[0, 5)` | `[0, 7)` | 7 | 10 | One-lane list rendered normally. |
-| Local window | List | 10,000 | Fast scroll | `[176, 182)` | `[174, 184)` | 10 | 10 | No empty region was visible in the sampled viewport. |
-| Eager | List | 100 | Initial | `[0, 5)` | `[0, 100)` | 100 | 10 | All roots mounted, as expected for the comparison baseline. |
-| Eager | Grid | 100 | Initial | `[0, 15)` | `[0, 100)` | 100 | 40 | All roots mounted across five lanes. |
+| Strategy     | Shape |  Items | Sample            | Visible range  | Rendered range | Mounted roots | Theoretical bound | Observation                                                 |
+| ------------ | ----- | -----: | ----------------- | -------------- | -------------- | ------------: | ----------------: | ----------------------------------------------------------- |
+| Local window | Grid  | 10,000 | Initial           | `[0, 15)`      | `[0, 25)`      |            25 |                40 | Five lanes rendered normally.                               |
+| Local window | Grid  | 10,000 | Fast scroll       | `[1045, 1065)` | `[1035, 1075)` |            40 |                40 | Mounted count reached, but did not exceed, the bound.       |
+| Local window | Grid  | 10,000 | Later fast scroll | `[1945, 1960)` | `[1935, 1970)` |            35 |                40 | No empty region was visible in the sampled viewport.        |
+| Local window | List  | 10,000 | Initial           | `[0, 5)`       | `[0, 7)`       |             7 |                10 | One-lane list rendered normally.                            |
+| Local window | List  | 10,000 | Fast scroll       | `[176, 182)`   | `[174, 184)`   |            10 |                10 | No empty region was visible in the sampled viewport.        |
+| Eager        | List  |    100 | Initial           | `[0, 5)`       | `[0, 100)`     |           100 |                10 | All roots mounted, as expected for the comparison baseline. |
+| Eager        | Grid  |    100 | Initial           | `[0, 15)`      | `[0, 100)`     |           100 |                40 | All roots mounted across five lanes.                        |
 
 ### Procedure
 
-1. Compare eager mounting and the local sparse-window prototype over identical row/tile data, viewport geometry, and theme.
-2. Run list and grid shapes at 100, 1,000, 5,000, and 10,000 items with the same overscan and scripted scroll velocity.
-3. Start each trial from a fresh story mount. Perform three warm-up trials, then five recorded trials per matrix row.
-4. Record initial mount time from story mount to the first settled rendered frame.
-5. Record mounted `GuiObject` count using the same descendant-count proxy for both strategies.
-6. Capture Lua heap/total memory before mount, after settled mount, and after unmount.
-7. Capture frame time through the scripted scroll interval and report median, p95, and maximum frame time.
-8. Record blank-window frames by inspecting whether any viewport region lacks an expected row/tile during scripted scrolling.
-9. Preserve the raw MicroProfiler capture and note its filename beside the result row.
+1. Build the client runner, then build `virtualization-benchmark.project.json` into a disposable place.
+2. Start that place in Play Solo. The runner mounts directly under `PlayerGui`; the UI Labs story is not used for timing.
+3. Compare eager mounting and the local sparse-window prototype over identical realistic row/tile surfaces, a fixed `680 x 320` viewport, overscan `2`, and a ping-pong scroll speed of `6x viewport/s`.
+4. Run list and grid shapes at 100, 1,000, 5,000, and 10,000 items. Perform three warm-up trials, then five recorded trials per matrix row.
+5. Measure mount time with `os.clock()` through two stable client frames, and count item roots, actual `GuiObject` instances, and all instances at or under the dedicated `ContentRoot`, including `ContentRoot` itself.
+6. Sample Stats memory before mount, after settled mount, and after unmount while memory tracking is enabled.
+7. Collect 120 `Stats.FrameTime` samples per recorded trial and report pooled median, p95, and maximum frame time.
+8. Run a separate 60-frame correctness pass per trial. A frame is blank if any expected visible item root is absent; this check does not contaminate the timing pass.
+9. Preserve the emitted JSON results and runner configuration as the raw capture.
 
-### Raw measurement slots
+### Play Solo measurements
 
-No Roblox client run has been performed for this document. Every performance field intentionally remains explicit and unfilled.
+The raw configuration and all 16 aggregate result objects are preserved in [`raw/2026-07-11-virtualization-play-solo.jsonl`](raw/2026-07-11-virtualization-play-solo.jsonl). `Mounted GuiObjects` is a settled, pre-scroll snapshot that counts the content root plus every `GuiObject` below it; each realistic item contributes four. The raw `instanceDescendants` field likewise includes `ContentRoot` itself despite its legacy name. `Blank frames` is reported across 300 correctness frames (60 per recorded trial). The artifact preserves aggregate percentiles rather than per-frame samples, so it reconciles the reported matrix but cannot independently recompute those percentiles.
 
-| Strategy     | Shape |  Items | Mount ms       | Mounted GuiObjects | Lua heap delta | Frame p50 ms   | Frame p95 ms   | Frame max ms   | Blank frames   | Capture        |
-| ------------ | ----- | -----: | -------------- | ------------------ | -------------- | -------------- | -------------- | -------------- | -------------- | -------------- |
-| Eager        | List  |    100 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Eager        | List  |  1,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Eager        | List  |  5,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Eager        | List  | 10,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Local window | List  |    100 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Local window | List  |  1,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Local window | List  |  5,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Local window | List  | 10,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Eager        | Grid  |    100 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Eager        | Grid  |  1,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Eager        | Grid  |  5,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Eager        | Grid  | 10,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Local window | Grid  |    100 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Local window | Grid  |  1,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Local window | Grid  |  5,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
-| Local window | Grid  | 10,000 | **UNMEASURED** | **UNMEASURED**     | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** | **UNMEASURED** |
+Memory-tag updates and garbage collection are delayed in Studio. A few eager rows therefore report negative before/after Lua or instance-category deltas even though their exact descendant counts increase. Those values are retained rather than sanitized; the decision uses exact mounted counts, mount time, frame percentiles, and the stable positive high-count Lua deltas. Total/category memory deltas are available in the raw JSONL.
+
+| Strategy     | Shape |  Items |  Mount ms | Mounted GuiObjects | Lua heap delta | Frame p50 ms | Frame p95 ms | Frame max ms | Blank frames | Capture   |
+| ------------ | ----- | -----: | --------: | -----------------: | -------------: | -----------: | -----------: | -----------: | -----------: | --------- |
+| Eager        | List  |    100 |    22.521 |                401 |       0.170 MB |        4.059 |        6.257 |        9.955 |      0 / 300 | JSONL row |
+| Eager        | List  |  1,000 |   190.428 |              4,001 |      -2.250 MB |        4.174 |        6.186 |       11.173 |      0 / 300 | JSONL row |
+| Eager        | List  |  5,000 | 1,075.888 |             20,001 |       8.382 MB |        5.090 |       10.282 |       22.488 |      0 / 300 | JSONL row |
+| Eager        | List  | 10,000 | 3,099.613 |             40,001 |      11.175 MB |       13.074 |       26.157 |       39.898 |      0 / 300 | JSONL row |
+| Local window | List  |    100 |    12.237 |                 41 |       0.008 MB |        4.168 |        5.993 |       63.194 |      0 / 300 | JSONL row |
+| Local window | List  |  1,000 |    15.442 |                 41 |       0.008 MB |        4.146 |        6.644 |       13.531 |      0 / 300 | JSONL row |
+| Local window | List  |  5,000 |    11.169 |                 41 |       0.008 MB |        4.076 |        6.394 |        8.857 |      0 / 300 | JSONL row |
+| Local window | List  | 10,000 |    12.970 |                 41 |       0.023 MB |        4.165 |        5.846 |       89.375 |      0 / 300 | JSONL row |
+| Eager        | Grid  |    100 |    29.159 |                401 |       1.030 MB |        4.149 |        6.071 |       10.996 |      0 / 300 | JSONL row |
+| Eager        | Grid  |  1,000 |   163.111 |              4,001 |       0.621 MB |        4.136 |        6.427 |       10.952 |      0 / 300 | JSONL row |
+| Eager        | Grid  |  5,000 | 1,015.631 |             20,001 |      39.987 MB |        4.531 |       10.016 |       16.137 |      0 / 300 | JSONL row |
+| Eager        | Grid  | 10,000 | 2,752.954 |             40,001 |      34.585 MB |       14.405 |       23.481 |      114.472 |      0 / 300 | JSONL row |
+| Local window | Grid  |    100 |    14.047 |                129 |       0.117 MB |        4.113 |        6.434 |       13.556 |      0 / 300 | JSONL row |
+| Local window | Grid  |  1,000 |    13.555 |                113 |       0.101 MB |        4.078 |        6.291 |       12.013 |      0 / 300 | JSONL row |
+| Local window | Grid  |  5,000 |    12.987 |                113 |       0.093 MB |        4.078 |        6.659 |        8.683 |      0 / 300 | JSONL row |
+| Local window | Grid  | 10,000 |    13.664 |                113 |       0.008 MB |        4.062 |        6.922 |       82.423 |      0 / 300 | JSONL row |
+
+### Interpretation
+
+- At the fixed 30% starting offset, the settled local-list snapshot is 10 roots / 41 GUI objects across 100 through 10,000 items. The settled local-grid snapshot is 28 / 113 from 1,000 through 10,000 and 32 / 129 at 100 items. These table values are not scrolling maxima. Independently, the range formula bounds this fixed 680-pixel, four-lane runner at 10 / 41 for lists and 32 / 129 for grids. The fluid-width five-lane story smoke pass is recorded separately above and reached 40 grid roots.
+- At 10,000 items, eager list mounting took 3,099.613 ms with a 26.157 ms frame p95; the local list took 12.970 ms with a 5.846 ms p95. Eager grid took 2,752.954 ms with a 23.481 ms p95; the local grid took 13.664 ms with a 6.922 ms p95.
+- The high-count eager rows mounted 40,001 GUI objects and 70,001 content-tree instances including `ContentRoot`. The corresponding local rows mounted 41/113 GUI objects and 71/197 content-tree instances including the root.
+- The local strategy had no missing expected visible item root across 2,400 correctness frames at `6x viewport/s`. Eager controls were also 0 / 2,400, producing 0 / 4,800 across the full matrix. This check verifies expected root presence, not rendered pixels.
+- Maximum-frame outliers occurred in Studio even on bounded local rows, while their medians and p95 values stayed flat. The decision therefore treats p95 as the stable scrolling signal and retains maxima in the raw evidence for transparency.
 
 ## Exit criteria for the public adapters
 
-- The local strategy's mounted `GuiObject` count follows the rendered-range bound and plateaus between 1,000 and 10,000 items for identical viewport geometry.
-- No blank viewport is observed at the agreed scripted scroll velocities.
-- Mount time, memory, and frame-time captures demonstrate a practical advantage over eager mounting at the target collection sizes.
-- The benchmark result includes its environment, raw capture references, and any observed tradeoffs before the public interface is committed.
+- Met: settled mounted snapshots stay flat between 1,000 and 10,000 items, and the deterministic range formula keeps all scrolling work within the stated bounds.
+- Met: no expected visible item root was missing across 2,400 local-window correctness checks (and 4,800 total matrix checks) at the agreed scripted velocity.
+- Met: exact mounted counts, mount time, high-count Lua heap deltas, and frame p95 demonstrate a practical advantage over eager mounting.
+- Met: the environment, reproducible client runner, raw JSONL, memory caveat, and Studio max-frame outliers are recorded before the public interface is committed.

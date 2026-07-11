@@ -15,6 +15,7 @@ import { resolveMinimumHeightConstraint } from "../_shared/frameSize";
 import type { TriggerOverlayLayout } from "../_shared/layering";
 import { applyStyleOverride } from "../_shared/styleOverride";
 import { TriggerOverlayLayer } from "../_shared/TriggerOverlayLayer";
+import { useOverlaySelectionLifecycle } from "../_shared/useOverlaySelectionLifecycle";
 import { usePressInteraction } from "../_shared/usePressInteraction";
 import { mergeSharedStyleProps, resolveUDimSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
@@ -73,6 +74,8 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 	const controlledValue = value ?? selected;
 	const [uncontrolledValue, setUncontrolledValue] = React.useState(controlledValue ?? defaultValue);
 	const [triggerInstance, setTriggerInstance] = React.useState<TextButton>();
+	const [dropdownInstance, setDropdownInstance] = React.useState<Frame>();
+	const [preferredOptionInstance, setPreferredOptionInstance] = React.useState<TextButton>();
 	const sizeStyles = resolveSelectSizeStyles(theme, size);
 	const mergedStyleProps = mergeSharedStyleProps(
 		{
@@ -103,6 +106,13 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 	const triggerTextSlotProps = slotProps?.triggerText;
 	const indicatorSlotProps = slotProps?.indicator;
 	const indicatorAsset = getLucideIconAsset("chevron-right", sizeStyles.indicatorSize);
+	useOverlaySelectionLifecycle({
+		opened: open && options.size() > 0,
+		container: preferredOptionInstance !== undefined ? dropdownInstance : undefined,
+		entryPolicy: "trigger",
+		trigger: triggerInstance,
+		preferredTarget: preferredOptionInstance,
+	});
 	React.useEffect(() => {
 		if (controlledValue !== undefined) {
 			setUncontrolledValue(controlledValue);
@@ -212,6 +222,12 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 		},
 		[ref],
 	);
+	const dropdownRef = React.useCallback((instance: Frame | undefined) => {
+		setDropdownInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
+	}, []);
+	const preferredOptionRef = React.useCallback((instance: TextButton | undefined) => {
+		setPreferredOptionInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
+	}, []);
 	const computedPosition = resolvedPosition ?? (props.center ? UDim2.fromScale(0.5, 0.5) : undefined);
 	const rootInstanceProps: Partial<React.InstanceProps<Frame>> = {
 		BorderSizePixel: 0,
@@ -346,6 +362,8 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 						styleOverrides={styleOverrides}
 						cursor={mergedStyleProps.cursor}
 						closeOnOutsidePress={closeOnOutsidePress}
+						setListInstance={dropdownRef}
+						setPreferredOptionInstance={preferredOptionRef}
 						onOutsidePress={() => setOpen(false)}
 						onSelect={handleSelect}
 					/>

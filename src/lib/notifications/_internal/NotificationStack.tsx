@@ -13,6 +13,7 @@ const MAX_STACK_WIDTH = 360;
 const MAX_STACK_HEIGHT = 100_000;
 
 interface NotificationStackProps {
+	readonly portal: boolean;
 	readonly position: NotificationPosition;
 	readonly zIndex?: number;
 }
@@ -65,7 +66,7 @@ function resolveStackPlacement(position: NotificationPosition): NotificationStac
 	}
 }
 
-export function NotificationStack({ position, zIndex }: NotificationStackProps): React.ReactElement | undefined {
+export function NotificationStack({ portal, position, zIndex }: NotificationStackProps): React.ReactElement | undefined {
 	const context = React.useContext(NotificationSnapshotContext);
 	const theme = useTheme();
 
@@ -77,49 +78,49 @@ export function NotificationStack({ position, zIndex }: NotificationStackProps):
 	const edgeInset = theme.spacing.lg;
 	const placement = resolveStackPlacement(position);
 
-	return (
-		<ScreenOverlayLayer zIndex={resolvedZIndex}>
+	const stack = (
+		<frame
+			BackgroundTransparency={1}
+			BorderSizePixel={0}
+			Position={UDim2.fromOffset(edgeInset, edgeInset)}
+			Size={new UDim2(1, -(edgeInset * 2), 1, -(edgeInset * 2))}
+			ClipsDescendants={false}
+			Active={false}
+			Selectable={false}
+			ZIndex={resolvedZIndex}
+		>
 			<frame
 				BackgroundTransparency={1}
 				BorderSizePixel={0}
-				Position={UDim2.fromOffset(edgeInset, edgeInset)}
-				Size={new UDim2(1, -(edgeInset * 2), 1, -(edgeInset * 2))}
+				AnchorPoint={placement.anchorPoint}
+				Position={placement.position}
+				Size={new UDim2(1, 0, 0, 0)}
+				AutomaticSize={Enum.AutomaticSize.Y}
 				ClipsDescendants={false}
 				Active={false}
 				Selectable={false}
 				ZIndex={resolvedZIndex}
 			>
-				<frame
-					BackgroundTransparency={1}
-					BorderSizePixel={0}
-					AnchorPoint={placement.anchorPoint}
-					Position={placement.position}
-					Size={new UDim2(1, 0, 0, 0)}
-					AutomaticSize={Enum.AutomaticSize.Y}
-					ClipsDescendants={false}
-					Active={false}
-					Selectable={false}
-					ZIndex={resolvedZIndex}
-				>
-					<uisizeconstraint key="width-constraint" MaxSize={new Vector2(MAX_STACK_WIDTH, MAX_STACK_HEIGHT)} />
-					<uilistlayout
-						key="list-layout"
-						FillDirection={Enum.FillDirection.Vertical}
-						HorizontalAlignment={Enum.HorizontalAlignment.Center}
-						Padding={new UDim(0, theme.spacing.sm)}
-						SortOrder={Enum.SortOrder.LayoutOrder}
+				<uisizeconstraint key="width-constraint" MaxSize={new Vector2(MAX_STACK_WIDTH, MAX_STACK_HEIGHT)} />
+				<uilistlayout
+					key="list-layout"
+					FillDirection={Enum.FillDirection.Vertical}
+					HorizontalAlignment={Enum.HorizontalAlignment.Center}
+					Padding={new UDim(0, theme.spacing.sm)}
+					SortOrder={Enum.SortOrder.LayoutOrder}
+				/>
+				{context.snapshot.visible.map((record, index) => (
+					<NotificationCard
+						key={record.id}
+						record={record}
+						store={context.store}
+						layoutOrder={placement.reverseOrder ? -index : index}
+						zIndex={resolvedZIndex}
 					/>
-					{context.snapshot.visible.map((record, index) => (
-						<NotificationCard
-							key={record.id}
-							record={record}
-							store={context.store}
-							layoutOrder={placement.reverseOrder ? -index : index}
-							zIndex={resolvedZIndex}
-						/>
-					))}
-				</frame>
+				))}
 			</frame>
-		</ScreenOverlayLayer>
+		</frame>
 	);
+
+	return portal ? <ScreenOverlayLayer zIndex={resolvedZIndex}>{stack}</ScreenOverlayLayer> : stack;
 }

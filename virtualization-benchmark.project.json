@@ -1,0 +1,30 @@
+{
+	"name": "PrismVirtualizationBenchmark",
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"Prism": {
+				"$path": "out/lib"
+			},
+			"rbxts_include": {
+				"$path": "include",
+				"node_modules": {
+					"$className": "Folder",
+					"@rbxts": {
+						"$path": "node_modules/@rbxts"
+					},
+					"@rbxts-js": {
+						"$path": "node_modules/@rbxts-js"
+					}
+				}
+			}
+		},
+		"StarterPlayer": {
+			"StarterPlayerScripts": {
+				"VirtualizationBenchmarkRunner": {
+					"$path": "out/benchmarks/VirtualizationBenchmarkRunner.client.luau"
+				}
+			}
+		}
+	}
+}
