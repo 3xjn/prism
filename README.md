@@ -9,7 +9,7 @@ A Roblox TypeScript UI kit for `rbxts-react` — typed components, theme tokens,
 | Layout | `Box`, `Stack`, `Divider`, `Card`, `ScrollArea` |
 | Text and media | `Text`, `Icon`, `Image`, `Avatar` |
 | Inputs and forms | `Button`, `Pressable`, `Input`, `KeybindInput`, `Checkbox`, `Switch`, `StepperInput`, `Slider` |
-| Feedback | `Progress`, `CircularProgress`, `Backdrop` |
+| Feedback | `Progress`, `CircularProgress`, `Backdrop`, `NotificationsProvider` |
 | Navigation | `SegmentedControl`, `Tabs`, `Menu`, `Select` |
 | Overlays | `WorldPortal`, `Popover`, `Modal`, `Tooltip` |
 | Utility | `Draggable` |
@@ -122,6 +122,40 @@ const [secondary, setSecondary] = React.useState<TextButton>();
 Assigning only to `ref.current` does not trigger a React render. Callback state does, so the neighboring control receives the native instance after mount. Disabled controls resolve to `Selectable={false}`; as elsewhere in Prism, a raw `slotProps` override remains the final escape hatch.
 
 This slice delegates directional navigation and focus visuals to Roblox. Prism does not mutate `GuiService.SelectedObject`, install a global selection coordinator, or replace the native `SelectionImageObject`.
+
+## Notifications
+
+Mount `NotificationsProvider` around the part of the tree that owns screen feedback, then call `useNotifications()` from descendants. Each provider owns an independent queue; Prism does not expose a process-wide singleton.
+
+```tsx
+function SaveLoadoutButton() {
+	const notifications = useNotifications();
+
+	return (
+		<Button
+			label="Save loadout"
+			onPress={() =>
+				notifications.show({
+					title: "Loadout saved",
+					message: "Recon kit is ready for the next round.",
+					color: "success",
+					icon: "check-circle",
+				})
+			}
+		/>
+	);
+}
+
+<NotificationsProvider position="top-right" defaultDuration={5} maxVisible={3}>
+	<SaveLoadoutButton />
+</NotificationsProvider>
+```
+
+`position` accepts `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, and `bottom-right`; `zIndex` is available when the stack needs to coordinate with an app's other screen layers. Notification actions dismiss their notification after `onPress` by default. Set `closeOnPress: false` when an action should leave it open.
+
+Use `duration: false` for a persistent notification. In updates, `icon: false` and `action: false` explicitly clear those values; omission preserves the current value because Luau cannot distinguish an omitted table key from `nil`.
+
+The stack observes Roblox's native `GuiService.ReducedMotionEnabled` preference. Safe bounds come from the nearest host `ScreenGui.ScreenInsets`, and Prism adds theme spacing inside those bounds; configure inset policy on the host instead of manually applying the same safe area twice.
 
 ## Slot props
 

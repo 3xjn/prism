@@ -134,6 +134,23 @@ Prism's first controller-navigation layer is native-first and deliberately small
 
 This boundary keeps selection composable: ordinary controls expose the native graph where precision is needed, while `Box`, `Stack`, and `ScrollArea` can define native group boundaries without becoming stateful navigation coordinators.
 
+## Notifications
+
+Notifications are provider-local screen feedback, not a global imperative service.
+
+### Notification rules
+
+1. Every `NotificationsProvider` lazily owns one queue store. Nested or sibling providers remain independent even when their generated notification IDs match.
+2. The public context exposes only stable `show`, `update`, `dismiss`, and `clear` actions. Snapshots, timers, pause/resume, close completion, and dismissal reasons stay internal.
+3. Public placement is a closed six-value screen-position union. The default is `top-right`; `zIndex` coordinates the stack with other app layers without exposing the stack itself.
+4. `duration: false` means persistent. On partial updates, omitted presentation values are preserved while `icon: false` and `action: false` are explicit clear sentinels for Luau callers.
+5. Notification actions dismiss with a user reason after `onPress` by default. `closeOnPress: false` keeps the record open for repeatable actions.
+6. The stack portals through the shared screen overlay layer and stays at most 360 pixels wide while shrinking naturally in narrower hosts.
+7. The nearest host `ScreenGui.ScreenInsets` defines device and Core UI safe bounds. Prism adds theme edge spacing inside those bounds and never creates a competing `ScreenGui` or guesses raw inset values.
+8. Motion observes `GuiService.ReducedMotionEnabled`. Entry and exit animate only group transparency and scale; native list layout owns reflow, so width, height, and absolute position are never animated.
+
+Keeping the changing snapshot in a private context prevents action-only consumers from rerendering for every queue mutation. The rendered stack remains an implementation detail mounted by the provider rather than a required public composition step.
+
 ## Composition
 
 Prism favors a small set of composition rules over highly dynamic polymorphism.
@@ -210,9 +227,10 @@ Shipped today in this repo:
 - the Lucide icon atlas under `@prism/icons`
 - shared component plumbing under `components/_shared` (interaction hooks, style resolution, decorators, overlay layering, presence, cursor claims)
 - roughly thirty components from the top-level `@prism` entrypoint: layout primitives (`Box`, `Text`, `Stack`, `Divider`, `Card`, `ScrollArea`), interaction primitives (`Pressable`, `Button`, `Draggable`), form controls (`Checkbox`, `Switch`, `Input`, `Select`, `Slider`, `StepperInput`, `SegmentedControl`, `KeybindInput`, `Tabs`), overlays (`Modal`, `Menu`, `Popover`, `Tooltip`, `Backdrop`), display (`Avatar`, `Icon`, `Image`, `Progress`, `CircularProgress`), and world integration (`WorldPortal`)
+- provider-local screen notifications with six placements, queueing, actions, persistent durations, reduced-motion handling, and host-owned safe bounds
 - a Luau interop bridge (`mountPrism` under `@prism`'s `bridge`) that renders a plain data tree of Prism components for non-TypeScript callers
 - playground stories for the public component surface under `src/playground/stories`
-- compile-time prop contracts via per-component `__typecheck__.tsx` files, plus a Node-based assertion runner (`npm test`) for unit conversion and Progress/Slider range math
+- compile-time prop contracts via per-component `__typecheck__.tsx` files, plus a Node-based assertion runner (`npm test`) for units, Progress/Slider ranges, responsive and selection mapping, and the notification store/API
 
 The current ui-labs integration is file-discovery based. `index.storybook.ts` exports the `Storybook` config and points `storyRoots` at the stories folder, while `src/playground/stories/index.ts` imports each story module so they are emitted and discoverable. Prism does not mount a separate PlayerGui playground app at runtime.
 
@@ -224,7 +242,7 @@ Deliberate next steps, roughly in priority order:
 - extract a shared intent-surface color resolver so per-component `styles.ts` files stop hand-tuning the same `mixColor` hover/pressed blends
 - split the outsized files: `KeybindInput.tsx` (~1,100 lines), `Draggable.tsx` (~1,000 lines), and `LuauBridge.tsx` (~1,100 lines, with heavy internal duplication across its per-prop validators)
 - converge `Tabs` and `SegmentedControl` per-item hover tracking with the shared interaction hook where their keyed-map semantics allow
-- add runtime coverage for the theme resolvers, `mergeTheme`, motion interpolation, and the bridge (only unit conversion and Progress/Slider math run under `npm test` today)
+- add runtime coverage for the theme resolvers, `mergeTheme`, motion interpolation, and the bridge; the notification state machine and public API adapter now have pure runtime coverage
 - migrate the per-state duration literals in component motion transitions (e.g. `0.06`/`0.14` in Checkbox, Button, Tabs styles) to `theme.motion.duration` tokens; easing already flows through tokens, durations mostly do not (Draggable now reads both from the theme)
 - styled gamepad focus (`SelectionImageObject`) so controller selection matches the design language instead of the stock Roblox box
 - optional: swap `elevation.tsx` internals for a 9-slice shadow image (`assets/drop-shadow-128.png`, uploaded as `rbxassetid://110725881404654`). The current 10-ring gaussian stack is visually smooth; the image route needs a punched-out center (a child ImageLabel draws over its parent surface) and measured pixel sizing everywhere (an ImageLabel larger than an AutomaticSize surface inflates it — rotation does not exempt it), so it only pays off if stroke rendering ever becomes a bottleneck

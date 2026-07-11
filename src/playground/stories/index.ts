@@ -29,5 +29,6 @@ import "./ControllerSelection.story";
 import "./Backdrop.story";
 import "./ScrollArea.story";
 import "./Responsive.story";
+import "./Notifications.story";
 
 export {};
