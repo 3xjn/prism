@@ -37,6 +37,7 @@ import {
 import type { KeybindCaptureDevice, KeybindDisplayDevice, KeybindInputProps, KeybindInputSlotProps } from "./types";
 
 const UserInputService = game.GetService("UserInputService");
+const GuiService = game.GetService("GuiService");
 const GAMEPAD_KEYCODE_MIN = Enum.KeyCode.ButtonX.Value;
 const GAMEPAD_KEYCODE_MAX = Enum.KeyCode.Thumbstick2Right.Value;
 const DEFAULT_CANCEL_KEY_CODES = [Enum.KeyCode.Escape, Enum.KeyCode.ButtonSelect] as const;
@@ -775,6 +776,9 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 	const [uncontrolledValue, setUncontrolledValue] = React.useState(value ?? defaultValue);
 	const valueRef = React.useRef(value ?? defaultValue);
 	const capturingRef = React.useRef(false);
+	const triggerInstanceRef = React.useRef<TextButton>();
+	// ButtonA emits Activated after InputBegan; remember the exact press when capture already consumed it.
+	const suppressedActivationInputRef = React.useRef<InputObject>();
 	const disabledRef = React.useRef(disabled);
 	const readOnlyRef = React.useRef(readOnly);
 	const clearableRef = React.useRef(clearable);
@@ -901,6 +905,16 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 		onCaptureEndRef.current?.(Enum.KeyCode.Unknown);
 		setCapturingState(false);
 	}, [commitValue, setCapturingState]);
+	const suppressCaptureEndingActivation = React.useCallback((input: InputObject) => {
+		const triggerInstance = triggerInstanceRef.current;
+		if (
+			input.KeyCode === Enum.KeyCode.ButtonA &&
+			triggerInstance !== undefined &&
+			GuiService.SelectedObject === triggerInstance
+		) {
+			suppressedActivationInputRef.current = input;
+		}
+	}, []);
 
 	React.useEffect(() => {
 		if (!disabled && !readOnly) {
@@ -927,11 +941,13 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 
 			const keyCode = input.KeyCode;
 			if (containsKeyCode(cancelKeyCodesRef.current, keyCode)) {
+				suppressCaptureEndingActivation(input);
 				cancelCapture();
 				return;
 			}
 
 			if (keyCode === Enum.KeyCode.Backspace || keyCode === Enum.KeyCode.Delete) {
+				suppressCaptureEndingActivation(input);
 				if (clearableRef.current) {
 					clearValue();
 				} else {
@@ -948,6 +964,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 				return;
 			}
 
+			suppressCaptureEndingActivation(input);
 			commitValue(keyCode);
 			setCapturingState(false);
 			onCaptureEndRef.current?.(keyCode);
@@ -956,7 +973,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 		return () => {
 			connection.Disconnect();
 		};
-	}, [cancelCapture, capturing, clearValue, commitValue, setCapturingState]);
+	}, [cancelCapture, capturing, clearValue, commitValue, setCapturingState, suppressCaptureEndingActivation]);
 
 	const rootSlotProps = slotProps?.root;
 	const triggerSlotProps = slotProps?.trigger;
@@ -1062,7 +1079,13 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 				setPressed(false);
 			}
 		},
-		Activated: () => {
+		Activated: (_button, input) => {
+			const suppressedInput = suppressedActivationInputRef.current;
+			suppressedActivationInputRef.current = undefined;
+			if (suppressedInput === input) {
+				return;
+			}
+
 			startCapture();
 		},
 	};
@@ -1098,16 +1121,17 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 		Event: triggerEvent,
 		Change,
 	};
+	const setTriggerRef = React.useCallback(
+		(instance: TextButton | undefined) => {
+			triggerInstanceRef.current = instance;
+			assignRef(ref, instance);
+		},
+		[ref],
+	);
 
 	return (
 		<frame {...rootInstanceProps} {...rootSlotProps}>
-			<textbutton
-				{...triggerInstanceProps}
-				{...triggerSlotProps}
-				ref={(instance) => {
-					assignRef(ref, instance);
-				}}
-			>
+			<textbutton {...triggerInstanceProps} {...triggerSlotProps} ref={setTriggerRef}>
 				{decoratorChildren}
 				<KeybindInputTileContent
 					contentState={{

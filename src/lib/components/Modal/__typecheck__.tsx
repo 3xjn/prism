@@ -14,6 +14,7 @@ const validModalProps: ModalProps[] = [
 	{ opened: true, onClose: () => undefined },
 	{ opened: false, onClose: () => undefined, title: "Settings" },
 	{ opened: true, onClose: () => undefined, closeOnBackdropClick: false },
+	{ opened: true, onClose: () => undefined, closeOnBack: false },
 	{ opened: true, onClose: () => undefined, withCloseButton: false },
 	{ opened: true, onClose: () => undefined, size: "sm" },
 	{ opened: true, onClose: () => undefined, size: "md" },
@@ -21,18 +22,46 @@ const validModalProps: ModalProps[] = [
 	{ opened: true, onClose: () => undefined, size: "xl", fullWidth: true },
 	{ opened: true, onClose: () => undefined, width: 420, minWidth: 320, maxWidth: 640, maxHeight: 520, zIndex: 12 },
 	{ opened: true, onClose: () => undefined, p: "xl", bg: themeRefs.background.surface },
-	{ opened: true, onClose: () => undefined, slotProps: { overlay: { ZIndex: 8 }, backdrop: { BackgroundTransparency: 0.8 }, contentLayer: { BackgroundTransparency: 1 } } },
+	{
+		opened: true,
+		onClose: () => undefined,
+		slotProps: {
+			overlay: { ZIndex: 8 },
+			backdrop: { BackgroundTransparency: 0.8 },
+			contentLayer: { BackgroundTransparency: 1 },
+		},
+	},
 	{ opened: true, onClose: () => undefined, slotProps: { content: { Rotation: 0 }, contentStroke: { Thickness: 2 } } },
-	{ opened: true, onClose: () => undefined, slotProps: { header: { BackgroundTransparency: 1 }, title: { TextColor3: Color3.fromRGB(33, 37, 41) } } },
-	{ opened: true, onClose: () => undefined, slotProps: { closeButton: { AutoButtonColor: true }, closeButtonCorner: { CornerRadius: new UDim(0, 10) }, closeIcon: { Size: UDim2.fromOffset(14, 14) } } },
-	{ opened: true, onClose: () => undefined, slotProps: { body: { ScrollBarThickness: 10 }, bodyContent: { BackgroundTransparency: 1 }, contentPadding: { PaddingLeft: new UDim(0, 24) } } },
+	{
+		opened: true,
+		onClose: () => undefined,
+		slotProps: { header: { BackgroundTransparency: 1 }, title: { TextColor3: Color3.fromRGB(33, 37, 41) } },
+	},
+	{
+		opened: true,
+		onClose: () => undefined,
+		slotProps: {
+			closeButton: { AutoButtonColor: true },
+			closeButtonCorner: { CornerRadius: new UDim(0, 10) },
+			closeIcon: { Size: UDim2.fromOffset(14, 14) },
+		},
+	},
+	{
+		opened: true,
+		onClose: () => undefined,
+		slotProps: {
+			body: { ScrollBarThickness: 10 },
+			bodyContent: { BackgroundTransparency: 1 },
+			contentPadding: { PaddingLeft: new UDim(0, 24) },
+		},
+	},
 	{ opened: true, onClose: () => undefined, ref: modalRef },
 ];
 
 const validExportedModalProps: ExportedModalProps[] = [
 	{ opened: true, onClose: () => undefined },
 	{ opened: true, onClose: () => undefined, title: "Modal", withCloseButton: false },
-	{ opened: true, onClose: () => undefined, size: "lg", closeOnBackdropClick: false },
+	{ opened: true, onClose: () => undefined, size: "lg", closeOnBackdropClick: false, closeOnBack: false },
 	{ opened: false, onClose: () => undefined, fullWidth: true },
 ];
 
@@ -45,19 +74,20 @@ const validModalExamples = [
 		</React.Fragment>
 	</Modal>,
 	<Modal key="backdrop" opened onClose={() => undefined} closeOnBackdropClick={false} />,
+	<Modal key="back-barrier" opened onClose={() => undefined} closeOnBack={false} />,
 	<Modal key="button" opened onClose={() => undefined} withCloseButton={false} />,
 	<Modal key="sizes" opened onClose={() => undefined} size="xl" fullWidth />,
 	<Modal
 		key="slots"
 		opened
 		onClose={() => undefined}
-			slotProps={{
-				overlay: { ZIndex: 11 },
-				contentLayer: { BackgroundTransparency: 1 },
-				content: { Rotation: 0 },
-				title: { Text: "Override" },
-				closeIcon: { ImageTransparency: 0.1 },
-				body: { ScrollBarThickness: 12 },
+		slotProps={{
+			overlay: { ZIndex: 11 },
+			contentLayer: { BackgroundTransparency: 1 },
+			content: { Rotation: 0 },
+			title: { Text: "Override" },
+			closeIcon: { ImageTransparency: 0.1 },
+			body: { ScrollBarThickness: 12 },
 			bodyContent: { BackgroundTransparency: 1 },
 		}}
 	>

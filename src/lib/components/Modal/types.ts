@@ -32,6 +32,8 @@ export interface ModalStyleProps extends SharedStyleProps {
 	readonly fullWidth?: boolean;
 	readonly title?: string | number;
 	readonly closeOnBackdropClick?: boolean;
+	/** Close the modal when Escape or gamepad ButtonB is pressed. Defaults to true. */
+	readonly closeOnBack?: boolean;
 	readonly withCloseButton?: boolean;
 }
 

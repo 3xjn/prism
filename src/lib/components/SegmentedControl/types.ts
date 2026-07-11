@@ -69,7 +69,10 @@ export interface SegmentedControlIndicatorStyleOverrideContext {
 export interface SegmentedControlStyleOverrides {
 	readonly frame?: StyleOverride<SegmentedControlFrameVisualStyles, SegmentedControlFrameStyleOverrideContext>;
 	readonly segment?: StyleOverride<SegmentedControlSegmentVisualStyles, SegmentedControlSegmentStyleOverrideContext>;
-	readonly indicator?: StyleOverride<SegmentedControlIndicatorVisualStyles, SegmentedControlIndicatorStyleOverrideContext>;
+	readonly indicator?: StyleOverride<
+		SegmentedControlIndicatorVisualStyles,
+		SegmentedControlIndicatorStyleOverrideContext
+	>;
 }
 
 export interface SegmentedControlStyleProps extends Omit<SharedStyleProps, "bg" | "bgTransparency"> {
@@ -87,6 +90,10 @@ export interface SegmentedControlStyleProps extends Omit<SharedStyleProps, "bg" 
 }
 
 export interface SegmentedControlProps extends SegmentedControlStyleProps {
+	/**
+	 * Every enabled segment is a native selection target. Left/Right wraps across enabled
+	 * options; ButtonA/Activated commits the focused option while Up/Down can leave the control.
+	 */
 	readonly options: readonly SegmentedControlOption[];
 	readonly value?: string;
 	readonly defaultValue?: string;
@@ -94,5 +101,6 @@ export interface SegmentedControlProps extends SegmentedControlStyleProps {
 	readonly Event?: React.InstanceProps<Frame>["Event"];
 	readonly Change?: React.InstanceProps<Frame>["Change"];
 	readonly slotProps?: SegmentedControlSlotProps;
+	/** Ref ownership stays on the non-interactive root Frame; segment targets remain internal. */
 	readonly ref?: React.Ref<Frame>;
 }

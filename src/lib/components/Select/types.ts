@@ -104,6 +104,8 @@ export interface SelectProps extends SelectStyleProps {
 	readonly maxVisibleOptions?: number;
 	/** Close the dropdown when a mouse or touch press lands outside the list. Defaults to true. */
 	readonly closeOnOutsidePress?: boolean;
+	/** Close the dropdown when Escape or gamepad ButtonB is pressed. Defaults to true. */
+	readonly closeOnBack?: boolean;
 	readonly Event?: React.InstanceProps<TextButton>["Event"];
 	readonly Change?: React.InstanceProps<TextButton>["Change"];
 	readonly slotProps?: SelectSlotProps;

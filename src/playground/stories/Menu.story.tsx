@@ -4,7 +4,7 @@ import { Boolean, CreateReactStory, EnumList, Number } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { Box, Icon, Menu, Pressable, Stack, Text } from "@prism";
 import type { MenuAlign, MenuItem, MenuPlacement, MenuSize } from "@prism";
-import { useTheme , theme as themeRefs } from "@prism/theme";
+import { useTheme, theme as themeRefs } from "@prism/theme";
 
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
 import { useSelectedObjectLabel } from "./_selectionStoryUtils";
@@ -15,15 +15,30 @@ const controls = {
 	align: EnumList({ start: "start", center: "center", end: "end" }, "start"),
 	size: EnumList({ xs: "xs", sm: "sm", md: "md", lg: "lg", xl: "xl" }, "md"),
 	disabled: Boolean(false),
+	closeOnBack: Boolean(true),
 	maxVisibleItems: Number(6, 2, 10, 1),
 };
 
 type MenuStoryControls = InferControls<typeof controls>;
 
-function MenuTrigger({ disabled, onPress }: { readonly disabled: boolean; readonly onPress: () => void }): React.ReactElement {
+function MenuTrigger({
+	disabled,
+	onPress,
+}: {
+	readonly disabled: boolean;
+	readonly onPress: () => void;
+}): React.ReactElement {
 	return (
 		<Pressable width={244} height={68} disabled={disabled} onPress={onPress} selectionOrder={10}>
-			<Box width="100%" height="100%" bg={themeRefs.background.surface} radius="md" border={1} borderColor={themeRefs.border.default} p="md">
+			<Box
+				width="100%"
+				height="100%"
+				bg={themeRefs.background.surface}
+				radius="md"
+				border={1}
+				borderColor={themeRefs.border.default}
+				p="md"
+			>
 				<Stack width="100%" direction="horizontal" align="center" gap="sm">
 					<Box width={34} height={34} bg={themeRefs.primary.light} radius="sm">
 						<Stack width="100%" height="100%" align="center" justify="center">
@@ -65,7 +80,7 @@ function MenuStoryCanvas({ controls: currentControls }: { readonly controls: Men
 				<Stack width="100%" gap="md">
 					<Text text="Menu" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="Select the Squad actions trigger and press A. Selection enters the first enabled command, skips the disabled favorite row, and returns to the exact trigger after choosing an item or dismissing the panel. The live label shows each native handoff."
+						text="Select the Squad actions trigger and press A. Selection enters the first enabled command and skips the disabled favorite row. Press B (or Escape) to dismiss the menu and restore the exact trigger; turn Close On Back off to keep the open menu as a topmost barrier."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
@@ -80,17 +95,22 @@ function MenuStoryCanvas({ controls: currentControls }: { readonly controls: Men
 								align={resolvedAlign}
 								size={resolvedSize}
 								disabled={currentControls.disabled}
+								closeOnBack={currentControls.closeOnBack}
 								maxVisibleItems={currentControls.maxVisibleItems}
 								onItemPress={setLastAction}
 								gap={8}
 							>
-								<MenuTrigger
-									disabled={currentControls.disabled}
-									onPress={() => setOpened((current) => !current)}
-								/>
+								<MenuTrigger disabled={currentControls.disabled} onPress={() => setOpened((current) => !current)} />
 							</Menu>
 							<Text text={`Last action: ${lastAction}`} size="sm" color={themeRefs.text.secondary} />
-							<Text text={selectedObjectLabel} size="sm" weight={600} color={themeRefs.primary.main} wrap width="100%" />
+							<Text
+								text={selectedObjectLabel}
+								size="sm"
+								weight={600}
+								color={themeRefs.primary.main}
+								wrap
+								width="100%"
+							/>
 						</Stack>
 					</Box>
 				</Stack>
@@ -102,7 +122,8 @@ function MenuStoryCanvas({ controls: currentControls }: { readonly controls: Men
 const story = CreateReactStory(
 	{
 		name: "Menu",
-		summary: "Popover-backed anchored command list for in-game actions, with disabled rows, separators, labels, destructive intent, scrolling, and slot escapes.",
+		summary:
+			"Popover-backed anchored command list for in-game actions, with disabled rows, separators, labels, destructive intent, scrolling, and slot escapes.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,

@@ -38,7 +38,11 @@ const menuStyleOverrides: MenuStyleOverrides = {
 const validMenuProps: MenuProps[] = [
 	{ items, children: trigger },
 	{ items, children: trigger, styleOverrides: menuStyleOverrides },
-	{ items, children: trigger, styleOverrides: { item: (_visualStyles, ctx) => (ctx.state === "disabled" ? { textTransparency: 0.4 } : {}) } },
+	{
+		items,
+		children: trigger,
+		styleOverrides: { item: (_visualStyles, ctx) => (ctx.state === "disabled" ? { textTransparency: 0.4 } : {}) },
+	},
 	{ items, children: trigger, opened: true },
 	{ items, children: trigger, defaultOpened: true },
 	{ items, children: trigger, disabled: true },
@@ -46,10 +50,15 @@ const validMenuProps: MenuProps[] = [
 	{ items, children: trigger, triggerMode: "manual", opened: true },
 	{ items, children: trigger, placement: "right", align: "end", gap: 10, offset: new Vector2(2, 4) },
 	{ items, children: trigger, closeOnOutsidePress: false, closeOnItemPress: false },
+	{ items, children: trigger, closeOnBack: false },
 	{ items, children: trigger, maxVisibleItems: 4, panelWidth: 260, size: "lg" },
 	{ items, children: trigger, width: 180, minWidth: 120, maxWidth: 260, layoutOrder: 3 },
 	{ items, children: trigger, slotProps: { root: { ZIndex: 4 }, panel: { BackgroundTransparency: 0.04 } } },
-	{ items, children: trigger, slotProps: { item: { AutoButtonColor: true }, itemLabel: { TextColor3: Color3.fromRGB(255, 255, 255) } } },
+	{
+		items,
+		children: trigger,
+		slotProps: { item: { AutoButtonColor: true }, itemLabel: { TextColor3: Color3.fromRGB(255, 255, 255) } },
+	},
 	{ items, children: trigger, slotProps: { divider: { BackgroundTransparency: 1 }, groupLabel: { Text: "Override" } } },
 	{ items, children: trigger, onItemPress: () => undefined, ref: menuRef },
 ];
@@ -57,15 +66,32 @@ const validMenuProps: MenuProps[] = [
 const validExportedMenuProps: ExportedMenuProps[] = [
 	{ items, children: trigger },
 	{ items, placement: "bottom", align: "start", triggerMode: "click", children: trigger },
-	{ items, opened: true, onOpenedChange: () => undefined, children: trigger },
+	{ items, opened: true, onOpenedChange: () => undefined, closeOnBack: false, children: trigger },
 ];
 
 const validMenuExamples = [
-	<Menu key="basic" items={items}>{trigger}</Menu>,
-	<Menu key="open" items={items} opened>{trigger}</Menu>,
-	<Menu key="hover" items={items} triggerMode="hover" placement="top">{trigger}</Menu>,
-	<Menu key="slots" items={items} slotProps={{ itemCorner: { CornerRadius: new UDim(0, 10) }, content: { ZIndex: 12 } }}>{trigger}</Menu>,
-	<Menu key="rich" items={[{ value: "preview", label: "Preview", icon: <Text text="P" /> }]} ref={menuRef}>{trigger}</Menu>,
+	<Menu key="basic" items={items}>
+		{trigger}
+	</Menu>,
+	<Menu key="open" items={items} opened>
+		{trigger}
+	</Menu>,
+	<Menu key="hover" items={items} triggerMode="hover" placement="top">
+		{trigger}
+	</Menu>,
+	<Menu key="back-barrier" items={items} closeOnBack={false}>
+		{trigger}
+	</Menu>,
+	<Menu
+		key="slots"
+		items={items}
+		slotProps={{ itemCorner: { CornerRadius: new UDim(0, 10) }, content: { ZIndex: 12 } }}
+	>
+		{trigger}
+	</Menu>,
+	<Menu key="rich" items={[{ value: "preview", label: "Preview", icon: <Text text="P" /> }]} ref={menuRef}>
+		{trigger}
+	</Menu>,
 ];
 
 const acceptsMenuChildren: React.ReactNode = validMenuExamples;
@@ -74,7 +100,9 @@ const acceptsExportedMenuProps: ExportedMenuProps[] = validExportedMenuProps;
 
 type MenuVisualStyleKey = keyof MenuPanelVisualStyles | keyof MenuItemVisualStyles;
 type MenuStyleOverridesAssignableToProp = AssertTrue<IsAssignable<MenuStyleOverrides, MenuProps["styleOverrides"]>>;
-type MenuStyleOverridesAssignableToExportedProp = AssertTrue<IsAssignable<MenuStyleOverrides, ExportedMenuProps["styleOverrides"]>>;
+type MenuStyleOverridesAssignableToExportedProp = AssertTrue<
+	IsAssignable<MenuStyleOverrides, ExportedMenuProps["styleOverrides"]>
+>;
 type MenuPanelCtxHasNoState = AssertFalse<HasProp<MenuPanelStyleOverrideContext, "state">>;
 type MenuVisualStylesHaveNoRadius = AssertFalse<IsAssignable<"radius", MenuVisualStyleKey>>;
 type MenuVisualStylesHaveNoItemRadius = AssertFalse<IsAssignable<"itemRadius", MenuVisualStyleKey>>;

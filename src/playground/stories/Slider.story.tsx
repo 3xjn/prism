@@ -2,7 +2,7 @@ import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Slider, Stack, Text } from "@prism";
 import type { SliderColor, SliderSize } from "@prism";
-import { useTheme , theme as themeRefs } from "@prism/theme";
+import { useTheme, theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -74,7 +74,11 @@ const controls = {
 
 type SliderStoryControls = InferControls<typeof controls>;
 
-function SliderStoryCanvas({ controls: currentControls }: { readonly controls: SliderStoryControls }): React.ReactElement {
+function SliderStoryCanvas({
+	controls: currentControls,
+}: {
+	readonly controls: SliderStoryControls;
+}): React.ReactElement {
 	const theme = useTheme();
 	const resolvedStep = resolveStoryStep(currentControls.step);
 	const resolvedColor = currentControls.color as SliderColor;
@@ -99,7 +103,7 @@ function SliderStoryCanvas({ controls: currentControls }: { readonly controls: S
 				<Stack width="100%" gap="md">
 					<Text text="Slider" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="Inspect one numeric control built for direct click-and-drag input. The full-width hit target still lets you grab anywhere on the rail, and the optional hover tooltip now surfaces the current value without changing the capture path."
+						text="Drag or click anywhere on the rail. While controller-selected, Left/Right and L1/R1 adjust the value without moving focus; Up/Down remains native navigation to surrounding controls."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
@@ -132,7 +136,7 @@ const story = CreateReactStory(
 	{
 		name: "Slider",
 		summary:
-			"Single-value numeric rail with semantic thumb and range styling, full-width click-and-drag input, optional hover tooltip value feedback, controlled or uncontrolled state, and safe clamping when ranges or steps change.",
+			"Single-value numeric rail with pointer dragging, selected-only controller stepping, native Up/Down navigation, optional tooltip feedback, and safe range clamping.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,

@@ -360,6 +360,12 @@ function loadSelectionModule() {
 	return evaluateTypeScriptModule(filePath, source);
 }
 
+function loadComponentSelectionModule(componentName) {
+	const filePath = path.join(process.cwd(), `src/lib/components/${componentName}/selection.ts`);
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(filePath, source, {}, "Array.prototype.size = function () { return this.length; };");
+}
+
 function loadOverlaySelectionLifecyclePolicyModule() {
 	const filePath = path.join(process.cwd(), "src/lib/components/_shared/useOverlaySelectionLifecycle.ts");
 	const source = fs.readFileSync(filePath, "utf8");
@@ -440,6 +446,18 @@ function loadWorkbenchModelModule() {
 	);
 }
 
+function loadVirtualInventoryNavigationModule() {
+	const filePath = path.join(process.cwd(), "src/playground/stories/_virtualInventoryNavigation.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(filePath, source, { math: themeMath });
+}
+
+function loadVirtualInventorySelectionPolicyModule() {
+	const filePath = path.join(process.cwd(), "src/playground/stories/_virtualInventorySelectionPolicy.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(filePath, source);
+}
+
 function loadWorkbenchSerializerModule(defaultTheme, modelModule) {
 	const filePath = path.join(process.cwd(), "src/playground/theme-workbench/serialize.ts");
 	const source = fs.readFileSync(filePath, "utf8");
@@ -471,6 +489,12 @@ function loadOutsidePressModule() {
 	const filePath = path.join(process.cwd(), "src/lib/components/_shared/outsidePress.ts");
 	const source = fs.readFileSync(filePath, "utf8");
 	return evaluateTypeScriptModule(filePath, source, { Vector2 });
+}
+
+function loadOverlayDismissalStackModule() {
+	const filePath = path.join(process.cwd(), "src/lib/components/_shared/overlayDismissalStack.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(filePath, source);
 }
 
 function loadNotificationStoreModule() {
@@ -1251,6 +1275,168 @@ function runOutsidePressAssertions() {
 	console.log("outside press: PASS");
 }
 
+function runOverlayDismissalStackAssertions() {
+	const { resolveOverlayBackDismissalTarget } = loadOverlayDismissalStackModule();
+	const modal = { token: "modal", layer: 10, openedOrder: 1, dismissible: true };
+	const menu = { token: "menu", layer: 14, openedOrder: 2, dismissible: true };
+	const newerSibling = { token: "sibling", layer: 14, openedOrder: 3, dismissible: true };
+	const barrier = { token: "barrier", layer: 18, openedOrder: 4, dismissible: false };
+
+	assertCondition(resolveOverlayBackDismissalTarget([]) === undefined, "overlay back handles an empty stack");
+	assertCondition(
+		resolveOverlayBackDismissalTarget([modal, menu]) === menu,
+		"overlay back prefers the visually higher nested overlay",
+	);
+	assertCondition(
+		resolveOverlayBackDismissalTarget([modal, menu, newerSibling]) === newerSibling,
+		"overlay back prefers the newest same-layer session",
+	);
+	assertCondition(
+		resolveOverlayBackDismissalTarget([modal, menu, barrier]) === undefined,
+		"overlay back retains a non-dismissible top overlay as a barrier and never punches through it",
+	);
+	assertCondition(
+		resolveOverlayBackDismissalTarget([modal]) === modal,
+		"overlay back reveals the underlying overlay only after the top record is removed",
+	);
+
+	console.log("overlay dismissal stack: PASS");
+}
+
+function runVirtualInventoryNavigationAssertions() {
+	const { resolveVirtualInventoryColumns, resolveVirtualInventoryDirection, resolveVirtualInventoryNavigationTarget } =
+		loadVirtualInventoryNavigationModule();
+
+	assertCondition(resolveVirtualInventoryColumns("xs") === 2, "virtual inventory maps xs to two columns");
+	assertCondition(resolveVirtualInventoryColumns("sm") === 3, "virtual inventory maps sm to three columns");
+	assertCondition(resolveVirtualInventoryColumns("md") === 4, "virtual inventory maps md to four columns");
+	assertCondition(resolveVirtualInventoryColumns("lg") === 6, "virtual inventory maps lg to six columns");
+	assertCondition(resolveVirtualInventoryColumns("xl") === 8, "virtual inventory maps xl to eight columns");
+	assertCondition(resolveVirtualInventoryDirection("DPadLeft") === "left", "virtual inventory maps D-pad left");
+	assertCondition(
+		resolveVirtualInventoryDirection("ButtonA") === undefined,
+		"virtual inventory ignores activation input",
+	);
+
+	const navigate = (index, direction, itemCount = 10, columns = 3, isDisabled) =>
+		resolveVirtualInventoryNavigationTarget({ index, direction, itemCount, columns, isDisabled });
+	assertCondition(navigate(4, "left") === 3, "virtual inventory moves left within a row");
+	assertCondition(navigate(4, "right") === 5, "virtual inventory moves right within a row");
+	assertCondition(navigate(4, "up") === 1, "virtual inventory moves up by the lane count");
+	assertCondition(navigate(4, "down") === 7, "virtual inventory moves down by the lane count");
+	assertCondition(navigate(3, "left") === undefined, "virtual inventory never wraps left across a row");
+	assertCondition(navigate(5, "right") === undefined, "virtual inventory never wraps right across a row");
+	assertCondition(navigate(1, "up") === undefined, "virtual inventory stops above the first row");
+	assertCondition(navigate(7, "down") === undefined, "virtual inventory stops before a sparse missing cell");
+	assertCondition(navigate(-1, "right") === undefined, "virtual inventory rejects an invalid selected index");
+	assertCondition(
+		navigate(4, "right", 10, 4, (index) => index === 5 || index === 6) === 7,
+		"virtual inventory skips disabled horizontal targets without leaving the row",
+	);
+	assertCondition(
+		navigate(1, "down", 12, 3, (index) => index === 4) === 7,
+		"virtual inventory skips disabled vertical targets along the same column",
+	);
+
+	console.log("virtual inventory navigation: PASS");
+}
+
+function runVirtualInventorySelectionPolicyAssertions() {
+	const {
+		resolveVirtualInventoryFallbackIndex,
+		resolveVirtualInventoryRollbackSelection,
+		shouldAssignVirtualInventoryRelay,
+		shouldAssignVirtualInventoryTarget,
+		shouldClearVirtualInventorySelection,
+	} = loadVirtualInventorySelectionPolicyModule();
+	const relay = {};
+	const target = {};
+	const external = {};
+	const captured = {};
+	const remounted = {};
+
+	assertCondition(
+		shouldAssignVirtualInventoryTarget({
+			currentSelection: relay,
+			lastOwnedSelection: relay,
+			targetSelection: target,
+			selectionOwned: true,
+		}),
+		"virtual inventory assigns a pending target while the relay still owns selection",
+	);
+	assertCondition(
+		shouldAssignVirtualInventoryTarget({
+			currentSelection: undefined,
+			lastOwnedSelection: relay,
+			targetSelection: target,
+			selectionOwned: true,
+		}),
+		"virtual inventory can recover a transient nil selection it still owns",
+	);
+	assertCondition(
+		!shouldAssignVirtualInventoryTarget({
+			currentSelection: external,
+			lastOwnedSelection: relay,
+			targetSelection: target,
+			selectionOwned: true,
+		}),
+		"virtual inventory never overwrites a same-turn external selection",
+	);
+	assertCondition(
+		!shouldAssignVirtualInventoryRelay({
+			currentSelection: target,
+			currentSelectionIsInventoryItem: true,
+			lastOwnedSelection: target,
+			targetSelection: relay,
+			selectionOwned: true,
+		}),
+		"virtual inventory never moves a pending verified target back to a replaced relay",
+	);
+	assertCondition(
+		resolveVirtualInventoryFallbackIndex({
+			mappedIndex: undefined,
+			fallbackIsLastOwned: true,
+			selectionOwned: true,
+			selectedIndex: 17,
+		}) === 17,
+		"virtual inventory snapshots the logical fallback after its old ref unregisters",
+	);
+	assertCondition(
+		resolveVirtualInventoryRollbackSelection({
+			capturedSelection: captured,
+			capturedSelectionRestorable: false,
+			fallbackIndex: 17,
+			mountedSelection: remounted,
+			mountedSelectionRestorable: true,
+		}) === remounted,
+		"virtual inventory rollback prefers the remounted logical fallback",
+	);
+	assertCondition(
+		resolveVirtualInventoryRollbackSelection({
+			capturedSelection: captured,
+			capturedSelectionRestorable: true,
+			fallbackIndex: undefined,
+			mountedSelection: remounted,
+			mountedSelectionRestorable: true,
+		}) === captured,
+		"virtual inventory rollback preserves a captured external fallback",
+	);
+	assertCondition(
+		shouldClearVirtualInventorySelection(target, target),
+		"virtual inventory teardown clears its exact last-owned object",
+	);
+	assertCondition(
+		shouldClearVirtualInventorySelection(target, relay, true),
+		"virtual inventory teardown clears a natively selected mapped item before deferred observation",
+	);
+	assertCondition(
+		!shouldClearVirtualInventorySelection(external, target),
+		"virtual inventory teardown preserves an external owner's selection",
+	);
+
+	console.log("virtual inventory selection policy: PASS");
+}
+
 function expectThrows(callback, messagePart, label) {
 	let thrown;
 
@@ -1757,9 +1943,13 @@ function runNotificationsApiAssertions() {
 function run() {
 	const { toUDim, toUDim2, toUDimAxis } = loadUnitsModule();
 	const { resolveProgressRange, resolveProgressValue, resolveProgressPercent } = loadProgressRangeModule();
-	const { alphaToValue, normalizeSliderValue, resolveSliderRange, valueToAlpha } = loadSliderRangeModule();
+	const { alphaToValue, normalizeSliderValue, resolveSliderControllerStep, resolveSliderRange, valueToAlpha } =
+		loadSliderRangeModule();
 	const { resolveBreakpoint, resolveResponsiveValue } = loadResponsiveModule();
 	const { resolveSelectionGroupProps, resolveSelectionProps } = loadSelectionModule();
+	const { resolveTabsSelectionNeighborIndex } = loadComponentSelectionModule("Tabs");
+	const { resolveSegmentedControlSelectionNeighborIndex } = loadComponentSelectionModule("SegmentedControl");
+	const { resolveDraggableSelectionNeighborIndex } = loadComponentSelectionModule("Draggable");
 	const {
 		resolveOverlaySelectionLocation,
 		shouldManageOverlaySelection,
@@ -1919,8 +2109,46 @@ function run() {
 	assertCondition(optedOutSelection.Selectable === false, "selection supports an explicit selectable opt-out");
 	assertCondition(selectionGroup.SelectionGroup === true, "selection preserves native group state");
 	assertCondition(selectionGroup.SelectionBehaviorRight === "Stop", "selection preserves native group behavior");
+	const compoundOptions = [{ value: "first" }, { value: "disabled", disabled: true }, { value: "last" }];
+	compoundOptions.size = () => compoundOptions.length;
+	const singleCompoundOption = [{ value: "only" }];
+	singleCompoundOption.size = () => singleCompoundOption.length;
+	const draggableDisabledItems = [false, true, false];
+	draggableDisabledItems.size = () => draggableDisabledItems.length;
+	assertCondition(
+		resolveTabsSelectionNeighborIndex(compoundOptions, 0, 1) === 2,
+		"tabs selection skips a disabled target",
+	);
+	assertCondition(
+		resolveTabsSelectionNeighborIndex(compoundOptions, 2, 1) === 0,
+		"tabs selection wraps across enabled targets",
+	);
+	assertCondition(
+		resolveSegmentedControlSelectionNeighborIndex(compoundOptions, 2, -1) === 0,
+		"segmented selection skips a disabled target in reverse",
+	);
+	assertCondition(
+		resolveSegmentedControlSelectionNeighborIndex(singleCompoundOption, 0, 1) === undefined,
+		"a single enabled segment does not point to itself",
+	);
+	assertCondition(
+		resolveDraggableSelectionNeighborIndex(draggableDisabledItems, 0, 1) === 2,
+		"draggable selection skips disabled items along its axis",
+	);
+	assertCondition(
+		resolveDraggableSelectionNeighborIndex(draggableDisabledItems, 2, 1) === undefined,
+		"draggable selection does not wrap past an edge",
+	);
+	assertCondition(
+		resolveSliderControllerStep("DPadLeft") === -1 && resolveSliderControllerStep("ButtonR1") === 1,
+		"slider maps selected-only value adjustment inputs",
+	);
+	assertCondition(
+		resolveSliderControllerStep("DPadUp") === undefined && resolveSliderControllerStep("DPadDown") === undefined,
+		"slider leaves vertical inputs to native navigation",
+	);
 
-	console.log("selection: PASS");
+	console.log("selection and compound navigation: PASS");
 
 	assertCondition(
 		shouldManageOverlaySelection("Gamepad", "always", false),
@@ -2187,7 +2415,10 @@ function run() {
 	runFixedVirtualGeometryAssertions();
 	runFixedVirtualCollectionAssertions();
 	runFixedVirtualGridLayoutAssertions();
+	runVirtualInventoryNavigationAssertions();
+	runVirtualInventorySelectionPolicyAssertions();
 	runOutsidePressAssertions();
+	runOverlayDismissalStackAssertions();
 
 	runNotificationStoreAssertions();
 	runNotificationsApiAssertions();

@@ -71,15 +71,16 @@ function createTabs(): readonly TabsTab[] {
 			),
 		},
 		{
-			value: "loadout",
-			label: "Loadout",
+			value: "locked",
+			label: "Locked",
 			panel: (
 				<MissionPanel
-					accent="GEAR LOCK"
-					title="Arc Lance Ready"
-					body="Tune weapons, boosts, and support tools without leaving the mission flow."
+					accent="LOCKED"
+					title="Clear Wave 8"
+					body="Disabled tabs remain readable but cannot receive native selection."
 				/>
 			),
+			disabled: true,
 		},
 		{
 			value: "rewards",
@@ -93,16 +94,15 @@ function createTabs(): readonly TabsTab[] {
 			),
 		},
 		{
-			value: "locked",
-			label: "Locked",
+			value: "loadout",
+			label: "Loadout",
 			panel: (
 				<MissionPanel
-					accent="LOCKED"
-					title="Clear Wave 8"
-					body="Disabled tabs remain readable but cannot be activated."
+					accent="GEAR LOCK"
+					title="Arc Lance Ready"
+					body="Tune weapons, boosts, and support tools without leaving the mission flow."
 				/>
 			),
-			disabled: true,
 		},
 	];
 }
@@ -120,6 +120,12 @@ function TabsStoryCanvas({ controls: currentControls }: { readonly controls: Tab
 			<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
 				<Stack width="100%" gap="md">
 					<Text text="Tabs" size="lg" weight={700} color={themeRefs.text.primary} />
+					<Text
+						text="Controller: Left/Right wraps through enabled tabs and skips Locked. Native focus activates the tab; Up/Down remains available to leave the row."
+						color={themeRefs.text.secondary}
+						wrap
+						width="100%"
+					/>
 					<Tabs
 						tabs={tabs}
 						value={activeTab}
@@ -142,7 +148,8 @@ function TabsStoryCanvas({ controls: currentControls }: { readonly controls: Tab
 const story = CreateReactStory(
 	{
 		name: "Tabs",
-		summary: "Concise content navigation with controlled state, disabled tabs, and an owned panel region.",
+		summary:
+			"Concise content navigation with controlled state, wrapping native tab selection, disabled-target skipping, and an owned panel region.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,

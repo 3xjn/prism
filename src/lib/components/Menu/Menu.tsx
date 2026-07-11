@@ -46,7 +46,11 @@ function resolveRowHeight(item: MenuItem, sizeStyles: MenuSizeStyles): number {
 	return sizeStyles.itemHeight;
 }
 
-function resolveVisibleListHeight(items: readonly MenuItem[], maxVisibleItems: number, sizeStyles: MenuSizeStyles): number {
+function resolveVisibleListHeight(
+	items: readonly MenuItem[],
+	maxVisibleItems: number,
+	sizeStyles: MenuSizeStyles,
+): number {
 	let height = 0;
 	let visibleRows = 0;
 
@@ -72,10 +76,7 @@ function resolveRightSectionWidth(panelWidth: UDim): UDim {
 	return new UDim(panelWidth.Scale * 0.34, math.floor(panelWidth.Offset * 0.34));
 }
 
-function resolveMenuItemIcon(
-	icon: IconName | React.ReactElement | undefined,
-	iconSize: number,
-): React.ReactNode {
+function resolveMenuItemIcon(icon: IconName | React.ReactElement | undefined, iconSize: number): React.ReactNode {
 	if (icon === undefined) {
 		return undefined;
 	}
@@ -94,11 +95,15 @@ function resolveMenuItemIcon(
 	return undefined;
 }
 
-function resolvePrimitiveMenuSection(value: React.ReactElement | string | number | undefined): string | number | undefined {
+function resolvePrimitiveMenuSection(
+	value: React.ReactElement | string | number | undefined,
+): string | number | undefined {
 	return typeIs(value, "string") || typeIs(value, "number") ? value : undefined;
 }
 
-function resolveRichMenuSection(value: React.ReactElement | string | number | undefined): React.ReactElement | undefined {
+function resolveRichMenuSection(
+	value: React.ReactElement | string | number | undefined,
+): React.ReactElement | undefined {
 	if (value === undefined || typeIs(value, "string") || typeIs(value, "number")) {
 		return undefined;
 	}
@@ -160,9 +165,17 @@ function MenuActionRow({
 		transition: resolveMenuItemMotionTransition(state),
 	});
 	const resolvedLabelFont = itemLabelSlotProps?.Font ?? theme.fontFamily;
-	const resolvedLabelFontFace = resolveTextFontFace(itemLabelSlotProps?.Font, itemLabelSlotProps?.FontFace, theme.fontFamily);
+	const resolvedLabelFontFace = resolveTextFontFace(
+		itemLabelSlotProps?.Font,
+		itemLabelSlotProps?.FontFace,
+		theme.fontFamily,
+	);
 	const resolvedRightLabelFont = itemRightLabelSlotProps?.Font ?? theme.fontFamily;
-	const resolvedRightLabelFontFace = resolveTextFontFace(itemRightLabelSlotProps?.Font, itemRightLabelSlotProps?.FontFace, theme.fontFamily);
+	const resolvedRightLabelFontFace = resolveTextFontFace(
+		itemRightLabelSlotProps?.Font,
+		itemRightLabelSlotProps?.FontFace,
+		theme.fontFamily,
+	);
 	const resolvedItemZIndex = itemSlotProps?.ZIndex ?? zIndex;
 	const resolvedContentZIndex = incrementZIndex(resolvedItemZIndex, 1);
 	const resolvedLabelZIndex = itemLabelSlotProps?.ZIndex ?? resolvedContentZIndex;
@@ -194,7 +207,7 @@ function MenuActionRow({
 	const rightReservedWidth = hasRightSection ? resolvedRightSectionWidth.Offset + sizeStyles.itemGap : 0;
 	const event = useRootCursorEvent(
 		composeEventMaps(press.eventMap, itemSlotProps?.Event),
-		itemSlotProps?.Event === undefined ? cursor ?? "pointer" : undefined,
+		itemSlotProps?.Event === undefined ? (cursor ?? "pointer") : undefined,
 		disabled,
 	);
 
@@ -308,11 +321,22 @@ function MenuActionRow({
 	);
 }
 
-function MenuPanel({ props, opened, setOpened }: { readonly props: MenuProps; readonly opened: boolean; readonly setOpened: (opened: boolean) => void }): React.ReactElement {
+function MenuPanel({
+	props,
+	opened,
+	setOpened,
+}: {
+	readonly props: MenuProps;
+	readonly opened: boolean;
+	readonly setOpened: (opened: boolean) => void;
+}): React.ReactElement {
 	const theme = useTheme();
 	const { items, slotProps, closeOnItemPress = true, maxVisibleItems = 6, size = "md" } = props;
 	const sizeStyles = resolveMenuSizeStyles(theme, size);
-	const panelVisualStyles = applyStyleOverride(resolveMenuPanelVisualStyles(theme), props.styleOverrides?.panel, { theme, size });
+	const panelVisualStyles = applyStyleOverride(resolveMenuPanelVisualStyles(theme), props.styleOverrides?.panel, {
+		theme,
+		size,
+	});
 	const listPadding = resolveThemeSizeSafe(theme, "menu", sizeStyles.listPadding, "spacing", 0);
 	const labelPaddingX = resolveThemeSizeSafe(theme, "menu", sizeStyles.labelPaddingX, "spacing", 0);
 	const clampedMaxVisibleItems = math.max(1, maxVisibleItems);
@@ -326,7 +350,11 @@ function MenuPanel({ props, opened, setOpened }: { readonly props: MenuProps; re
 	const dividerZIndex = slotProps?.divider?.ZIndex ?? contentZIndex;
 	const groupLabelZIndex = slotProps?.groupLabel?.ZIndex ?? contentZIndex;
 	const resolvedGroupLabelFont = slotProps?.groupLabel?.Font ?? theme.fontFamily;
-	const resolvedGroupLabelFontFace = resolveTextFontFace(slotProps?.groupLabel?.Font, slotProps?.groupLabel?.FontFace, theme.fontFamily);
+	const resolvedGroupLabelFontFace = resolveTextFontFace(
+		slotProps?.groupLabel?.Font,
+		slotProps?.groupLabel?.FontFace,
+		theme.fontFamily,
+	);
 	const onItemPress = React.useCallback(
 		(item: MenuActionItem) => {
 			item.onPress?.(item.value);
@@ -473,6 +501,7 @@ const MenuBase = React.forwardRef<Frame, MenuProps>((props, ref) => {
 		align = "start",
 		triggerMode = "click",
 		closeOnOutsidePress = true,
+		closeOnBack = true,
 		gap,
 		offset,
 		Event,
@@ -542,6 +571,7 @@ const MenuBase = React.forwardRef<Frame, MenuProps>((props, ref) => {
 			defaultOpened={defaultOpened}
 			onOpenedChange={setOpened}
 			closeOnOutsidePress={closeOnOutsidePress}
+			closeOnBack={closeOnBack && (opened === undefined || onOpenedChange !== undefined)}
 			gap={gap}
 			offset={offset}
 			width={props.width}

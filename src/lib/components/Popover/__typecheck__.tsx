@@ -33,26 +33,44 @@ const validPopoverProps: PopoverProps[] = [
 	{ content, triggerMode: "manual", opened: true, children: trigger },
 	{ content, placement: "top", align: "start", gap: 12, offset: new Vector2(4, -2), children: trigger },
 	{ content, closeOnOutsidePress: false, children: trigger },
+	{ content, closeOnBack: false, children: trigger },
 	{ content, width: 180, minWidth: 120, maxWidth: 260, layoutOrder: 3, children: trigger },
 	{ content, cursor: "pointer", children: trigger },
 	{ content, slotProps: { root: { ZIndex: 4 }, panel: { BackgroundTransparency: 0.04 } }, children: trigger },
 	{ content, slotProps: { trigger: { AutoButtonColor: true }, outsideCapture: { ZIndex: 40 } }, children: trigger },
-	{ content, slotProps: { panelCorner: { CornerRadius: new UDim(0, 10) }, panelPadding: { PaddingLeft: new UDim(0, 14) } }, children: trigger },
+	{
+		content,
+		slotProps: { panelCorner: { CornerRadius: new UDim(0, 10) }, panelPadding: { PaddingLeft: new UDim(0, 14) } },
+		children: trigger,
+	},
 	{ content, ref: popoverRef, children: trigger },
 ];
 
 const validExportedPopoverProps: ExportedPopoverProps[] = [
 	{ content, children: trigger },
 	{ content, placement: "right", align: "end", triggerMode: "click", children: trigger },
-	{ content, opened: true, onOpenedChange: () => undefined, children: trigger },
+	{ content, opened: true, onOpenedChange: () => undefined, closeOnBack: false, children: trigger },
 ];
 
 const validPopoverExamples = [
-	<Popover key="basic" content={content}>{trigger}</Popover>,
-	<Popover key="open" content={content} opened>{trigger}</Popover>,
-	<Popover key="hover" content={content} triggerMode="hover" placement="top">{trigger}</Popover>,
-	<Popover key="slots" content={content} slotProps={{ panelStroke: { Thickness: 2 }, content: { ZIndex: 12 } }}>{trigger}</Popover>,
-	<Popover key="ref" content={content} ref={popoverRef}>{trigger}</Popover>,
+	<Popover key="basic" content={content}>
+		{trigger}
+	</Popover>,
+	<Popover key="open" content={content} opened>
+		{trigger}
+	</Popover>,
+	<Popover key="hover" content={content} triggerMode="hover" placement="top">
+		{trigger}
+	</Popover>,
+	<Popover key="back-barrier" content={content} closeOnBack={false}>
+		{trigger}
+	</Popover>,
+	<Popover key="slots" content={content} slotProps={{ panelStroke: { Thickness: 2 }, content: { ZIndex: 12 } }}>
+		{trigger}
+	</Popover>,
+	<Popover key="ref" content={content} ref={popoverRef}>
+		{trigger}
+	</Popover>,
 ];
 
 const acceptsPopoverChildren: React.ReactNode = validPopoverExamples;
@@ -62,9 +80,14 @@ const acceptsExportedPopoverProps: ExportedPopoverProps[] = validExportedPopover
 type PopoverHasChildrenProp = "children" extends keyof PopoverProps ? true : false;
 type InvalidPopoverPlacementAllowed = "center" extends NonNullable<PopoverProps["placement"]> ? true : false;
 type InvalidPopoverTriggerModeAllowed = "focus" extends NonNullable<PopoverProps["triggerMode"]> ? true : false;
-type ExportedPopoverContentAllowed = React.ReactElement extends NonNullable<ExportedPopoverProps["content"]> ? true : false;
-type PopoverStyleOverrideAssignableToProp = AssertTrue<IsAssignable<PopoverStyleOverride, PopoverProps["styleOverrides"]>>;
-type PopoverStyleOverrideAssignableToExportedProp = AssertTrue<IsAssignable<PopoverStyleOverride, ExportedPopoverProps["styleOverrides"]>>;
+type ExportedPopoverContentAllowed =
+	React.ReactElement extends NonNullable<ExportedPopoverProps["content"]> ? true : false;
+type PopoverStyleOverrideAssignableToProp = AssertTrue<
+	IsAssignable<PopoverStyleOverride, PopoverProps["styleOverrides"]>
+>;
+type PopoverStyleOverrideAssignableToExportedProp = AssertTrue<
+	IsAssignable<PopoverStyleOverride, ExportedPopoverProps["styleOverrides"]>
+>;
 type PopoverStyleOverrideContextHasTheme = AssertTrue<HasProp<PopoverStyleOverrideContext, "theme">>;
 type PopoverStyleOverrideContextHasNoState = AssertFalse<HasProp<PopoverStyleOverrideContext, "state">>;
 type PopoverVisualStylesHasNoRadius = AssertFalse<IsAssignable<"radius", keyof PopoverVisualStyles>>;

@@ -134,7 +134,8 @@ Prism's first controller-navigation layer is native-first and deliberately small
 8. Overlay entry is session-scoped and gamepad-gated. Trigger overlays manage selection only when the captured opening target belongs to the trigger subtree; Modal may enter unconditionally when the preferred input is gamepad.
 9. Entry uses a valid preferred target when one exists (for Select, the current enabled option followed by the first enabled option) and otherwise calls native `GuiService.Select`, allowing `SelectionOrder` to decide. Native `SelectionGroup` plus `Stop` boundaries contain the owned overlay route while raw slot overrides remain final.
 10. Closing restores the exact captured target when it remains valid, then the trigger or its first native descendant. If selection moved outside the overlay, Prism releases ownership and leaves it alone. A nil, hidden, disabled, or unmounted owned target is repaired while the overlay remains open.
-11. A styled `SelectionImageObject` and topmost controller-back dismissal remain separate follow-up layers.
+11. Escape and gamepad ButtonB dismissal uses one conditional, internal overlay-back stack. Records are ordered by their mounted overlay ZIndex and open session; a non-dismissible top record is a barrier, so the resolver never searches downward and closes a covered overlay. The input action is unbound when the overlay stack is empty.
+12. A styled `SelectionImageObject` remains a separate follow-up layer.
 
 This boundary keeps selection composable: ordinary controls expose the native graph where precision is needed, while `Box`, `Stack`, and `ScrollArea` can define native group boundaries without becoming stateful navigation coordinators.
 
@@ -181,7 +182,7 @@ Components whose semantics genuinely differ (for example per-item hover maps key
 
 ### Host requirements
 
-Trigger overlays keep positioning, input capture, and visuals as separate adapters. `TriggerOverlayLayer` owns portal-relative placement for Select, Popover, and therefore Menu; `OutsidePressLayer` is their transparent, non-selectable mouse/touch catcher; `Backdrop` owns visible dimming and remains the right primitive for Modal. This separation is intentionally concrete rather than a mode-driven overlay runtime.
+Trigger overlays keep positioning, input capture, and visuals as separate adapters. `TriggerOverlayLayer` owns portal-relative placement for Select, Popover, and therefore Menu; `OutsidePressLayer` is their transparent, non-selectable mouse/touch catcher; `Backdrop` owns visible dimming and remains the right primitive for Modal. A separate internal overlay-back stack registers those concrete consumers only while their mounted surfaces are open, preserving topmost Escape/ButtonB ownership without coupling pointer geometry to controller input. This separation is intentionally concrete rather than a mode-driven overlay runtime.
 
 Prism's overlay stacking (`incrementZIndex` ladders in Select, Popover, Menu, Modal, Tooltip) assumes the hosting `ScreenGui` uses `ZIndexBehavior.Sibling`. Under `Global` behavior, inner content whose `ZIndex` is not explicitly laddered can render beneath ancestor surfaces (a `ScreenGui` created via `Instance.new` defaults to `Global` — set it to `Sibling`).
 

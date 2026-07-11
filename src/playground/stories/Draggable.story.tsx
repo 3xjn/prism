@@ -15,7 +15,7 @@ interface AbilityItem extends DraggableItem {
 
 const abilities: readonly AbilityItem[] = [
 	{ id: "dash", label: "Dash", icon: "rbxassetid://110526050617848", cooldown: "4s" },
-	{ id: "barrier", label: "Barrier", icon: "rbxassetid://70420218349466", cooldown: "12s" },
+	{ id: "barrier", label: "Barrier", icon: "rbxassetid://70420218349466", cooldown: "12s", disabled: true },
 	{ id: "mend", label: "Mend", icon: "rbxassetid://77237225617245", cooldown: "9s" },
 	{ id: "ignite", label: "Ignite", icon: "rbxassetid://124578818898399", cooldown: "7s" },
 	{ id: "focus", label: "Focus", icon: "rbxassetid://125807330222658", cooldown: "15s" },
@@ -112,7 +112,11 @@ function AbilitySlot({
 	);
 }
 
-function DraggableStoryCanvas({ controls: currentControls }: { readonly controls: DraggableStoryControls }): React.ReactElement {
+function DraggableStoryCanvas({
+	controls: currentControls,
+}: {
+	readonly controls: DraggableStoryControls;
+}): React.ReactElement {
 	const direction = currentControls.direction as "vertical" | "horizontal";
 	const [order, setOrder] = React.useState<readonly string[]>(() => abilities.map((item) => item.id));
 
@@ -122,7 +126,7 @@ function DraggableStoryCanvas({ controls: currentControls }: { readonly controls
 				<Stack width="100%" gap="md">
 					<Text text="Draggable" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="A headless reorderable list primitive. Drag an ability to change its hotbar slot -- Prism animates the pickup, the reorder shifts, and the drop settle while your render function owns the visuals."
+						text="Drag an enabled ability to change its hotbar slot. Controller selection follows the list axis without wrapping, skips the disabled Barrier slot, and surfaces the selected item through render-state active; reordering remains a pointer/touch gesture."
 						color={themeRefs.text.secondary}
 						align="left"
 						wrap
@@ -165,7 +169,7 @@ function DraggableStoryCanvas({ controls: currentControls }: { readonly controls
 												item={state.item}
 												slotNumber={(slotIndex >= 0 ? slotIndex : state.index) + 1}
 												disabled={state.disabled}
-												dragging={state.dragging}
+												dragging={state.dragging || state.active}
 												direction={direction}
 											/>
 										);
@@ -191,7 +195,7 @@ const story = CreateReactStory(
 	{
 		name: "Draggable",
 		summary:
-			"Headless drag-and-drop reorderable list primitive with controlled or uncontrolled order, mouse and touch dragging, animated pickup/settle, and render-state driven item styling.",
+			"Headless reorderable list with pointer/touch dragging, native axis-aware item selection, disabled-target skipping, animated pickup/settle, and render-state driven styling.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,

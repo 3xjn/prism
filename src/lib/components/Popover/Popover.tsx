@@ -10,6 +10,7 @@ import type { TriggerOverlayLayout } from "../_shared/layering";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
 import { applyStyleOverride } from "../_shared/styleOverride";
 import { useDelayedCallback } from "../_shared/useDelayedCallback";
+import { useOverlayBackDismissal } from "../_shared/useOverlayBackDismissal";
 import { useOverlaySelectionLifecycle } from "../_shared/useOverlaySelectionLifecycle";
 import { useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
@@ -41,6 +42,7 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 		triggerMode = "click",
 		openDelay = 0,
 		closeOnOutsidePress = true,
+		closeOnBack = true,
 		Event,
 		Change,
 	} = props;
@@ -92,6 +94,12 @@ const PopoverBase = React.forwardRef<Frame, PopoverProps>((props, ref) => {
 		},
 		[disabled, onOpenedChange, opened, uncontrolledOpened],
 	);
+	useOverlayBackDismissal({
+		opened: isOpen,
+		dismissible: closeOnBack && triggerMode !== "hover" && (opened === undefined || onOpenedChange !== undefined),
+		overlay: panelInstance,
+		onDismiss: () => setOpened(false),
+	});
 
 	React.useEffect(() => {
 		if (!disabled && hasContent) {

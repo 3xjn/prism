@@ -3,7 +3,7 @@ import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Stack, StepperInput, Text } from "@prism";
 import type { StepperInputSize } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme , theme as themeRefs } from "@prism/theme";
+import { useTheme, theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -68,12 +68,18 @@ const controls = {
 
 type StepperInputStoryControls = InferControls<typeof controls>;
 
-function StepperInputStoryCanvas({ controls: currentControls }: { readonly controls: StepperInputStoryControls }): React.ReactElement {
+function StepperInputStoryCanvas({
+	controls: currentControls,
+}: {
+	readonly controls: StepperInputStoryControls;
+}): React.ReactElement {
 	const theme = useTheme();
 	const resolvedStep = resolveStoryStep(currentControls.step);
 	const resolvedVariant = currentControls.variant as Variant;
 	const resolvedSize = currentControls.size as StepperInputSize;
-	const [squadCap, setSquadCap] = React.useState(normalizeStoryValue(currentControls.value, currentControls.min, currentControls.max, resolvedStep));
+	const [squadCap, setSquadCap] = React.useState(
+		normalizeStoryValue(currentControls.value, currentControls.min, currentControls.max, resolvedStep),
+	);
 	const [respawns, setRespawns] = React.useState(3);
 	const normalizedValue = normalizeStoryValue(squadCap, currentControls.min, currentControls.max, resolvedStep);
 	const width = currentControls.fullWidth ? "100%" : undefined;
@@ -88,7 +94,7 @@ function StepperInputStoryCanvas({ controls: currentControls }: { readonly contr
 				<Stack width="100%" gap="md">
 					<Text text="StepperInput" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="A compact tactical value rail for game settings. Drag the center control to scrub across the range, or use the side arrows for exact stepped changes."
+						text="A compact tactical value rail for game settings. Mouse/touch drags the center rail; controller selection targets only the minus and plus actions, and a bound action becomes disabled and is skipped."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
@@ -126,7 +132,13 @@ function StepperInputStoryCanvas({ controls: currentControls }: { readonly contr
 									width="100%"
 								/>
 							</Stack>
-							<Text text={`Squad cap: ${tostring(normalizedValue)} | Respawns: ${tostring(respawns)}`} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
+							<Text
+								text={`Squad cap: ${tostring(normalizedValue)} | Respawns: ${tostring(respawns)}`}
+								size="sm"
+								color={themeRefs.text.secondary}
+								wrap
+								width="100%"
+							/>
 						</Stack>
 					</Box>
 				</Stack>
@@ -138,7 +150,8 @@ function StepperInputStoryCanvas({ controls: currentControls }: { readonly contr
 const story = CreateReactStory(
 	{
 		name: "StepperInput",
-		summary: "Compact game-setting number rail with horizontal drag input, arrow stepping, safe value normalization, semantic variants, and raw slot escape hatches.",
+		summary:
+			"Compact game-setting number rail with pointer scrubbing, native minus/plus selection, bound-aware disabled-target skipping, and raw slot escape hatches.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,

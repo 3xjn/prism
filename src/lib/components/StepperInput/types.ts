@@ -77,6 +77,10 @@ export interface StepperInputStyleProps extends Omit<SharedStyleProps, "bg" | "b
 }
 
 export interface StepperInputProps extends StepperInputStyleProps {
+	/**
+	 * Native selection targets the enabled decrement and increment buttons. The center rail
+	 * remains the pointer/touch scrub surface and the public ref target.
+	 */
 	readonly value?: number;
 	readonly defaultValue?: number;
 	readonly onChange?: (value: number) => void;
@@ -85,5 +89,6 @@ export interface StepperInputProps extends StepperInputStyleProps {
 	readonly Event?: React.InstanceProps<TextButton>["Event"];
 	readonly Change?: React.InstanceProps<TextButton>["Change"];
 	readonly slotProps?: StepperInputSlotProps;
+	/** Ref to the center pointer/touch rail; internal step buttons retain their own refs. */
 	readonly ref?: React.Ref<TextButton>;
 }

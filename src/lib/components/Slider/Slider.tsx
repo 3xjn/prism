@@ -5,11 +5,7 @@ import { useTheme } from "@prism/theme";
 import { CaptureOverlay, usePortalTarget } from "../_shared/layering";
 import { incrementZIndex, type GuiZIndex } from "../_shared/overlayLayerPolicy";
 import { resolveSelectionProps } from "../_shared/selection";
-import {
-	mergeSharedStyleProps,
-	resolveUDimSafe,
-	useResolvedStyleProps,
-} from "../_shared/useResolvedStyleProps";
+import { mergeSharedStyleProps, resolveUDimSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import {
 	pushDecorator,
 	renderCornerDecorator,
@@ -51,10 +47,7 @@ const UserInputService = game.GetService("UserInputService");
 
 type TextButtonEventMap = React.InstanceProps<TextButton>["Event"];
 
-function resolveSliderTooltipContent(
-	tooltip: SliderProps["tooltip"],
-	value: number,
-): string | undefined {
+function resolveSliderTooltipContent(tooltip: SliderProps["tooltip"], value: number): string | undefined {
 	if (tooltip === undefined || tooltip === false) {
 		return undefined;
 	}
@@ -135,6 +128,7 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 	const endConnectionRef = React.useRef<RBXScriptConnection | undefined>(undefined);
 	const draggingRef = React.useRef(false);
 	const dragValueRef = React.useRef(displayValue);
+	const resolvedValueRef = React.useRef(resolvedValue);
 
 	onChangeRef.current = onChange;
 	onChangeEndRef.current = onChangeEnd;
@@ -144,6 +138,7 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 		controlled: value !== undefined,
 	};
 	dragValueRef.current = displayValue;
+	resolvedValueRef.current = resolvedValue;
 
 	const rootSlotProps = slotProps?.root;
 	const labelSlotProps = slotProps?.label;
@@ -206,17 +201,27 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 				return;
 			}
 
-			const finalValue = commitValue(
-				stepSliderValue({
-					value: dragValueRef.current,
-					direction,
-					range: configRef.current.range,
-					step: configRef.current.step,
-				}),
-			);
+			const { range, step: currentStep, controlled } = configRef.current;
+			const currentValue = controlled ? resolvedValueRef.current : dragValueRef.current;
+			const finalValue = stepSliderValue({
+				value: currentValue,
+				direction,
+				range,
+				step: currentStep,
+			});
+
+			if (finalValue !== currentValue) {
+				if (!controlled) {
+					dragValueRef.current = finalValue;
+					setUncontrolledValue(finalValue);
+				}
+
+				onChangeRef.current?.(finalValue);
+			}
+
 			onChangeEndRef.current?.(finalValue);
 		},
-		[commitValue, disabled],
+		[disabled],
 	);
 	const controllerInput = useSliderControllerInput({
 		disabled,
@@ -329,7 +334,7 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 	const minimumHeight = sizeStyles.minHeight + labelRowHeight + labelGap;
 	const computedWidth = fullWidth
 		? resolveUDimSafe("slider", "100%", "width")
-		: resolvedSize?.X ?? resolvedWidth ?? new UDim(0, sizeStyles.defaultWidth);
+		: (resolvedSize?.X ?? resolvedWidth ?? new UDim(0, sizeStyles.defaultWidth));
 	const computedHeight = resolvedSize?.Y ?? resolvedHeight ?? new UDim(0, minimumHeight);
 	const computedSize = new UDim2(computedWidth, computedHeight);
 	const computedConstraint =
@@ -337,17 +342,27 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 			? {
 					min: new Vector2(0, minimumHeight),
 					max: undefined,
-			  }
+				}
 			: {
 					min:
 						resolvedConstraint.min === undefined
 							? new Vector2(0, minimumHeight)
 							: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, minimumHeight)),
 					max: resolvedConstraint.max,
-			  };
-	const interactionState: SliderInteractionState = disabled ? "disabled" : dragging ? "pressed" : hovered ? "hovered" : "idle";
+				};
+	const interactionState: SliderInteractionState = disabled
+		? "disabled"
+		: dragging
+			? "pressed"
+			: hovered || controllerInput.selected
+				? "hovered"
+				: "idle";
 	const styleOverrideContext = { theme, color, size, state: interactionState };
-	const visualStyles = applyStyleOverride(resolveSliderVisualStyles(theme, color, interactionState), styleOverrides, styleOverrideContext);
+	const visualStyles = applyStyleOverride(
+		resolveSliderVisualStyles(theme, color, interactionState),
+		styleOverrides,
+		styleOverrideContext,
+	);
 	const resolvedRootZIndex = rootSlotProps?.ZIndex ?? props.zIndex;
 	const resolvedLabelZIndex = labelSlotProps?.ZIndex ?? incrementZIndex(resolvedRootZIndex, 1);
 	const resolvedValueLabelZIndex = valueLabelSlotProps?.ZIndex ?? incrementZIndex(resolvedRootZIndex, 1);
@@ -359,24 +374,28 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 		tooltipContent === undefined
 			? undefined
 			: {
-				root: {
-					ZIndex: resolvedThumbZIndex,
-					...slotProps?.tooltipTrigger,
-				},
-				overlay: slotProps?.tooltipOverlay,
-				bubble: slotProps?.tooltip,
-				bubbleCorner: slotProps?.tooltipCorner,
-				bubbleStroke: slotProps?.tooltipStroke,
-				bubblePadding: slotProps?.tooltipPadding,
-				label: slotProps?.tooltipLabel,
-				tail: slotProps?.tooltipTail,
-				tailBorder: slotProps?.tooltipTailBorder,
-			};
+					root: {
+						ZIndex: resolvedThumbZIndex,
+						...slotProps?.tooltipTrigger,
+					},
+					overlay: slotProps?.tooltipOverlay,
+					bubble: slotProps?.tooltip,
+					bubbleCorner: slotProps?.tooltipCorner,
+					bubbleStroke: slotProps?.tooltipStroke,
+					bubblePadding: slotProps?.tooltipPadding,
+					label: slotProps?.tooltipLabel,
+					tail: slotProps?.tooltipTail,
+					tailBorder: slotProps?.tooltipTailBorder,
+				};
 	const computedPosition = resolvedPosition ?? (props.center ? UDim2.fromScale(0.5, 0.5) : undefined);
 	const labelFont = labelSlotProps?.Font ?? theme.fontFamily;
 	const labelFontFace = resolveTextFontFace(labelSlotProps?.Font, labelSlotProps?.FontFace, theme.fontFamily);
 	const valueLabelFont = valueLabelSlotProps?.Font ?? theme.fontFamily;
-	const valueLabelFontFace = resolveTextFontFace(valueLabelSlotProps?.Font, valueLabelSlotProps?.FontFace, theme.fontFamily);
+	const valueLabelFontFace = resolveTextFontFace(
+		valueLabelSlotProps?.Font,
+		valueLabelSlotProps?.FontFace,
+		theme.fontFamily,
+	);
 	const trackCornerRadius = new UDim(0.5, 0);
 	const thumbCornerRadius = new UDim(0.5, 0);
 	const mouseDragCaptureActive = dragging && isMouseDragActive(dragKindRef.current) && portalTarget !== undefined;
@@ -415,7 +434,7 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 				InputEnded: (_button, input) => {
 					handleDragEndInput(input);
 				},
-		  }
+			}
 		: undefined;
 	const hitboxRef = React.useCallback(
 		(instance: TextButton | undefined) => {
@@ -440,9 +459,19 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 
 	pushDecorator(
 		decoratorChildren,
-		renderPaddingDecorator({ enabled: hasPadding, paddingTop, paddingRight, paddingBottom, paddingLeft, slotProps: slotProps?.padding }),
+		renderPaddingDecorator({
+			enabled: hasPadding,
+			paddingTop,
+			paddingRight,
+			paddingBottom,
+			paddingLeft,
+			slotProps: slotProps?.padding,
+		}),
 	);
-	pushDecorator(decoratorChildren, renderSizeConstraintDecorator({ constraint: computedConstraint, slotProps: slotProps?.sizeConstraint }));
+	pushDecorator(
+		decoratorChildren,
+		renderSizeConstraintDecorator({ constraint: computedConstraint, slotProps: slotProps?.sizeConstraint }),
+	);
 
 	return (
 		<>

@@ -51,6 +51,8 @@ export interface PopoverStyleProps extends Omit<SharedStyleProps, "bg" | "bgTran
 	readonly opened?: boolean;
 	readonly defaultOpened?: boolean;
 	readonly closeOnOutsidePress?: boolean;
+	/** Close the panel when Escape or gamepad ButtonB is pressed. Defaults to true. */
+	readonly closeOnBack?: boolean;
 	readonly gap?: number;
 	readonly offset?: Vector2;
 	/**

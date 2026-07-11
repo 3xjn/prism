@@ -1,5 +1,6 @@
 import React from "@rbxts/react";
 import { theme as themeRefs } from "@prism/theme";
+import type { AssertFalse, HasProp } from "@prism/testing/typeContracts";
 
 import { Box } from "../Box";
 import { Text } from "../Text";
@@ -29,7 +30,14 @@ const validDraggableProps: DraggableProps<DemoItem>[] = [
 	{
 		items: demoItems,
 		defaultValue: ["two", "one"],
-		renderItem: (state) => <Box key={state.item.id} width={120} height={32} bg={state.dragging ? themeRefs.primary.light : themeRefs.background.surface} />,
+		renderItem: (state) => (
+			<Box
+				key={state.item.id}
+				width={120}
+				height={32}
+				bg={state.dragging ? themeRefs.primary.light : themeRefs.background.surface}
+			/>
+		),
 	},
 	{
 		items: demoItems,
@@ -67,7 +75,7 @@ const validDraggableProps: DraggableProps<DemoItem>[] = [
 			root: { BorderSizePixel: 2 },
 			padding: { PaddingLeft: new UDim(0, 14) },
 			listLayout: { HorizontalAlignment: Enum.HorizontalAlignment.Center },
-			item: { AutoButtonColor: true },
+			item: { AutoButtonColor: true, NextSelectionDown: draggableRef.current },
 		},
 	},
 	{
@@ -96,7 +104,9 @@ const validDraggableExamples = [
 		key="render-state"
 		items={demoItems}
 		defaultValue={["three", "one", "two"]}
-		renderItem={(state) => <Box bg={state.dragging ? themeRefs.action.pressed : themeRefs.background.surface} width={140} height={40} />}
+		renderItem={(state) => (
+			<Box bg={state.dragging ? themeRefs.action.pressed : themeRefs.background.surface} width={140} height={40} />
+		)}
 	/>,
 	<Draggable key="ref" ref={draggableRef} items={demoItems} renderItem={(state) => <Text text={state.item.label} />} />,
 ];
@@ -106,13 +116,16 @@ const acceptsDraggableProps: DraggableProps<DemoItem>[] = validDraggableProps;
 const acceptsExportedDraggableProps: ExportedDraggableProps[] = validExportedDraggableProps;
 
 type InvalidDraggableDirectionAllowed = "diagonal" extends NonNullable<DraggableProps["direction"]> ? true : false;
+type DraggableHasNoAmbiguousSelectionNeighbor = AssertFalse<HasProp<DraggableProps, "nextSelectionDown">>;
 type InvalidDraggableValueAllowed = number[] extends NonNullable<DraggableProps["value"]> ? true : false;
-type InvalidDraggableRenderAllowed = ((state: { readonly foo: string }) => React.ReactNode) extends NonNullable<DraggableProps["renderItem"]>
-	? true
-	: false;
+type InvalidDraggableRenderAllowed =
+	((state: { readonly foo: string }) => React.ReactNode) extends NonNullable<DraggableProps["renderItem"]>
+		? true
+		: false;
 type DraggableRenderStateHasItem = DraggableItemRenderState<DemoItem>["item"] extends DemoItem ? true : false;
 
 const invalidDraggableDirection: InvalidDraggableDirectionAllowed = false;
+const draggableHasNoAmbiguousSelectionNeighbor: DraggableHasNoAmbiguousSelectionNeighbor = false;
 const invalidDraggableValue: InvalidDraggableValueAllowed = false;
 const invalidDraggableRender: InvalidDraggableRenderAllowed = false;
 const draggableRenderStateHasItem: DraggableRenderStateHasItem = true;
@@ -122,6 +135,7 @@ export {
 	acceptsDraggableProps,
 	acceptsExportedDraggableProps,
 	draggableRenderStateHasItem,
+	draggableHasNoAmbiguousSelectionNeighbor,
 	invalidDraggableDirection,
 	invalidDraggableRender,
 	invalidDraggableValue,

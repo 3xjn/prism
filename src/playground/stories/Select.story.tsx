@@ -55,6 +55,7 @@ const controls = {
 	),
 	maxVisibleOptions: Number(6, 1, 8, 1),
 	closeOnOutsidePress: Boolean(true),
+	closeOnBack: Boolean(true),
 	disableHarbor: Boolean(false),
 	removeHarbor: Boolean(false),
 	disabled: Boolean(false),
@@ -125,11 +126,14 @@ const labOverrideStyles: SelectStyleOverrides = {
 	},
 };
 
-function SelectStoryCanvas({ controls: currentControls }: { readonly controls: SelectStoryControls }): React.ReactElement {
+function SelectStoryCanvas({
+	controls: currentControls,
+}: {
+	readonly controls: SelectStoryControls;
+}): React.ReactElement {
 	const theme = useTheme();
 	const [previewValue, setPreviewValue] = React.useState("harbor");
 	const [labValue, setLabValue] = React.useState("harbor");
-	const [observedOpen, setObservedOpen] = React.useState(false);
 	const [triggerActivations, setTriggerActivations] = React.useState(0);
 	const [outsideDismissals, setOutsideDismissals] = React.useState(0);
 	const [selectionChanges, setSelectionChanges] = React.useState(0);
@@ -143,21 +147,19 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 			option.value === "harbor" && currentControls.disableHarbor ? { ...option, disabled: true } : option,
 		);
 	const currentOption = previewOptions.find((option) => option.value === previewValue);
-	const currentValueLabel = currentOption === undefined ? "Current value: (none)" : `Current value: ${currentOption.label}`;
+	const currentValueLabel =
+		currentOption === undefined ? "Current value: (none)" : `Current value: ${currentOption.label}`;
 	const dismissalLabel = currentControls.closeOnOutsidePress
 		? "Outside press dismissal: enabled"
 		: "Outside press dismissal: disabled (the list stays open)";
-	const observedBehavior = `Observed: ${observedOpen ? "open" : "closed"}, ${triggerActivations} trigger activations, ${outsideDismissals} outside dismissals, ${selectionChanges} selection changes`;
+	const backLabel = currentControls.closeOnBack
+		? "Back dismissal: enabled"
+		: "Back dismissal: disabled (the open list is a stack barrier)";
+	const observedBehavior = `Observed: ${triggerActivations} trigger activations, ${outsideDismissals} outside dismissals, ${selectionChanges} selection changes`;
 	const handlePreviewChange = (nextValue: string) => {
 		setPreviewValue(nextValue);
-		setObservedOpen(false);
 		setSelectionChanges((current) => current + 1);
 	};
-	React.useEffect(() => {
-		if (currentControls.disabled) {
-			setObservedOpen(false);
-		}
-	}, [currentControls.disabled]);
 
 	return (
 		<StoryCanvas>
@@ -165,7 +167,7 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 				<Stack width="100%" gap="md">
 					<Text text="Select" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="With a gamepad, select the trigger and press A: selection enters Harbor Shift. While it is highlighted, toggle Disable Harbor or Remove Harbor in UI Labs to verify native selection repairs to another enabled row without closing. Choose or dismiss, then confirm selection returns to the trigger."
+						text="With a gamepad, select the trigger and press A: selection enters Harbor Shift. Press B (or Escape) to dismiss only this dropdown and restore the trigger. Turn Close On Back off to keep the open dropdown as a barrier, then use outside press or choose an option."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
@@ -182,11 +184,11 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 								size={resolvedSize}
 								maxVisibleOptions={currentControls.maxVisibleOptions}
 								closeOnOutsidePress={currentControls.closeOnOutsidePress}
+								closeOnBack={currentControls.closeOnBack}
 								disabled={currentControls.disabled}
 								fullWidth={currentControls.fullWidth}
 								Event={{
 									Activated: () => {
-										setObservedOpen((current) => !current);
 										setTriggerActivations((current) => current + 1);
 									},
 								}}
@@ -194,7 +196,6 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 									outsideCapture: {
 										Event: {
 											Activated: () => {
-												setObservedOpen(false);
 												setOutsideDismissals((current) => current + 1);
 											},
 										},
@@ -203,8 +204,16 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 							/>
 							<Text text={currentValueLabel} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 							<Text text={dismissalLabel} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
+							<Text text={backLabel} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 							<Text text={observedBehavior} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
-							<Text text={selectedObjectLabel} size="sm" weight={600} color={themeRefs.primary.main} wrap width="100%" />
+							<Text
+								text={selectedObjectLabel}
+								size="sm"
+								weight={600}
+								color={themeRefs.primary.main}
+								wrap
+								width="100%"
+							/>
 						</Stack>
 					</Box>
 					<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
@@ -251,7 +260,11 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 											listStroke: { Color: theme.colors.secondary.main, Transparency: 0 },
 										}}
 									/>
-									<Text text="slotProps only: static, no hover/open reaction" size="sm" color={themeRefs.text.secondary} />
+									<Text
+										text="slotProps only: static, no hover/open reaction"
+										size="sm"
+										color={themeRefs.text.secondary}
+									/>
 								</Stack>
 							</Stack>
 						</Stack>
@@ -265,7 +278,8 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 const story = CreateReactStory(
 	{
 		name: "Select",
-		summary: "Single-value dropdown with shared trigger anchoring, configurable outside dismissal, disabled-safe options, and capped scrolling for longer choice sets.",
+		summary:
+			"Single-value dropdown with shared trigger anchoring, configurable outside dismissal, disabled-safe options, and capped scrolling for longer choice sets.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,

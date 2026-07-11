@@ -3,7 +3,7 @@ import ReactRoblox from "@rbxts/react-roblox";
 import { Box, SegmentedControl, Stack, Text } from "@prism";
 import type { SegmentedControlColor, SegmentedControlOption, SegmentedControlSize } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme , theme as themeRefs } from "@prism/theme";
+import { useTheme, theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -16,8 +16,8 @@ const modeOptions: readonly SegmentedControlOption[] = [
 
 const pacingOptions: readonly SegmentedControlOption[] = [
 	{ value: "quick", label: "Quick" },
-	{ value: "standard", label: "Standard" },
 	{ value: "ranked", label: "Ranked", disabled: true },
+	{ value: "standard", label: "Standard" },
 ];
 
 const controls = {
@@ -58,7 +58,11 @@ const controls = {
 
 type SegmentedControlStoryControls = InferControls<typeof controls>;
 
-function SegmentedControlStoryCanvas({ controls: currentControls }: { readonly controls: SegmentedControlStoryControls }): React.ReactElement {
+function SegmentedControlStoryCanvas({
+	controls: currentControls,
+}: {
+	readonly controls: SegmentedControlStoryControls;
+}): React.ReactElement {
 	const theme = useTheme();
 	const [mode, setMode] = React.useState("duo");
 	const [pacing, setPacing] = React.useState("standard");
@@ -73,7 +77,7 @@ function SegmentedControlStoryCanvas({ controls: currentControls }: { readonly c
 				<Stack width="100%" gap="md">
 					<Text text="SegmentedControl" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="A direct option picker for game settings and queue choices. It keeps every choice visible, with a compact rail and selected segment that reads as a control instead of website tabs."
+						text="A direct option picker for game settings and queue choices. Controller Left/Right wraps through enabled segments and skips Ranked; ButtonA commits the focused choice while Up/Down leaves the rail."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
@@ -107,7 +111,13 @@ function SegmentedControlStoryCanvas({ controls: currentControls }: { readonly c
 									width="100%"
 								/>
 							</Stack>
-							<Text text={`Selected: ${mode} | ${pacing}`} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
+							<Text
+								text={`Selected: ${mode} | ${pacing}`}
+								size="sm"
+								color={themeRefs.text.secondary}
+								wrap
+								width="100%"
+							/>
 						</Stack>
 					</Box>
 				</Stack>
@@ -119,7 +129,8 @@ function SegmentedControlStoryCanvas({ controls: currentControls }: { readonly c
 const story = CreateReactStory(
 	{
 		name: "SegmentedControl",
-		summary: "Visible single-choice control for game options, queue modes, and settings choices without dropdown hiding or SaaS tab styling.",
+		summary:
+			"Visible single-choice control with wrapping native segment selection, disabled-target skipping, and explicit ButtonA activation.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,

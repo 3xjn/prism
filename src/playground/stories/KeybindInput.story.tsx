@@ -5,7 +5,7 @@ import type { InferControls } from "@rbxts/ui-labs";
 import { Box, KeybindInput, Stack, Text } from "@prism";
 import type { KeybindCaptureDevice, KeybindInputColor, KeybindInputSize } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme , theme as themeRefs } from "@prism/theme";
+import { useTheme, theme as themeRefs } from "@prism/theme";
 
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
 
@@ -57,7 +57,7 @@ function KeybindInputStoryCanvas({
 				<Stack width="100%" gap="md">
 					<Text text="KeybindInput" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="Click a control to capture a keyboard or gamepad key. Click it again to keep the current bind; Escape/ButtonSelect cancels capture; Backspace/Delete clears when clearable."
+						text="Click or controller-select a control and press ButtonA to begin capture. The next allowed keyboard or gamepad input, including ButtonA, becomes the bind; Escape/ButtonSelect cancels, and Backspace/Delete clears when allowed."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"

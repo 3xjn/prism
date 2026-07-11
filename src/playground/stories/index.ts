@@ -31,6 +31,7 @@ import "./Backdrop.story";
 import "./ScrollArea.story";
 import "./VirtualList.story";
 import "./VirtualGrid.story";
+import "./VirtualInventory.story";
 import "./Responsive.story";
 import "./Notifications.story";
 import "./VirtualizationBenchmark.story";

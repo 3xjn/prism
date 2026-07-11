@@ -3,7 +3,13 @@ import type { AssertFalse, AssertTrue, HasProp, IsAssignable } from "@prism/test
 
 import { Tabs } from "./Tabs";
 import type { TabsListVisualStyles, TabsPanelVisualStyles, TabsTabVisualStyles } from "./styles";
-import type { TabsListStyleOverrideContext, TabsPanelStyleOverrideContext, TabsProps, TabsStyleOverrides, TabsTab } from "./types";
+import type {
+	TabsListStyleOverrideContext,
+	TabsPanelStyleOverrideContext,
+	TabsProps,
+	TabsStyleOverrides,
+	TabsTab,
+} from "./types";
 
 const tabsRef = React.createRef<Frame>();
 type ExportedTabsProps = React.ComponentProps<typeof Tabs>;
@@ -16,7 +22,9 @@ const tabs: readonly TabsTab[] = [
 
 const tabsStyleOverrides: TabsStyleOverrides = {
 	list: (visualStyles, ctx) =>
-		ctx.disabled ? {} : { strokeColor: ctx.theme.colors[ctx.color].dark, strokeTransparency: visualStyles.strokeTransparency * 0.5 },
+		ctx.disabled
+			? {}
+			: { strokeColor: ctx.theme.colors[ctx.color].dark, strokeTransparency: visualStyles.strokeTransparency * 0.5 },
 	tab: (_visualStyles, ctx) => {
 		if (ctx.state === "selected") {
 			return { indicatorColor: ctx.theme.colors[ctx.color].dark, textColor: ctx.theme.colors[ctx.color].dark };
@@ -27,7 +35,9 @@ const tabsStyleOverrides: TabsStyleOverrides = {
 			: {};
 	},
 	panel: (visualStyles, ctx) =>
-		ctx.disabled ? { backgroundTransparency: visualStyles.backgroundTransparency } : { strokeColor: ctx.theme.colors[ctx.color].main },
+		ctx.disabled
+			? { backgroundTransparency: visualStyles.backgroundTransparency }
+			: { strokeColor: ctx.theme.colors[ctx.color].main },
 };
 
 const validTabsProps: TabsProps[] = [
@@ -42,7 +52,14 @@ const validTabsProps: TabsProps[] = [
 	{ tabs, variant: "contained", color: "secondary", size: "lg" },
 	{ tabs, renderPanel: (tab) => tab.panel },
 	{ tabs, cursor: "pointer", p: "xs", layoutOrder: 2 },
-	{ tabs, slotProps: { root: { ZIndex: 3 }, tab: { AutoButtonColor: true }, tabText: { Text: "Override" } } },
+	{
+		tabs,
+		slotProps: {
+			root: { ZIndex: 3 },
+			tab: { AutoButtonColor: true, NextSelectionRight: tabsRef.current },
+			tabText: { Text: "Override" },
+		},
+	},
 	{ tabs, slotProps: { list: { BackgroundTransparency: 0.1 }, tabStroke: { Transparency: 0.2 } } },
 	{ tabs, slotProps: { panel: { BackgroundTransparency: 0.04 }, panelPadding: { PaddingLeft: new UDim(0, 18) } } },
 	{ tabs, slotProps: { sizeConstraint: { MinSize: new Vector2(260, 140) } } },
@@ -81,13 +98,16 @@ const acceptsTabsProps: TabsProps[] = validTabsProps;
 const acceptsExportedTabsProps: ExportedTabsProps[] = validExportedTabsProps;
 
 type TabsHasChildrenProp = "children" extends keyof TabsProps ? true : false;
+type TabsHasNoAmbiguousSelectionNeighbor = AssertFalse<HasProp<TabsProps, "nextSelectionLeft">>;
 type InvalidTabsColorAllowed = "palette.primary.5" extends NonNullable<TabsProps["color"]> ? true : false;
 type InvalidTabsValueAllowed = number extends NonNullable<TabsProps["value"]> ? true : false;
 type InvalidTabsVariantAllowed = "outline" extends NonNullable<TabsProps["variant"]> ? true : false;
 type TabsPanelAllowed = React.ReactNode extends TabsTab["panel"] ? true : false;
 type TabsVisualStyleKey = keyof TabsListVisualStyles | keyof TabsTabVisualStyles | keyof TabsPanelVisualStyles;
 type TabsStyleOverridesAssignableToProp = AssertTrue<IsAssignable<TabsStyleOverrides, TabsProps["styleOverrides"]>>;
-type TabsStyleOverridesAssignableToExportedProp = AssertTrue<IsAssignable<TabsStyleOverrides, ExportedTabsProps["styleOverrides"]>>;
+type TabsStyleOverridesAssignableToExportedProp = AssertTrue<
+	IsAssignable<TabsStyleOverrides, ExportedTabsProps["styleOverrides"]>
+>;
 type TabsListCtxHasNoState = AssertFalse<HasProp<TabsListStyleOverrideContext, "state">>;
 type TabsPanelCtxHasNoState = AssertFalse<HasProp<TabsPanelStyleOverrideContext, "state">>;
 type TabsVisualStylesHaveNoRadius = AssertFalse<IsAssignable<"radius", TabsVisualStyleKey>>;
@@ -95,6 +115,7 @@ type TabsVisualStylesHaveNoPadding = AssertFalse<IsAssignable<"padding", TabsVis
 type TabsVisualStylesHaveNoFontSize = AssertFalse<IsAssignable<"fontSize", TabsVisualStyleKey>>;
 
 const tabsHasChildrenProp: TabsHasChildrenProp = false;
+const tabsHasNoAmbiguousSelectionNeighbor: TabsHasNoAmbiguousSelectionNeighbor = false;
 const invalidTabsColor: InvalidTabsColorAllowed = false;
 const invalidTabsValue: InvalidTabsValueAllowed = false;
 const invalidTabsVariant: InvalidTabsVariantAllowed = false;
@@ -115,6 +136,7 @@ export {
 	invalidTabsValue,
 	invalidTabsVariant,
 	tabsHasChildrenProp,
+	tabsHasNoAmbiguousSelectionNeighbor,
 	tabsListCtxHasNoState,
 	tabsPanelAllowed,
 	tabsPanelCtxHasNoState,

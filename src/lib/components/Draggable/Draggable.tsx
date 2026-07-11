@@ -17,9 +17,15 @@ import {
 	type DragInputKind,
 } from "../_shared/interaction";
 import { DRAG_OVERLAY_Z_INDEX } from "../_shared/overlayLayerPolicy";
-import { resolveThemeSizeSafe, resolveUDimSafe, mergeSharedStyleProps, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
+import {
+	resolveThemeSizeSafe,
+	resolveUDimSafe,
+	mergeSharedStyleProps,
+	useResolvedStyleProps,
+} from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
+import { resolveDraggableSelectionNeighborIndex } from "./selection";
 import type { DraggableItem, DraggableItemRenderState, DraggableProps, DraggableSlotProps } from "./types";
 
 const UserInputService = game.GetService("UserInputService");
@@ -120,7 +126,10 @@ function resolveVerticalAlignment(
 	}
 }
 
-function resolveHorizontalFlex(direction: DraggableProps["direction"], justify: DraggableProps["justify"]): Enum.UIFlexAlignment | undefined {
+function resolveHorizontalFlex(
+	direction: DraggableProps["direction"],
+	justify: DraggableProps["justify"],
+): Enum.UIFlexAlignment | undefined {
 	if (direction !== "horizontal") {
 		return undefined;
 	}
@@ -139,7 +148,10 @@ function resolveHorizontalFlex(direction: DraggableProps["direction"], justify: 
 	}
 }
 
-function resolveVerticalFlex(direction: DraggableProps["direction"], justify: DraggableProps["justify"]): Enum.UIFlexAlignment | undefined {
+function resolveVerticalFlex(
+	direction: DraggableProps["direction"],
+	justify: DraggableProps["justify"],
+): Enum.UIFlexAlignment | undefined {
 	if (direction === "horizontal") {
 		return undefined;
 	}
@@ -166,12 +178,21 @@ function resolveInputPosition(input: InputObject): Vector2 {
 	return new Vector2(input.Position.X, input.Position.Y);
 }
 
-function resolveAxisLockedDragPosition(direction: DraggableProps["direction"], inputPosition: Vector2, grabOffset: Vector2, origin: Vector2): Vector2 {
+function resolveAxisLockedDragPosition(
+	direction: DraggableProps["direction"],
+	inputPosition: Vector2,
+	grabOffset: Vector2,
+	origin: Vector2,
+): Vector2 {
 	const freePosition = inputPosition.sub(grabOffset);
 	return direction === "horizontal" ? new Vector2(freePosition.X, origin.Y) : new Vector2(origin.X, freePosition.Y);
 }
 
-function clampDragPositionToListBounds(position: Vector2, itemSize: Vector2 | undefined, listInstance: Frame | undefined): Vector2 {
+function clampDragPositionToListBounds(
+	position: Vector2,
+	itemSize: Vector2 | undefined,
+	listInstance: Frame | undefined,
+): Vector2 {
 	if (itemSize === undefined || listInstance === undefined) {
 		return position;
 	}
@@ -192,8 +213,14 @@ function resolveItemCenter(direction: DraggableProps["direction"], instance: Gui
 		: instance.AbsolutePosition.Y + instance.AbsoluteSize.Y / 2;
 }
 
-function resolveVisualItemCenter(direction: DraggableProps["direction"], visualPosition: Vector2, instance: GuiObject): number {
-	return direction === "horizontal" ? visualPosition.X + instance.AbsoluteSize.X / 2 : visualPosition.Y + instance.AbsoluteSize.Y / 2;
+function resolveVisualItemCenter(
+	direction: DraggableProps["direction"],
+	visualPosition: Vector2,
+	instance: GuiObject,
+): number {
+	return direction === "horizontal"
+		? visualPosition.X + instance.AbsoluteSize.X / 2
+		: visualPosition.Y + instance.AbsoluteSize.Y / 2;
 }
 
 function findOrderIndex(order: readonly string[], itemId: string): number {
@@ -246,7 +273,10 @@ function buildItemRecord<TItem extends DraggableItem>(items: readonly TItem[]): 
 	return record;
 }
 
-function normalizeOrder<TItem extends DraggableItem>(candidate: readonly string[] | undefined, items: readonly TItem[]): readonly string[] {
+function normalizeOrder<TItem extends DraggableItem>(
+	candidate: readonly string[] | undefined,
+	items: readonly TItem[],
+): readonly string[] {
 	const itemIds = new Set<string>();
 	for (const item of items) {
 		itemIds.add(item.id);
@@ -316,7 +346,10 @@ function resolveReorderedOrder(
 	return nextOrder;
 }
 
-function resolveItemSize(direction: DraggableProps["direction"], align: DraggableProps["align"]): {
+function resolveItemSize(
+	direction: DraggableProps["direction"],
+	align: DraggableProps["align"],
+): {
 	readonly size?: UDim2;
 	readonly automaticSize: Enum.AutomaticSize;
 } {
@@ -377,6 +410,11 @@ interface DraggableItemButtonProps<TItem extends DraggableItem> {
 	readonly onBeginDrag: (itemId: string, itemDisabled: boolean | undefined, input: InputObject) => void;
 	readonly onDragMove: (input: InputObject) => void;
 	readonly onDragEnd: (input: InputObject) => void;
+	readonly onSelectionChange: (itemId: string, selected: boolean) => void;
+	readonly nextSelectionUp: TextButton | undefined;
+	readonly nextSelectionDown: TextButton | undefined;
+	readonly nextSelectionLeft: TextButton | undefined;
+	readonly nextSelectionRight: TextButton | undefined;
 	readonly setItemRef: (itemId: string, instance: TextButton | undefined) => void;
 }
 
@@ -443,7 +481,9 @@ function DraggableItemButton<TItem extends DraggableItem>(props: DraggableItemBu
 			}
 
 			setMeasuredSize((currentSize) =>
-				currentSize !== undefined && currentSize.X === nextSize.X && currentSize.Y === nextSize.Y ? currentSize : nextSize,
+				currentSize !== undefined && currentSize.X === nextSize.X && currentSize.Y === nextSize.Y
+					? currentSize
+					: nextSize,
 			);
 		};
 
@@ -479,7 +519,9 @@ function DraggableItemButton<TItem extends DraggableItem>(props: DraggableItemBu
 			animateOffsetToZero(offset);
 		};
 
-		const absolutePositionConnection = itemInstance.GetPropertyChangedSignal("AbsolutePosition").Connect(updateLayoutOffset);
+		const absolutePositionConnection = itemInstance
+			.GetPropertyChangedSignal("AbsolutePosition")
+			.Connect(updateLayoutOffset);
 
 		return () => {
 			absolutePositionConnection.Disconnect();
@@ -500,6 +542,14 @@ function DraggableItemButton<TItem extends DraggableItem>(props: DraggableItemBu
 	}, [stopTransition]);
 
 	const internalEvent: TextButtonEventMap = {
+		SelectionGained: () => {
+			if (props.interactive && !props.itemDisabled) {
+				props.onSelectionChange(props.item.id, true);
+			}
+		},
+		SelectionLost: () => {
+			props.onSelectionChange(props.item.id, false);
+		},
 		InputBegan: (_button, input) => {
 			props.onBeginDrag(props.item.id, props.item.disabled, input);
 		},
@@ -528,7 +578,15 @@ function DraggableItemButton<TItem extends DraggableItem>(props: DraggableItemBu
 	const layoutSize = measuredLayout?.size ?? itemSize.size;
 	const layoutAutomaticSize = measuredLayout?.automaticSize ?? itemSize.automaticSize;
 	const visualSize = measuredLayout?.size ?? itemSize.size ?? UDim2.fromScale(1, 1);
-	const visualAutomaticSize = measuredLayout?.automaticSize ?? (itemSize.size === undefined ? itemSize.automaticSize : Enum.AutomaticSize.None);
+	const visualAutomaticSize =
+		measuredLayout?.automaticSize ?? (itemSize.size === undefined ? itemSize.automaticSize : Enum.AutomaticSize.None);
+	const itemRef = React.useCallback(
+		(instance: TextButton | undefined) => {
+			setItemInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
+			props.setItemRef(props.item.id, instance);
+		},
+		[props.item.id, props.setItemRef],
+	);
 
 	return (
 		<textbutton
@@ -541,14 +599,15 @@ function DraggableItemButton<TItem extends DraggableItem>(props: DraggableItemBu
 			Size={layoutSize}
 			AutomaticSize={layoutAutomaticSize}
 			LayoutOrder={props.index}
+			NextSelectionUp={props.nextSelectionUp}
+			NextSelectionDown={props.nextSelectionDown}
+			NextSelectionLeft={props.nextSelectionLeft}
+			NextSelectionRight={props.nextSelectionRight}
 			Event={itemEvent}
 			Text=""
 			TextTransparency={1}
 			TextStrokeTransparency={1}
-			ref={(instance) => {
-				setItemInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
-				props.setItemRef(props.item.id, instance);
-			}}
+			ref={itemRef}
 			{...props.slotProps}
 		>
 			<frame
@@ -588,12 +647,15 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 	const controlled = value !== undefined;
 	const uniqueItems = React.useMemo(() => dedupeItems(items), [items]);
 	const itemRecord = React.useMemo(() => buildItemRecord(uniqueItems), [uniqueItems]);
-	const [uncontrolledOrder, setUncontrolledOrder] = React.useState<readonly string[]>(() => normalizeOrder(defaultValue, uniqueItems));
+	const [uncontrolledOrder, setUncontrolledOrder] = React.useState<readonly string[]>(() =>
+		normalizeOrder(defaultValue, uniqueItems),
+	);
 	const resolvedOrder = React.useMemo(
 		() => normalizeOrder(controlled ? value : uncontrolledOrder, uniqueItems),
 		[controlled, uniqueItems, uncontrolledOrder, value],
 	);
 	const [activeItemId, setActiveItemId] = React.useState<string | undefined>(undefined);
+	const [focusedItemId, setFocusedItemId] = React.useState<string | undefined>(undefined);
 	const [draggingItemId, setDraggingItemId] = React.useState<string | undefined>(undefined);
 	const [settlingItemId, setSettlingItemId] = React.useState<string | undefined>(undefined);
 	const [dragVisualPosition, setDragVisualPosition] = React.useState<Vector2 | undefined>(undefined);
@@ -602,6 +664,9 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 	const [listInstance, setListInstance] = React.useState<Frame>();
 	const [measuredListSize, setMeasuredListSize] = React.useState<Vector2>();
 	const itemRefs = React.useRef<Record<string, TextButton | undefined>>({});
+	const [selectionItemInstances, setSelectionItemInstances] = React.useState<
+		Readonly<Record<string, TextButton | undefined>>
+	>({});
 	const currentOrderRef = React.useRef<readonly string[]>(resolvedOrder);
 	const dragKindRef = React.useRef<DragInputKind | undefined>(undefined);
 	const activeTouchRef = React.useRef<InputObject | undefined>(undefined);
@@ -619,6 +684,19 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 	onReorderRef.current = onReorder;
 	currentOrderRef.current = resolvedOrder;
 	configRef.current = { controlled, direction };
+	const setItemRef = React.useCallback((itemId: string, instance: TextButton | undefined) => {
+		itemRefs.current[itemId] = instance;
+		setSelectionItemInstances((currentInstances) => {
+			if (currentInstances[itemId] === instance) {
+				return currentInstances;
+			}
+
+			return { ...currentInstances, [itemId]: instance };
+		});
+	}, []);
+	const handleSelectionChange = React.useCallback((itemId: string, selected: boolean) => {
+		setFocusedItemId((currentItemId) => (selected ? itemId : currentItemId === itemId ? undefined : currentItemId));
+	}, []);
 
 	const {
 		theme,
@@ -731,7 +809,12 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 				return undefined;
 			}
 
-			const pointerPosition = resolveAxisLockedDragPosition(configRef.current.direction, resolveInputPosition(input), grabOffset, origin);
+			const pointerPosition = resolveAxisLockedDragPosition(
+				configRef.current.direction,
+				resolveInputPosition(input),
+				grabOffset,
+				origin,
+			);
 			const visualPosition = clampDragPositionToListBounds(pointerPosition, dragVisualSizeRef.current, listInstance);
 			dragVisualPositionRef.current = visualPosition;
 			setDragVisualPosition(visualPosition);
@@ -839,7 +922,15 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 				handleDragEndInput(endedInput);
 			});
 		},
-		[disconnectDragTracking, handleDragEndInput, handleDragMoveInput, interactive, stopSettle, updateDragVisualPosition, updateOrderFromInput],
+		[
+			disconnectDragTracking,
+			handleDragEndInput,
+			handleDragMoveInput,
+			interactive,
+			stopSettle,
+			updateDragVisualPosition,
+			updateOrderFromInput,
+		],
 	);
 
 	React.useEffect(() => {
@@ -879,6 +970,22 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 	}, [endDrag, itemRecord, resolvedOrder]);
 
 	React.useEffect(() => {
+		if (focusedItemId === undefined) {
+			return;
+		}
+
+		const focusedItem = itemRecord[focusedItemId];
+		if (
+			!interactive ||
+			focusedItem === undefined ||
+			focusedItem.disabled === true ||
+			!resolvedOrder.includes(focusedItemId)
+		) {
+			setFocusedItemId(undefined);
+		}
+	}, [focusedItemId, interactive, itemRecord, resolvedOrder]);
+
+	React.useEffect(() => {
 		return () => {
 			disconnectDragTracking();
 			settleConnectionRef.current?.Disconnect();
@@ -898,12 +1005,16 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 			}
 
 			setMeasuredListSize((currentSize) =>
-				currentSize !== undefined && currentSize.X === nextSize.X && currentSize.Y === nextSize.Y ? currentSize : nextSize,
+				currentSize !== undefined && currentSize.X === nextSize.X && currentSize.Y === nextSize.Y
+					? currentSize
+					: nextSize,
 			);
 		};
 
 		updateMeasuredListSize();
-		const absoluteSizeConnection = listInstance.GetPropertyChangedSignal("AbsoluteSize").Connect(updateMeasuredListSize);
+		const absoluteSizeConnection = listInstance
+			.GetPropertyChangedSignal("AbsoluteSize")
+			.Connect(updateMeasuredListSize);
 
 		return () => {
 			absoluteSizeConnection.Disconnect();
@@ -938,9 +1049,19 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 
 	pushDecorator(
 		decoratorChildren,
-		renderPaddingDecorator({ enabled: hasPadding, paddingTop, paddingRight, paddingBottom, paddingLeft, slotProps: slotProps?.padding }),
+		renderPaddingDecorator({
+			enabled: hasPadding,
+			paddingTop,
+			paddingRight,
+			paddingBottom,
+			paddingLeft,
+			slotProps: slotProps?.padding,
+		}),
 	);
-	pushDecorator(decoratorChildren, renderSizeConstraintDecorator({ constraint: resolvedConstraint, slotProps: slotProps?.sizeConstraint }));
+	pushDecorator(
+		decoratorChildren,
+		renderSizeConstraintDecorator({ constraint: resolvedConstraint, slotProps: slotProps?.sizeConstraint }),
+	);
 
 	decoratorChildren.push(
 		<uilistlayout
@@ -958,6 +1079,7 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 		/>,
 	);
 
+	const selectionDisabledItems = resolvedOrder.map((itemId) => !interactive || itemRecord[itemId]?.disabled === true);
 	const itemElements = resolvedOrder.map((itemId, index) => {
 		const item = itemRecord[itemId];
 		if (item === undefined) {
@@ -965,6 +1087,15 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 		}
 
 		const itemDisabled = disabled || item.disabled === true;
+		const previousIndex = itemDisabled
+			? undefined
+			: resolveDraggableSelectionNeighborIndex(selectionDisabledItems, index, -1);
+		const nextIndex = itemDisabled
+			? undefined
+			: resolveDraggableSelectionNeighborIndex(selectionDisabledItems, index, 1);
+		const previousInstance =
+			previousIndex === undefined ? undefined : selectionItemInstances[resolvedOrder[previousIndex]];
+		const nextInstance = nextIndex === undefined ? undefined : selectionItemInstances[resolvedOrder[nextIndex]];
 
 		return (
 			<DraggableItemButton
@@ -973,7 +1104,7 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 				index={index}
 				interactive={interactive}
 				itemDisabled={itemDisabled}
-				itemActive={activeItemId === item.id}
+				itemActive={activeItemId === item.id || focusedItemId === item.id}
 				itemDragging={draggingItemId === item.id}
 				itemHidden={draggingItemId === item.id || settlingItemId === item.id}
 				direction={direction}
@@ -985,15 +1116,21 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 				onBeginDrag={beginDrag}
 				onDragMove={handleDragMoveInput}
 				onDragEnd={handleDragEndInput}
-				setItemRef={(resolvedItemId, instance) => {
-					itemRefs.current[resolvedItemId] = instance;
-				}}
+				onSelectionChange={handleSelectionChange}
+				nextSelectionUp={direction === "vertical" ? previousInstance : undefined}
+				nextSelectionDown={direction === "vertical" ? nextInstance : undefined}
+				nextSelectionLeft={direction === "horizontal" ? previousInstance : undefined}
+				nextSelectionRight={direction === "horizontal" ? nextInstance : undefined}
+				setItemRef={setItemRef}
 			/>
 		);
 	});
 
-	const shouldFreezeRootSize = draggingItemId !== undefined && computedAutoSize !== undefined && measuredListSize !== undefined;
-	const effectiveRootSize = shouldFreezeRootSize ? UDim2.fromOffset(measuredListSize.X, measuredListSize.Y) : computedSize;
+	const shouldFreezeRootSize =
+		draggingItemId !== undefined && computedAutoSize !== undefined && measuredListSize !== undefined;
+	const effectiveRootSize = shouldFreezeRootSize
+		? UDim2.fromOffset(measuredListSize.X, measuredListSize.Y)
+		: computedSize;
 	const effectiveRootAutoSize = shouldFreezeRootSize ? Enum.AutomaticSize.None : computedAutoSize;
 	const frameInstanceProps: Partial<React.InstanceProps<Frame>> = {
 		BorderSizePixel: 0,
@@ -1024,7 +1161,9 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 	const overlayItem = overlayItemId !== undefined ? itemRecord[overlayItemId] : undefined;
 	const overlayIndex = overlayItemId !== undefined ? findOrderIndex(resolvedOrder, overlayItemId) : -1;
 	const overlayPosition =
-		dragVisualPosition !== undefined && rootInstance !== undefined ? dragVisualPosition.sub(rootInstance.AbsolutePosition) : undefined;
+		dragVisualPosition !== undefined && rootInstance !== undefined
+			? dragVisualPosition.sub(rootInstance.AbsolutePosition)
+			: undefined;
 	const overlaySize = dragVisualSize ?? dragVisualSizeRef.current;
 	const animatedLift = useMotion({
 		values: { lift: draggingItemId !== undefined ? 1 : 0 },
@@ -1073,7 +1212,14 @@ function DraggableComponent<TItem extends DraggableItem>(props: DraggableProps<T
 				{decoratorChildren}
 				{itemElements}
 			</frame>
-			<frame key="overlay-layer" BackgroundTransparency={1} BorderSizePixel={0} Position={UDim2.fromOffset(0, 0)} Size={UDim2.fromOffset(0, 0)} ZIndex={DRAG_OVERLAY_Z_INDEX}>
+			<frame
+				key="overlay-layer"
+				BackgroundTransparency={1}
+				BorderSizePixel={0}
+				Position={UDim2.fromOffset(0, 0)}
+				Size={UDim2.fromOffset(0, 0)}
+				ZIndex={DRAG_OVERLAY_Z_INDEX}
+			>
 				{overlayElement}
 			</frame>
 		</frame>

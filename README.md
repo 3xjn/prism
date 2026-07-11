@@ -148,7 +148,11 @@ const [secondary, setSecondary] = React.useState<TextButton>();
 
 Assigning only to `ref.current` does not trigger a React render. Callback state does, so the neighboring control receives the native instance after mount. Disabled controls resolve to `Selectable={false}`; as elsewhere in Prism, a raw `slotProps` override remains the final escape hatch.
 
+Compound controls keep their native targets internal instead of pretending one component-level neighbor applies everywhere. Enabled `Tabs` and `SegmentedControl` choices wrap horizontally and skip disabled choices; tab focus activates its panel, while a segment waits for `ButtonA`/`Activated`. `StepperInput` exposes its minus and plus actions to selection but keeps the center rail for pointer/touch scrubbing and public ref ownership. Enabled `Draggable` items follow the configured list axis without wrapping; controller selection is reflected through `renderItem`'s `active` state, while reordering remains a pointer/touch gesture. Slider and ColorPicker consume only their documented value-adjustment inputs while selected, leaving Up/Down to Roblox navigation.
+
 Ordinary directional navigation and focus visuals still belong to Roblox. When a gamepad opens a Prism-owned Select, Menu, Modal, or eligible Popover, Prism briefly manages `GuiService.SelectedObject` only for that overlay session: it enters through the preferred/native eligible target, uses native selection-group boundaries, repairs an invalid owned target, and restores the opening target on close. If selection moves outside the overlay, Prism releases ownership and does not pull it back. There is no `SelectionScope`, global coordinator, custom graph solver, or replacement `SelectionImageObject`.
+
+Open Select, Menu, Popover, and Modal surfaces also share topmost Back dismissal. Escape or gamepad ButtonB closes only the visually highest eligible Prism overlay; `closeOnBack={false}`, hover Popovers, and controlled overlays without a close callback remain stack barriers instead of exposing a lower overlay. The shared action is absent when no Prism overlay is open, and a non-dismissible barrier passes the input through without closing anything underneath it.
 
 ## Color picking
 

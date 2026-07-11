@@ -92,6 +92,10 @@ export interface TabsStyleProps extends Omit<SharedStyleProps, "bg" | "bgTranspa
 }
 
 export interface TabsProps extends TabsStyleProps {
+	/**
+	 * Every enabled tab is a native selection target. Left/Right wraps across enabled tabs,
+	 * and controller focus activates the focused tab. Up/Down stays available to the surrounding layout.
+	 */
 	readonly tabs: readonly TabsTab[];
 	readonly value?: string;
 	readonly defaultValue?: string;
@@ -101,5 +105,6 @@ export interface TabsProps extends TabsStyleProps {
 	readonly Event?: React.InstanceProps<Frame>["Event"];
 	readonly Change?: React.InstanceProps<Frame>["Change"];
 	readonly slotProps?: TabsSlotProps;
+	/** Ref ownership stays on the non-interactive root Frame; tab targets remain internal. */
 	readonly ref?: React.Ref<Frame>;
 }

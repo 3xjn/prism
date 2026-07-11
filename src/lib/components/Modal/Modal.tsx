@@ -1,7 +1,7 @@
 import React from "@rbxts/react";
 
 import { useMotion } from "@prism/motion";
-import { useTheme , theme as themeRefs } from "@prism/theme";
+import { useTheme, theme as themeRefs } from "@prism/theme";
 import type { Theme } from "@prism/theme";
 
 import { getLucideIconAsset } from "../../icons/lucide";
@@ -16,15 +16,10 @@ import {
 } from "../_shared/foundationDecorators";
 import { renderElevationShadow } from "../_shared/elevation";
 import { assignRef, isPressInput } from "../_shared/interaction";
-import {
-	DEFAULT_SCREEN_OVERLAY_BASE_Z_INDEX,
-	incrementZIndex,
-} from "../_shared/overlayLayerPolicy";
-import {
-	mergeSharedStyleProps,
-	useResolvedStyleProps,
-} from "../_shared/useResolvedStyleProps";
+import { DEFAULT_SCREEN_OVERLAY_BASE_Z_INDEX, incrementZIndex } from "../_shared/overlayLayerPolicy";
+import { mergeSharedStyleProps, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { usePresence } from "../_shared/usePresence";
+import { useOverlayBackDismissal } from "../_shared/useOverlayBackDismissal";
 import { useOverlaySelectionLifecycle } from "../_shared/useOverlaySelectionLifecycle";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
@@ -116,7 +111,9 @@ function useAbsoluteSize(instance: GuiObject | undefined): Vector2 | undefined {
 		const updateAbsoluteSize = () => {
 			const nextSize = instance.AbsoluteSize;
 			setAbsoluteSize((currentSize) =>
-				currentSize !== undefined && currentSize.X === nextSize.X && currentSize.Y === nextSize.Y ? currentSize : nextSize,
+				currentSize !== undefined && currentSize.X === nextSize.X && currentSize.Y === nextSize.Y
+					? currentSize
+					: nextSize,
 			);
 		};
 
@@ -144,6 +141,7 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 		size = "md",
 		fullWidth = false,
 		closeOnBackdropClick = true,
+		closeOnBack = true,
 		withCloseButton = true,
 		Event,
 		Change,
@@ -182,8 +180,10 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 		hasPadding,
 	} = useResolvedStyleProps("modal", mergedStyleProps);
 	const shouldRenderHeader = title !== undefined || withCloseButton;
-	const usesDefaultCenteredLayout = props.position === undefined && props.anchor === undefined && props.center !== false;
-	const rootOverlayZIndex = slotProps?.overlay?.ZIndex ?? mergedStyleProps.zIndex ?? DEFAULT_SCREEN_OVERLAY_BASE_Z_INDEX;
+	const usesDefaultCenteredLayout =
+		props.position === undefined && props.anchor === undefined && props.center !== false;
+	const rootOverlayZIndex =
+		slotProps?.overlay?.ZIndex ?? mergedStyleProps.zIndex ?? DEFAULT_SCREEN_OVERLAY_BASE_Z_INDEX;
 	const backdropZIndex = slotProps?.backdrop?.ZIndex ?? rootOverlayZIndex;
 	const contentLayerZIndex = slotProps?.contentLayer?.ZIndex ?? incrementZIndex(rootOverlayZIndex, 1);
 	const contentZIndex = slotProps?.content?.ZIndex ?? incrementZIndex(contentLayerZIndex, 1);
@@ -202,6 +202,12 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 		container: contentLayerInstance,
 		entryPolicy: "always",
 	});
+	useOverlayBackDismissal({
+		opened,
+		dismissible: closeOnBack,
+		overlay: contentLayerInstance,
+		onDismiss: onClose,
+	});
 	const closeButtonScale = closePressed ? MODAL_CLOSE_PRESS_SCALE : closeHovered ? MODAL_CLOSE_HOVER_SCALE : 1;
 	const closeButtonMotionDuration = closePressed ? 0.045 : closeHovered ? 0.09 : 0.1;
 	const animated = useMotion({
@@ -216,10 +222,22 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 			closeButtonScale,
 		},
 		transition: {
-			backdropOpacity: { duration: presence.present ? MODAL_BACKDROP_ENTER_DURATION : MODAL_BACKDROP_EXIT_DURATION, easing: presence.present ? "out" : "in" },
-			panelOpacity: { duration: presence.present ? MODAL_PANEL_ENTER_DURATION : MODAL_PANEL_EXIT_DURATION, easing: presence.present ? "out" : "in" },
-			panelScale: { duration: presence.present ? MODAL_PANEL_ENTER_DURATION : MODAL_PANEL_EXIT_DURATION, easing: presence.present ? "out" : "in" },
-			panelOffsetY: { duration: presence.present ? MODAL_PANEL_ENTER_DURATION : MODAL_PANEL_EXIT_DURATION, easing: presence.present ? "out" : "in" },
+			backdropOpacity: {
+				duration: presence.present ? MODAL_BACKDROP_ENTER_DURATION : MODAL_BACKDROP_EXIT_DURATION,
+				easing: presence.present ? "out" : "in",
+			},
+			panelOpacity: {
+				duration: presence.present ? MODAL_PANEL_ENTER_DURATION : MODAL_PANEL_EXIT_DURATION,
+				easing: presence.present ? "out" : "in",
+			},
+			panelScale: {
+				duration: presence.present ? MODAL_PANEL_ENTER_DURATION : MODAL_PANEL_EXIT_DURATION,
+				easing: presence.present ? "out" : "in",
+			},
+			panelOffsetY: {
+				duration: presence.present ? MODAL_PANEL_ENTER_DURATION : MODAL_PANEL_EXIT_DURATION,
+				easing: presence.present ? "out" : "in",
+			},
 			closeButtonBackgroundColor: { duration: closeButtonMotionDuration, easing: "standard" },
 			closeButtonBackgroundTransparency: { duration: closeButtonMotionDuration, easing: "standard" },
 			closeButtonIconColor: { duration: closeButtonMotionDuration, easing: "standard" },
@@ -239,42 +257,45 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 	const closeButtonEvent = useRootCursorEvent(
 		withCloseButton
 			? {
-				MouseEnter: () => {
-					setCloseHovered(true);
-				},
-				MouseLeave: () => {
-					setCloseHovered(false);
-					setClosePressed(false);
-				},
-				InputBegan: (_button: TextButton, input: InputObject) => {
-					if (!isPressInput(input)) {
-						return;
-					}
+					MouseEnter: () => {
+						setCloseHovered(true);
+					},
+					MouseLeave: () => {
+						setCloseHovered(false);
+						setClosePressed(false);
+					},
+					InputBegan: (_button: TextButton, input: InputObject) => {
+						if (!isPressInput(input)) {
+							return;
+						}
 
-					setClosePressed(true);
-				},
-				InputEnded: (_button: TextButton, input: InputObject) => {
-					if (!isPressInput(input)) {
-						return;
-					}
+						setClosePressed(true);
+					},
+					InputEnded: (_button: TextButton, input: InputObject) => {
+						if (!isPressInput(input)) {
+							return;
+						}
 
-					setClosePressed(false);
-				},
-				Activated: () => {
-					onClose();
-				},
-			  }
+						setClosePressed(false);
+					},
+					Activated: () => {
+						onClose();
+					},
+				}
 			: undefined,
-		slotProps?.closeButton?.Event === undefined ? mergedStyleProps.cursor ?? "pointer" : undefined,
+		slotProps?.closeButton?.Event === undefined ? (mergedStyleProps.cursor ?? "pointer") : undefined,
 		!withCloseButton,
 	);
 	const contentLayerRef = React.useCallback((instance: Frame | undefined) => {
 		setContentLayerInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
 	}, []);
-	const panelRef = React.useCallback((instance: Frame | undefined) => {
-		setPanelInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
-		assignRef(ref, instance);
-	}, [ref]);
+	const panelRef = React.useCallback(
+		(instance: Frame | undefined) => {
+			setPanelInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
+			assignRef(ref, instance);
+		},
+		[ref],
+	);
 	const headerRef = React.useCallback((instance: Frame | undefined) => {
 		setHeaderInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
 	}, []);
@@ -289,11 +310,16 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 	const availableLayerSize = contentLayerSize ?? new Vector2(sizeStyles.width, DEFAULT_MODAL_MAX_HEIGHT);
 	const availableLayerWidth = math.max(0, availableLayerSize.X);
 	const availableLayerHeight = math.max(0, availableLayerSize.Y);
-	const panelFallbackHeight = math.max(DEFAULT_MODAL_MAX_HEIGHT, sizeStyles.closeButtonSize + sizeStyles.overlayPadding * 2);
+	const panelFallbackHeight = math.max(
+		DEFAULT_MODAL_MAX_HEIGHT,
+		sizeStyles.closeButtonSize + sizeStyles.overlayPadding * 2,
+	);
 	const defaultMaxPanelHeight = availableLayerHeight > 0 ? availableLayerHeight : panelFallbackHeight;
 	const hasExplicitWidth = resolvedSize !== undefined || resolvedWidth !== undefined;
 	const hasExplicitHeight = resolvedSize !== undefined || resolvedHeight !== undefined;
-	const defaultMaxPanelWidth = fullWidth ? availableLayerWidth : math.min(sizeStyles.width, availableLayerWidth > 0 ? availableLayerWidth : sizeStyles.width);
+	const defaultMaxPanelWidth = fullWidth
+		? availableLayerWidth
+		: math.min(sizeStyles.width, availableLayerWidth > 0 ? availableLayerWidth : sizeStyles.width);
 	const resolvedMaxPanelWidth =
 		resolvedConstraint?.max !== undefined
 			? math.min(defaultMaxPanelWidth, resolvedConstraint.max.X)
@@ -308,7 +334,10 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 	const panelVerticalPadding = resolvePaddingOffset(paddingTop) + resolvePaddingOffset(paddingBottom);
 	const availableBodyHeight = math.max(0, panelMaxSize.Y - panelVerticalPadding - headerHeight - bodyGap);
 	const fallbackBodyHeight = math.min(DEFAULT_MODAL_BODY_HEIGHT, availableBodyHeight);
-	const resolvedBodyHeight = math.max(0, math.min(bodyContentHeight > 0 ? bodyContentHeight : fallbackBodyHeight, availableBodyHeight));
+	const resolvedBodyHeight = math.max(
+		0,
+		math.min(bodyContentHeight > 0 ? bodyContentHeight : fallbackBodyHeight, availableBodyHeight),
+	);
 	const bodyScrollable = bodyContentHeight > availableBodyHeight + 1;
 	const scrollBarThickness = bodyScrollable ? theme.spacing.xs : 0;
 	const bodyHorizontalOverflow = math.max(
@@ -328,7 +357,9 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 		panelSize = new UDim2(resolvedWidth, new UDim(0, 0));
 		panelAutoSize = Enum.AutomaticSize.Y;
 	} else if (resolvedHeight !== undefined) {
-		panelSize = usesDefaultCenteredLayout ? new UDim2(1, 0, resolvedHeight.Scale, resolvedHeight.Offset) : new UDim2(0, panelMaxSize.X, resolvedHeight.Scale, resolvedHeight.Offset);
+		panelSize = usesDefaultCenteredLayout
+			? new UDim2(1, 0, resolvedHeight.Scale, resolvedHeight.Offset)
+			: new UDim2(0, panelMaxSize.X, resolvedHeight.Scale, resolvedHeight.Offset);
 		panelAutoSize = undefined;
 	} else if (usesDefaultCenteredLayout) {
 		panelSize = new UDim2(1, 0, 0, 0);
@@ -338,21 +369,26 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 		panelAutoSize = Enum.AutomaticSize.Y;
 	}
 
-	const resolvedPanelPosition = usesDefaultCenteredLayout ? UDim2.fromScale(0.5, 0.5) : resolvedPosition ?? UDim2.fromScale(0.5, 0.5);
+	const resolvedPanelPosition = usesDefaultCenteredLayout
+		? UDim2.fromScale(0.5, 0.5)
+		: (resolvedPosition ?? UDim2.fromScale(0.5, 0.5));
 	const animatedPanelPosition = new UDim2(
 		resolvedPanelPosition.X.Scale,
 		resolvedPanelPosition.X.Offset,
 		resolvedPanelPosition.Y.Scale,
 		resolvedPanelPosition.Y.Offset + animated.panelOffsetY,
 	);
-	const resolvedPanelAnchor = usesDefaultCenteredLayout ? new Vector2(0.5, 0.5) : resolvedAnchor ?? new Vector2(0.5, 0.5);
+	const resolvedPanelAnchor = usesDefaultCenteredLayout
+		? new Vector2(0.5, 0.5)
+		: (resolvedAnchor ?? new Vector2(0.5, 0.5));
 	const panelBackgroundColor = resolvedBackgroundColor ?? theme.colors.background.surface;
-	const panelBackgroundTransparency = 1 - ((1 - (mergedStyleProps.bgTransparency ?? 0)) * animated.panelOpacity);
-	const panelStrokeTransparency = 1 - ((1 - 0.08) * animated.panelOpacity);
+	const panelBackgroundTransparency = 1 - (1 - (mergedStyleProps.bgTransparency ?? 0)) * animated.panelOpacity;
+	const panelStrokeTransparency = 1 - (1 - 0.08) * animated.panelOpacity;
 	const contentEvent = slotProps?.content?.Event === undefined ? Event : undefined;
-	const panelSizeConstraint = panelMinSize !== undefined || panelMaxSize.X > 0 || panelMaxSize.Y > 0
-		? { min: panelMinSize, max: panelMaxSize }
-		: undefined;
+	const panelSizeConstraint =
+		panelMinSize !== undefined || panelMaxSize.X > 0 || panelMaxSize.Y > 0
+			? { min: panelMinSize, max: panelMaxSize }
+			: undefined;
 
 	const panelElement = (
 		<frame
@@ -395,7 +431,14 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 				GroupTransparency={1 - animated.panelOpacity}
 				ZIndex={contentInnerZIndex}
 			>
-				{renderPaddingDecorator({ enabled: hasPadding, paddingTop, paddingRight, paddingBottom, paddingLeft, slotProps: slotProps?.contentPadding })}
+				{renderPaddingDecorator({
+					enabled: hasPadding,
+					paddingTop,
+					paddingRight,
+					paddingBottom,
+					paddingLeft,
+					slotProps: slotProps?.contentPadding,
+				})}
 				<uilistlayout
 					FillDirection={Enum.FillDirection.Vertical}
 					HorizontalAlignment={Enum.HorizontalAlignment.Left}
@@ -405,80 +448,85 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 					{...slotProps?.contentLayout}
 				/>
 				{shouldRenderHeader ? (
-				<frame
-					BackgroundTransparency={1}
-					BorderSizePixel={0}
-					Size={UDim2.fromScale(1, 0)}
-					AutomaticSize={Enum.AutomaticSize.Y}
-					LayoutOrder={1}
-					ZIndex={headerZIndex}
-					ref={headerRef}
-					{...slotProps?.header}
-				>
-					{renderSizeConstraintDecorator({
-						constraint: withCloseButton ? { min: new Vector2(0, sizeStyles.closeButtonSize) } : undefined,
-						slotProps: slotProps?.headerSizeConstraint,
-					})}
-					{title !== undefined ? (
-						<textlabel
-							BackgroundTransparency={1}
-							BorderSizePixel={0}
-							Size={new UDim2(
-								1,
-								withCloseButton ? -(sizeStyles.closeButtonSize + sizeStyles.headerGap) : 0,
-								0,
-								withCloseButton ? sizeStyles.closeButtonSize : 0,
-							)}
-							AutomaticSize={Enum.AutomaticSize.Y}
-							Text={tostring(title)}
-							TextColor3={theme.colors.text.primary}
-							TextSize={sizeStyles.titleSize}
-							FontFace={Font.fromEnum(theme.fontFamily)}
-							LineHeight={sizeStyles.titleLineHeight}
-							TextWrapped={true}
-							TextXAlignment={Enum.TextXAlignment.Left}
-							TextYAlignment={Enum.TextYAlignment.Center}
-							TextTruncate={Enum.TextTruncate.None}
-							ZIndex={titleZIndex}
-							{...slotProps?.title}
-						/>
-					) : undefined}
-					{withCloseButton ? (
-						<textbutton
-							AutoButtonColor={false}
-							BackgroundColor3={animated.closeButtonBackgroundColor}
-							BackgroundTransparency={animated.closeButtonBackgroundTransparency}
-							BorderSizePixel={0}
-							Size={UDim2.fromOffset(sizeStyles.closeButtonSize, sizeStyles.closeButtonSize)}
-							Position={UDim2.fromScale(1, 0.5)}
-							AnchorPoint={new Vector2(1, 0.5)}
-							Text=""
-							TextTransparency={1}
-							ZIndex={closeButtonZIndex}
-							Event={closeButtonEvent}
-							{...slotProps?.closeButton}
-						>
-							<uiscale Scale={animated.closeButtonScale} />
-							{renderCornerDecorator({ radius: new UDim(0, theme.radius.sm), slotProps: slotProps?.closeButtonCorner })}
-							<imagelabel
+					<frame
+						BackgroundTransparency={1}
+						BorderSizePixel={0}
+						Size={UDim2.fromScale(1, 0)}
+						AutomaticSize={Enum.AutomaticSize.Y}
+						LayoutOrder={1}
+						ZIndex={headerZIndex}
+						ref={headerRef}
+						{...slotProps?.header}
+					>
+						{renderSizeConstraintDecorator({
+							constraint: withCloseButton ? { min: new Vector2(0, sizeStyles.closeButtonSize) } : undefined,
+							slotProps: slotProps?.headerSizeConstraint,
+						})}
+						{title !== undefined ? (
+							<textlabel
 								BackgroundTransparency={1}
 								BorderSizePixel={0}
-								Size={closeIconSize}
-								Position={UDim2.fromScale(0.5, 0.5)}
-								AnchorPoint={new Vector2(0.5, 0.5)}
-								Image={closeIconAsset?.Url}
-								ImageRectSize={closeIconAsset?.ImageRectSize}
-								ImageRectOffset={closeIconAsset?.ImageRectOffset}
-								ImageColor3={animated.closeButtonIconColor}
-								ScaleType={Enum.ScaleType.Fit}
-								ZIndex={incrementZIndex(closeButtonZIndex, 1)}
-								Active={false}
-								Selectable={false}
-								{...slotProps?.closeIcon}
+								Size={
+									new UDim2(
+										1,
+										withCloseButton ? -(sizeStyles.closeButtonSize + sizeStyles.headerGap) : 0,
+										0,
+										withCloseButton ? sizeStyles.closeButtonSize : 0,
+									)
+								}
+								AutomaticSize={Enum.AutomaticSize.Y}
+								Text={tostring(title)}
+								TextColor3={theme.colors.text.primary}
+								TextSize={sizeStyles.titleSize}
+								FontFace={Font.fromEnum(theme.fontFamily)}
+								LineHeight={sizeStyles.titleLineHeight}
+								TextWrapped={true}
+								TextXAlignment={Enum.TextXAlignment.Left}
+								TextYAlignment={Enum.TextYAlignment.Center}
+								TextTruncate={Enum.TextTruncate.None}
+								ZIndex={titleZIndex}
+								{...slotProps?.title}
 							/>
-						</textbutton>
-					) : undefined}
-				</frame>
+						) : undefined}
+						{withCloseButton ? (
+							<textbutton
+								AutoButtonColor={false}
+								BackgroundColor3={animated.closeButtonBackgroundColor}
+								BackgroundTransparency={animated.closeButtonBackgroundTransparency}
+								BorderSizePixel={0}
+								Size={UDim2.fromOffset(sizeStyles.closeButtonSize, sizeStyles.closeButtonSize)}
+								Position={UDim2.fromScale(1, 0.5)}
+								AnchorPoint={new Vector2(1, 0.5)}
+								Text=""
+								TextTransparency={1}
+								ZIndex={closeButtonZIndex}
+								Event={closeButtonEvent}
+								{...slotProps?.closeButton}
+							>
+								<uiscale Scale={animated.closeButtonScale} />
+								{renderCornerDecorator({
+									radius: new UDim(0, theme.radius.sm),
+									slotProps: slotProps?.closeButtonCorner,
+								})}
+								<imagelabel
+									BackgroundTransparency={1}
+									BorderSizePixel={0}
+									Size={closeIconSize}
+									Position={UDim2.fromScale(0.5, 0.5)}
+									AnchorPoint={new Vector2(0.5, 0.5)}
+									Image={closeIconAsset?.Url}
+									ImageRectSize={closeIconAsset?.ImageRectSize}
+									ImageRectOffset={closeIconAsset?.ImageRectOffset}
+									ImageColor3={animated.closeButtonIconColor}
+									ScaleType={Enum.ScaleType.Fit}
+									ZIndex={incrementZIndex(closeButtonZIndex, 1)}
+									Active={false}
+									Selectable={false}
+									{...slotProps?.closeIcon}
+								/>
+							</textbutton>
+						) : undefined}
+					</frame>
 				) : undefined}
 				<frame
 					BackgroundTransparency={1}

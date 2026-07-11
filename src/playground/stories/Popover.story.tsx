@@ -16,6 +16,7 @@ const controls = {
 	content: String("Squad aura, loot bias, and extract timer."),
 	disabled: Boolean(false),
 	closeOnOutsidePress: Boolean(true),
+	closeOnBack: Boolean(true),
 };
 
 type PopoverStoryControls = InferControls<typeof controls>;
@@ -46,7 +47,14 @@ function PopoverPanelContent({ detail }: { readonly detail: string }): React.Rea
 
 function PopoverTrigger(): React.ReactElement {
 	return (
-		<Box width={232} bg={themeRefs.background.surface} radius="md" border={1} borderColor={themeRefs.border.default} p="md">
+		<Box
+			width={232}
+			bg={themeRefs.background.surface}
+			radius="md"
+			border={1}
+			borderColor={themeRefs.border.default}
+			p="md"
+		>
 			<Stack width="100%" direction="horizontal" align="center" gap="sm">
 				<Icon name="settings" size={22} color={themeRefs.primary.main} />
 				<Stack width="100%" gap="xs">
@@ -58,7 +66,11 @@ function PopoverTrigger(): React.ReactElement {
 	);
 }
 
-function PopoverStoryCanvas({ controls: currentControls }: { readonly controls: PopoverStoryControls }): React.ReactElement {
+function PopoverStoryCanvas({
+	controls: currentControls,
+}: {
+	readonly controls: PopoverStoryControls;
+}): React.ReactElement {
 	const theme = useTheme();
 	const resolvedPlacement = currentControls.placement as PopoverPlacement;
 	const resolvedAlign = currentControls.align as PopoverAlign;
@@ -78,7 +90,7 @@ function PopoverStoryCanvas({ controls: currentControls }: { readonly controls: 
 				<Stack width="100%" gap="md">
 					<Text text="Popover" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="The panel uses trigger anchoring while a separate invisible interaction layer handles outside dismissal. Open it, press inside the panel, press the trigger again, and press the surrounding lab surface to verify each boundary."
+						text="The panel keeps pointer dismissal separate from keyboard/controller back. In click mode, open it and press B (or Escape) to close only the top panel. Close On Back off and hover mode remain topmost barriers without dismissing lower Prism overlays."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
@@ -110,6 +122,7 @@ function PopoverStoryCanvas({ controls: currentControls }: { readonly controls: 
 								triggerMode={resolvedTriggerMode}
 								disabled={currentControls.disabled || resolvedTriggerMode === "manual"}
 								closeOnOutsidePress={currentControls.closeOnOutsidePress}
+								closeOnBack={currentControls.closeOnBack}
 								onOpenedChange={setObservedOpen}
 								gap={12}
 								Event={{ Activated: () => setTriggerActivations((current) => current + 1) }}
@@ -128,7 +141,8 @@ function PopoverStoryCanvas({ controls: currentControls }: { readonly controls: 
 const story = CreateReactStory(
 	{
 		name: "Popover",
-		summary: "Trigger-anchored portal panel seam for game UI context surfaces, with placement controls, outside-dismiss capture, neutral defaults, and slot escapes.",
+		summary:
+			"Trigger-anchored portal panel seam for game UI context surfaces, with placement controls, outside-dismiss capture, neutral defaults, and slot escapes.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,

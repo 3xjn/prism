@@ -15,6 +15,7 @@ import { resolveMinimumHeightConstraint } from "../_shared/frameSize";
 import type { TriggerOverlayLayout } from "../_shared/layering";
 import { applyStyleOverride } from "../_shared/styleOverride";
 import { TriggerOverlayLayer } from "../_shared/TriggerOverlayLayer";
+import { useOverlayBackDismissal } from "../_shared/useOverlayBackDismissal";
 import { useOverlaySelectionLifecycle } from "../_shared/useOverlaySelectionLifecycle";
 import { usePressInteraction } from "../_shared/usePressInteraction";
 import { mergeSharedStyleProps, resolveUDimSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
@@ -56,6 +57,7 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 		onChange,
 		maxVisibleOptions = 6,
 		closeOnOutsidePress = true,
+		closeOnBack = true,
 		styleOverrides,
 		Event,
 		Change,
@@ -106,12 +108,21 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 	const triggerTextSlotProps = slotProps?.triggerText;
 	const indicatorSlotProps = slotProps?.indicator;
 	const indicatorAsset = getLucideIconAsset("chevron-right", sizeStyles.indicatorSize);
+	const dismissDropdown = React.useCallback(() => {
+		setOpen(false);
+	}, []);
 	useOverlaySelectionLifecycle({
 		opened: open && options.size() > 0,
 		container: preferredOptionInstance !== undefined ? dropdownInstance : undefined,
 		entryPolicy: "trigger",
 		trigger: triggerInstance,
 		preferredTarget: preferredOptionInstance,
+	});
+	useOverlayBackDismissal({
+		opened: !disabled && open && options.size() > 0,
+		dismissible: closeOnBack,
+		overlay: dropdownInstance,
+		onDismiss: dismissDropdown,
 	});
 	React.useEffect(() => {
 		if (controlledValue !== undefined) {
@@ -141,8 +152,7 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 	const triggerHeight = resolvedSize?.Y ?? resolvedHeight ?? new UDim(0, sizeStyles.minHeight);
 	const minimumTriggerHeight = math.max(sizeStyles.minHeight, triggerHeight.Offset);
 	const resolveDropdownPlacement = React.useCallback(
-		(layout: TriggerOverlayLayout) =>
-			resolveSelectOverlayPlacement(layout, sizeStyles.listGap, minimumTriggerHeight),
+		(layout: TriggerOverlayLayout) => resolveSelectOverlayPlacement(layout, sizeStyles.listGap, minimumTriggerHeight),
 		[minimumTriggerHeight, sizeStyles.listGap],
 	);
 	const computedConstraint = resolveMinimumHeightConstraint(resolvedConstraint, sizeStyles.minHeight);
@@ -364,7 +374,7 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 						closeOnOutsidePress={closeOnOutsidePress}
 						setListInstance={dropdownRef}
 						setPreferredOptionInstance={preferredOptionRef}
-						onOutsidePress={() => setOpen(false)}
+						onOutsidePress={dismissDropdown}
 						onSelect={handleSelect}
 					/>
 				)}

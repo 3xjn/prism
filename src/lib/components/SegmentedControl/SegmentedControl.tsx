@@ -28,6 +28,7 @@ import {
 	type SegmentedControlSegmentVisualStyles,
 	type SegmentedControlSizeStyles,
 } from "./styles";
+import { resolveSegmentedControlSelectionNeighborIndex } from "./selection";
 import type { SegmentedControlOption, SegmentedControlProps } from "./types";
 
 type FrameEventMap = React.InstanceProps<Frame>["Event"];
@@ -35,7 +36,8 @@ type TextButtonEventMap = React.InstanceProps<TextButton>["Event"];
 type FrameProps = React.InstanceProps<Frame>;
 type TextButtonProps = React.InstanceProps<TextButton>;
 type TextLabelProps = React.InstanceProps<TextLabel>;
-type SegmentedControlComponent = ((props: SegmentedControlProps) => React.ReactElement) & React.ForwardRefExoticComponent<SegmentedControlProps>;
+type SegmentedControlComponent = ((props: SegmentedControlProps) => React.ReactElement) &
+	React.ForwardRefExoticComponent<SegmentedControlProps>;
 
 interface SegmentMotionValues extends Readonly<Record<string, MotionInputValue>> {
 	readonly backgroundColor: Color3;
@@ -62,6 +64,9 @@ interface SegmentedControlSegmentViewProps {
 	readonly segmentCount: number;
 	readonly segmentVisualStyles: SegmentedControlSegmentVisualStyles;
 	readonly segmentEvent: TextButtonEventMap;
+	readonly nextSelectionLeft: TextButton | undefined;
+	readonly nextSelectionRight: TextButton | undefined;
+	readonly setSegmentRef: (value: string, instance: TextButton | undefined) => void;
 	readonly segmentSlotProps: TextButtonProps | undefined;
 	readonly segmentTextSlotProps: TextLabelProps | undefined;
 	readonly slotProps: SegmentedControlProps["slotProps"];
@@ -75,7 +80,10 @@ interface SegmentedControlSegmentViewProps {
 	readonly resolvedSegmentTextZIndex: TextLabelProps["ZIndex"];
 }
 
-function findOption(options: readonly SegmentedControlOption[], value: string | undefined): SegmentedControlOption | undefined {
+function findOption(
+	options: readonly SegmentedControlOption[],
+	value: string | undefined,
+): SegmentedControlOption | undefined {
 	if (value === undefined) {
 		return undefined;
 	}
@@ -89,7 +97,10 @@ function findOption(options: readonly SegmentedControlOption[], value: string | 
 	return undefined;
 }
 
-function resolveInitialValue(options: readonly SegmentedControlOption[], value: string | undefined): string | undefined {
+function resolveInitialValue(
+	options: readonly SegmentedControlOption[],
+	value: string | undefined,
+): string | undefined {
 	const matchingOption = findOption(options, value);
 	if (matchingOption !== undefined) {
 		return matchingOption.value;
@@ -132,6 +143,9 @@ function SegmentedControlSegmentView({
 	segmentCount,
 	segmentVisualStyles,
 	segmentEvent,
+	nextSelectionLeft,
+	nextSelectionRight,
+	setSegmentRef,
 	segmentSlotProps,
 	segmentTextSlotProps,
 	slotProps,
@@ -156,6 +170,12 @@ function SegmentedControlSegmentView({
 		values: motionValues,
 		transition: resolveSegmentedControlSegmentMotionTransition(interactionState),
 	});
+	const segmentRef = React.useCallback(
+		(instance: TextButton | undefined) => {
+			setSegmentRef(option.value, instance);
+		},
+		[option.value, setSegmentRef],
+	);
 
 	return (
 		<textbutton
@@ -172,7 +192,10 @@ function SegmentedControlSegmentView({
 			TextTransparency={1}
 			TextStrokeTransparency={1}
 			ZIndex={resolvedSegmentZIndex}
+			NextSelectionLeft={nextSelectionLeft}
+			NextSelectionRight={nextSelectionRight}
 			Event={segmentEvent}
+			ref={segmentRef}
 			{...segmentSlotProps}
 		>
 			{renderCornerDecorator({ radius: sizeStyles.segmentRadius, slotProps: slotProps?.segmentCorner })}
@@ -185,10 +208,22 @@ function SegmentedControlSegmentView({
 			})}
 			{renderPaddingDecorator({
 				enabled: true,
-				paddingTop: new UDim(0, resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.segmentPaddingY, "spacing", theme.spacing.xs)),
-				paddingRight: new UDim(0, resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.segmentPaddingX, "spacing", theme.spacing.sm)),
-				paddingBottom: new UDim(0, resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.segmentPaddingY, "spacing", theme.spacing.xs)),
-				paddingLeft: new UDim(0, resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.segmentPaddingX, "spacing", theme.spacing.sm)),
+				paddingTop: new UDim(
+					0,
+					resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.segmentPaddingY, "spacing", theme.spacing.xs),
+				),
+				paddingRight: new UDim(
+					0,
+					resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.segmentPaddingX, "spacing", theme.spacing.sm),
+				),
+				paddingBottom: new UDim(
+					0,
+					resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.segmentPaddingY, "spacing", theme.spacing.xs),
+				),
+				paddingLeft: new UDim(
+					0,
+					resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.segmentPaddingX, "spacing", theme.spacing.sm),
+				),
 				slotProps: slotProps?.segmentPadding,
 			})}
 			<textlabel
@@ -233,7 +268,10 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 	} = props;
 	const [hoveredValue, setHoveredValue] = React.useState<string>();
 	const [pressedValue, setPressedValue] = React.useState<string>();
-	const [uncontrolledValue, setUncontrolledValue] = React.useState(() => resolveInitialValue(options, value ?? defaultValue));
+	const [segmentInstances, setSegmentInstances] = React.useState<Readonly<Record<string, TextButton | undefined>>>({});
+	const [uncontrolledValue, setUncontrolledValue] = React.useState(() =>
+		resolveInitialValue(options, value ?? defaultValue),
+	);
 	const selectedValue = value ?? uncontrolledValue;
 	const sizeStyles = resolveSegmentedControlSizeStyles(theme, size);
 	const mergedStyleProps = mergeSharedStyleProps({ cursor: "pointer" }, props);
@@ -275,19 +313,27 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 	const segmentSlotProps = slotProps?.segment;
 	const segmentTextSlotProps = slotProps?.segmentText;
 	const segmentCount = math.max(options.size(), 1);
-	const frameVisualStyles = applyStyleOverride(resolveSegmentedControlFrameVisualStyles(theme, variant, color, disabled), styleOverrides?.frame, {
-		theme,
-		variant,
-		color,
-		size,
-		disabled,
-	});
+	const frameVisualStyles = applyStyleOverride(
+		resolveSegmentedControlFrameVisualStyles(theme, variant, color, disabled),
+		styleOverrides?.frame,
+		{
+			theme,
+			variant,
+			color,
+			size,
+			disabled,
+		},
+	);
 	const resolvedRootZIndex = rootSlotProps?.ZIndex ?? props.zIndex;
 	const resolvedFrameZIndex = frameSlotProps?.ZIndex ?? resolvedRootZIndex;
 	const resolvedSegmentZIndex = segmentSlotProps?.ZIndex ?? resolvedFrameZIndex;
 	const resolvedSegmentTextZIndex = segmentTextSlotProps?.ZIndex ?? resolvedSegmentZIndex;
 	const segmentTextFont = segmentTextSlotProps?.Font ?? theme.fontFamily;
-	const segmentTextFontFace = resolveTextFontFace(segmentTextSlotProps?.Font, segmentTextSlotProps?.FontFace, theme.fontFamily);
+	const segmentTextFontFace = resolveTextFontFace(
+		segmentTextSlotProps?.Font,
+		segmentTextSlotProps?.FontFace,
+		theme.fontFamily,
+	);
 	const segmentTextSize = segmentTextSlotProps?.TextSize ?? sizeStyles.fontSize;
 	const segmentLineHeight = segmentTextSlotProps?.LineHeight ?? sizeStyles.lineHeight;
 	const selectedIndex = resolveSelectedIndex(options, selectedValue);
@@ -332,16 +378,16 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 	const computedConstraint =
 		resolvedConstraint === undefined
 			? {
-				min: new Vector2(0, sizeStyles.minHeight),
-				max: undefined,
-			  }
+					min: new Vector2(0, sizeStyles.minHeight),
+					max: undefined,
+				}
 			: {
-				min:
-					resolvedConstraint.min === undefined
-						? new Vector2(0, sizeStyles.minHeight)
-						: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, sizeStyles.minHeight)),
-				max: resolvedConstraint.max,
-			  };
+					min:
+						resolvedConstraint.min === undefined
+							? new Vector2(0, sizeStyles.minHeight)
+							: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, sizeStyles.minHeight)),
+					max: resolvedConstraint.max,
+				};
 	const computedPosition = resolvedPosition ?? (props.center ? UDim2.fromScale(0.5, 0.5) : undefined);
 	const rootRef = React.useCallback(
 		(instance: Frame | undefined) => {
@@ -349,7 +395,20 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 		},
 		[ref],
 	);
-	const rootEvent = useRootCursorEvent(composeEventMaps(Event as FrameEventMap | undefined), rootSlotProps?.Event === undefined ? mergedStyleProps.cursor : undefined, disabled);
+	const rootEvent = useRootCursorEvent(
+		composeEventMaps(Event as FrameEventMap | undefined),
+		rootSlotProps?.Event === undefined ? mergedStyleProps.cursor : undefined,
+		disabled,
+	);
+	const setSegmentRef = React.useCallback((optionValue: string, instance: TextButton | undefined) => {
+		setSegmentInstances((currentInstances) => {
+			if (currentInstances[optionValue] === instance) {
+				return currentInstances;
+			}
+
+			return { ...currentInstances, [optionValue]: instance };
+		});
+	}, []);
 
 	const commitValue = (nextValue: string) => {
 		if (disabled) {
@@ -374,17 +433,21 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 		const interactionState: SegmentedControlSegmentState = optionDisabled
 			? "disabled"
 			: selected
-			? "selected"
-			: pressedValue === option.value
-			? "pressed"
-			: hoveredValue === option.value
-			? "hovered"
-			: "idle";
+				? "selected"
+				: pressedValue === option.value
+					? "pressed"
+					: hoveredValue === option.value
+						? "hovered"
+						: "idle";
 		const segmentVisualStyles = applyStyleOverride(
 			resolveSegmentedControlSegmentVisualStyles(theme, variant, color, interactionState),
 			styleOverrides?.segment,
 			{ theme, variant, color, size, option, state: interactionState },
 		);
+		const previousIndex = optionDisabled
+			? undefined
+			: resolveSegmentedControlSelectionNeighborIndex(options, index, -1);
+		const nextIndex = optionDisabled ? undefined : resolveSegmentedControlSelectionNeighborIndex(options, index, 1);
 		const segmentEvent: TextButtonEventMap = {
 			MouseEnter: () => {
 				if (!optionDisabled) {
@@ -425,6 +488,9 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 				segmentCount={segmentCount}
 				segmentVisualStyles={segmentVisualStyles}
 				segmentEvent={mergedSegmentEvent}
+				nextSelectionLeft={previousIndex === undefined ? undefined : segmentInstances[options[previousIndex].value]}
+				nextSelectionRight={nextIndex === undefined ? undefined : segmentInstances[options[nextIndex].value]}
+				setSegmentRef={setSegmentRef}
 				segmentSlotProps={segmentSlotProps}
 				segmentTextSlotProps={segmentTextSlotProps}
 				slotProps={slotProps}
@@ -458,7 +524,14 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 			ref={rootRef}
 		>
 			{renderSizeConstraintDecorator({ constraint: computedConstraint, slotProps: slotProps?.sizeConstraint })}
-			{renderPaddingDecorator({ enabled: hasPadding, paddingTop, paddingRight, paddingBottom, paddingLeft, slotProps: slotProps?.padding })}
+			{renderPaddingDecorator({
+				enabled: hasPadding,
+				paddingTop,
+				paddingRight,
+				paddingBottom,
+				paddingLeft,
+				slotProps: slotProps?.padding,
+			})}
 			<frame
 				BackgroundColor3={frameVisualStyles.backgroundColor}
 				BackgroundTransparency={0}
@@ -480,10 +553,22 @@ const SegmentedControlBase = React.forwardRef<Frame, SegmentedControlProps>((pro
 				})}
 				{renderPaddingDecorator({
 					enabled: true,
-					paddingTop: new UDim(0, resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.padding, "spacing", theme.spacing.xs)),
-					paddingRight: new UDim(0, resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.padding, "spacing", theme.spacing.xs)),
-					paddingBottom: new UDim(0, resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.padding, "spacing", theme.spacing.xs)),
-					paddingLeft: new UDim(0, resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.padding, "spacing", theme.spacing.xs)),
+					paddingTop: new UDim(
+						0,
+						resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.padding, "spacing", theme.spacing.xs),
+					),
+					paddingRight: new UDim(
+						0,
+						resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.padding, "spacing", theme.spacing.xs),
+					),
+					paddingBottom: new UDim(
+						0,
+						resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.padding, "spacing", theme.spacing.xs),
+					),
+					paddingLeft: new UDim(
+						0,
+						resolveThemeSizeSafe(theme, "segmentedControl", sizeStyles.padding, "spacing", theme.spacing.xs),
+					),
 					slotProps: slotProps?.framePadding,
 				})}
 				<frame

@@ -27,9 +27,8 @@ import {
 	type TabsTabState,
 	type TabsTabVisualStyles,
 } from "./styles";
+import { resolveTabsSelectionNeighborIndex } from "./selection";
 import type { TabsPanelRenderState, TabsProps, TabsTab } from "./types";
-
-const UserInputService = game.GetService("UserInputService");
 
 type FrameEventMap = React.InstanceProps<Frame>["Event"];
 type TextButtonEventMap = React.InstanceProps<TextButton>["Event"];
@@ -59,6 +58,9 @@ interface TabsTabViewProps {
 	readonly interactionState: TabsTabState;
 	readonly tabVisualStyles: TabsTabVisualStyles;
 	readonly tabEvent: TextButtonEventMap;
+	readonly nextSelectionLeft: TextButton | undefined;
+	readonly nextSelectionRight: TextButton | undefined;
+	readonly setTabRef: (value: string, instance: TextButton | undefined) => void;
 	readonly tabSlotProps: TextButtonProps | undefined;
 	readonly tabTextSlotProps: TextLabelProps | undefined;
 	readonly slotProps: TabsProps["slotProps"];
@@ -103,52 +105,6 @@ function resolveInitialValue(tabs: readonly TabsTab[], value: string | undefined
 	return tabs[0]?.value;
 }
 
-function resolveSelectedIndex(tabs: readonly TabsTab[], selectedValue: string | undefined): number {
-	if (selectedValue === undefined) {
-		return 0;
-	}
-
-	for (let index = 0; index < tabs.size(); index += 1) {
-		const tab = tabs[index];
-
-		if (tab.value === selectedValue) {
-			return index;
-		}
-	}
-
-	return 0;
-}
-
-function resolveNextEnabledTabValue(
-	tabs: readonly TabsTab[],
-	selectedValue: string | undefined,
-	direction: -1 | 1,
-): string | undefined {
-	if (tabs.size() === 0) {
-		return undefined;
-	}
-
-	const selectedIndex = resolveSelectedIndex(tabs, selectedValue);
-	for (let step = 1; step <= tabs.size(); step += 1) {
-		const nextIndex = (selectedIndex + step * direction + tabs.size()) % tabs.size();
-		const nextTab = tabs[nextIndex];
-
-		if (nextTab.disabled !== true) {
-			return nextTab.value;
-		}
-	}
-
-	return undefined;
-}
-
-function isPreviousTabInput(keyCode: Enum.KeyCode): boolean {
-	return keyCode === Enum.KeyCode.Left || keyCode === Enum.KeyCode.A || keyCode === Enum.KeyCode.DPadLeft;
-}
-
-function isNextTabInput(keyCode: Enum.KeyCode): boolean {
-	return keyCode === Enum.KeyCode.Right || keyCode === Enum.KeyCode.D || keyCode === Enum.KeyCode.DPadRight;
-}
-
 function offsetZIndex(zIndex: FrameProps["ZIndex"], offset: number): number | undefined {
 	return typeIs(zIndex, "number") ? zIndex + offset : undefined;
 }
@@ -163,6 +119,9 @@ function TabsTabView({
 	interactionState,
 	tabVisualStyles,
 	tabEvent,
+	nextSelectionLeft,
+	nextSelectionRight,
+	setTabRef,
 	tabSlotProps,
 	tabTextSlotProps,
 	slotProps,
@@ -187,6 +146,12 @@ function TabsTabView({
 		values: motionValues,
 		transition: resolveTabsTabMotionTransition(interactionState),
 	});
+	const tabRef = React.useCallback(
+		(instance: TextButton | undefined) => {
+			setTabRef(tab.value, instance);
+		},
+		[setTabRef, tab.value],
+	);
 
 	return (
 		<textbutton
@@ -204,7 +169,10 @@ function TabsTabView({
 			TextTransparency={1}
 			TextStrokeTransparency={1}
 			ZIndex={resolvedTabZIndex}
+			NextSelectionLeft={nextSelectionLeft}
+			NextSelectionRight={nextSelectionRight}
 			Event={tabEvent}
+			ref={tabRef}
 			{...tabSlotProps}
 		>
 			{renderCornerDecorator({ radius: sizeStyles.tabRadius, slotProps: slotProps?.tabCorner })}
@@ -300,6 +268,7 @@ const TabsBase = React.forwardRef<Frame, TabsProps>((props, ref) => {
 	const [hoveredValue, setHoveredValue] = React.useState<string>();
 	const [pressedValue, setPressedValue] = React.useState<string>();
 	const [focusedValue, setFocusedValue] = React.useState<string>();
+	const [tabInstances, setTabInstances] = React.useState<Readonly<Record<string, TextButton | undefined>>>({});
 	const [uncontrolledValue, setUncontrolledValue] = React.useState(() =>
 		resolveInitialValue(tabs, value ?? defaultValue),
 	);
@@ -347,20 +316,28 @@ const TabsBase = React.forwardRef<Frame, TabsProps>((props, ref) => {
 	const tabTextSlotProps = slotProps?.tabText;
 	const panelSlotProps = slotProps?.panel;
 	const tabCount = math.max(tabs.size(), 1);
-	const listVisualStyles = applyStyleOverride(resolveTabsListVisualStyles(theme, variant, color, disabled), styleOverrides?.list, {
-		theme,
-		variant,
-		color,
-		size,
-		disabled,
-	});
-	const panelVisualStyles = applyStyleOverride(resolveTabsPanelVisualStyles(theme, variant, color, disabled), styleOverrides?.panel, {
-		theme,
-		variant,
-		color,
-		size,
-		disabled,
-	});
+	const listVisualStyles = applyStyleOverride(
+		resolveTabsListVisualStyles(theme, variant, color, disabled),
+		styleOverrides?.list,
+		{
+			theme,
+			variant,
+			color,
+			size,
+			disabled,
+		},
+	);
+	const panelVisualStyles = applyStyleOverride(
+		resolveTabsPanelVisualStyles(theme, variant, color, disabled),
+		styleOverrides?.panel,
+		{
+			theme,
+			variant,
+			color,
+			size,
+			disabled,
+		},
+	);
 	const resolvedRootZIndex = rootSlotProps?.ZIndex ?? props.zIndex;
 	const resolvedListZIndex = listSlotProps?.ZIndex ?? resolvedRootZIndex;
 	const resolvedTabZIndex = tabSlotProps?.ZIndex ?? offsetZIndex(resolvedListZIndex, 2);
@@ -414,6 +391,15 @@ const TabsBase = React.forwardRef<Frame, TabsProps>((props, ref) => {
 		rootSlotProps?.Event === undefined ? mergedStyleProps.cursor : undefined,
 		disabled,
 	);
+	const setTabRef = React.useCallback((tabValue: string, instance: TextButton | undefined) => {
+		setTabInstances((currentInstances) => {
+			if (currentInstances[tabValue] === instance) {
+				return currentInstances;
+			}
+
+			return { ...currentInstances, [tabValue]: instance };
+		});
+	}, []);
 
 	const commitValue = (nextValue: string) => {
 		if (disabled) {
@@ -431,31 +417,6 @@ const TabsBase = React.forwardRef<Frame, TabsProps>((props, ref) => {
 
 		onChange?.(nextValue);
 	};
-
-	const commitRelativeValue = (direction: -1 | 1) => {
-		const nextValue = resolveNextEnabledTabValue(tabs, selectedValue, direction);
-		if (nextValue !== undefined) {
-			commitValue(nextValue);
-		}
-	};
-
-	React.useEffect(() => {
-		if (focusedValue === undefined || disabled) {
-			return;
-		}
-
-		const connection = UserInputService.InputEnded.Connect((input) => {
-			if (isPreviousTabInput(input.KeyCode)) {
-				commitRelativeValue(-1);
-			} else if (isNextTabInput(input.KeyCode)) {
-				commitRelativeValue(1);
-			}
-		});
-
-		return () => {
-			connection.Disconnect();
-		};
-	}, [disabled, focusedValue, selectedValue, tabs, value]);
 
 	const renderTab = (tab: TabsTab, index: number) => {
 		const tabDisabled = disabled || tab.disabled === true;
@@ -477,6 +438,8 @@ const TabsBase = React.forwardRef<Frame, TabsProps>((props, ref) => {
 			styleOverrides?.tab,
 			{ theme, variant, color, size, tab, state: interactionState },
 		);
+		const previousIndex = tabDisabled ? undefined : resolveTabsSelectionNeighborIndex(tabs, index, -1);
+		const nextIndex = tabDisabled ? undefined : resolveTabsSelectionNeighborIndex(tabs, index, 1);
 		const tabEvent: TextButtonEventMap = {
 			MouseEnter: () => {
 				if (!tabDisabled) {
@@ -504,6 +467,7 @@ const TabsBase = React.forwardRef<Frame, TabsProps>((props, ref) => {
 			SelectionGained: () => {
 				if (!tabDisabled) {
 					setFocusedValue(tab.value);
+					commitValue(tab.value);
 				}
 			},
 			SelectionLost: () => {
@@ -529,6 +493,9 @@ const TabsBase = React.forwardRef<Frame, TabsProps>((props, ref) => {
 				interactionState={interactionState}
 				tabVisualStyles={rawTabVisualStyles}
 				tabEvent={mergedTabEvent}
+				nextSelectionLeft={previousIndex === undefined ? undefined : tabInstances[tabs[previousIndex].value]}
+				nextSelectionRight={nextIndex === undefined ? undefined : tabInstances[tabs[nextIndex].value]}
+				setTabRef={setTabRef}
 				tabSlotProps={tabSlotProps}
 				tabTextSlotProps={tabTextSlotProps}
 				slotProps={slotProps}

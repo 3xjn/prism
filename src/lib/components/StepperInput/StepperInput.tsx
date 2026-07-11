@@ -25,7 +25,12 @@ import {
 } from "../_shared/interaction";
 import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveTextFontFace } from "../_shared/textFont";
-import { mergeSharedStyleProps, resolveThemeSizeSafe, resolveUDimSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
+import {
+	mergeSharedStyleProps,
+	resolveThemeSizeSafe,
+	resolveUDimSafe,
+	useResolvedStyleProps,
+} from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
 import {
@@ -59,7 +64,8 @@ type FrameProps = React.InstanceProps<Frame>;
 type TextButtonEventMap = React.InstanceProps<TextButton>["Event"];
 type TextButtonProps = React.InstanceProps<TextButton>;
 type TextLabelProps = React.InstanceProps<TextLabel>;
-type StepperInputComponent = ((props: StepperInputProps) => React.ReactElement) & React.ForwardRefExoticComponent<StepperInputProps>;
+type StepperInputComponent = ((props: StepperInputProps) => React.ReactElement) &
+	React.ForwardRefExoticComponent<StepperInputProps>;
 
 interface ButtonMotionValues extends Readonly<Record<string, MotionInputValue>> {
 	readonly backgroundColor: Color3;
@@ -82,6 +88,9 @@ interface StepperButtonViewProps {
 	readonly sizeStyles: StepperInputSizeStyles;
 	readonly visualStyles: StepperInputButtonVisualStyles;
 	readonly event: TextButtonEventMap;
+	readonly nextSelectionLeft: TextButton | undefined;
+	readonly nextSelectionRight: TextButton | undefined;
+	readonly buttonRef: React.Ref<TextButton>;
 	readonly theme: Theme;
 }
 
@@ -122,6 +131,9 @@ function StepperButtonView({
 	sizeStyles,
 	visualStyles,
 	event,
+	nextSelectionLeft,
+	nextSelectionRight,
+	buttonRef,
 	theme,
 }: StepperButtonViewProps): React.ReactElement {
 	const motionValues: ButtonMotionValues = {
@@ -152,7 +164,10 @@ function StepperButtonView({
 			TextTransparency={1}
 			TextStrokeTransparency={1}
 			ZIndex={zIndex}
+			NextSelectionLeft={nextSelectionLeft}
+			NextSelectionRight={nextSelectionRight}
 			Event={event}
+			ref={buttonRef}
 			{...buttonSlotProps}
 		>
 			{renderCornerDecorator({ radius: sizeStyles.buttonRadius, slotProps: slotProps?.buttonCorner })}
@@ -165,10 +180,22 @@ function StepperButtonView({
 			})}
 			{renderPaddingDecorator({
 				enabled: true,
-				paddingTop: new UDim(0, resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.buttonPaddingY, "spacing", theme.spacing.xs)),
-				paddingRight: new UDim(0, resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.buttonPaddingX, "spacing", theme.spacing.xs)),
-				paddingBottom: new UDim(0, resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.buttonPaddingY, "spacing", theme.spacing.xs)),
-				paddingLeft: new UDim(0, resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.buttonPaddingX, "spacing", theme.spacing.xs)),
+				paddingTop: new UDim(
+					0,
+					resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.buttonPaddingY, "spacing", theme.spacing.xs),
+				),
+				paddingRight: new UDim(
+					0,
+					resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.buttonPaddingX, "spacing", theme.spacing.xs),
+				),
+				paddingBottom: new UDim(
+					0,
+					resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.buttonPaddingY, "spacing", theme.spacing.xs),
+				),
+				paddingLeft: new UDim(
+					0,
+					resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.buttonPaddingX, "spacing", theme.spacing.xs),
+				),
 				slotProps: slotProps?.buttonPadding,
 			})}
 			<textlabel
@@ -279,6 +306,8 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 	const [dragging, setDragging] = React.useState(false);
 	const [dragValueOverride, setDragValueOverride] = React.useState<number | undefined>(undefined);
 	const [railInstance, setRailInstance] = React.useState<TextButton>();
+	const [decrementInstance, setDecrementInstance] = React.useState<TextButton>();
+	const [incrementInstance, setIncrementInstance] = React.useState<TextButton>();
 	const [decrementHovered, setDecrementHovered] = React.useState(false);
 	const [decrementPressed, setDecrementPressed] = React.useState(false);
 	const [incrementHovered, setIncrementHovered] = React.useState(false);
@@ -288,7 +317,9 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 	const range = React.useMemo(() => resolveStepperInputRange(min, max), [min, max]);
 	const railRange = React.useMemo(() => resolveStepperInputRailRange(range), [range]);
 	const resolvedStep = React.useMemo(() => resolveValidStepperInputStep(step), [step]);
-	const [uncontrolledValue, setUncontrolledValue] = React.useState(() => normalizeStepperInputValue(value ?? defaultValue, range, resolvedStep));
+	const [uncontrolledValue, setUncontrolledValue] = React.useState(() =>
+		normalizeStepperInputValue(value ?? defaultValue, range, resolvedStep),
+	);
 	const resolvedValue = normalizeStepperInputValue(value ?? uncontrolledValue, range, resolvedStep);
 	const displayValue = dragValueOverride ?? resolvedValue;
 	const displayAlpha = valueToStepperInputRailAlpha(displayValue, railRange);
@@ -378,31 +409,34 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 		};
 	}, [disconnectDragTracking]);
 
-	const commitValue = React.useCallback((nextValue: number, emitChangeEnd: boolean, useDragOverride: boolean = false) => {
-		const { range: currentRange, step: currentStep, controlled } = configRef.current;
-		const normalizedValue = normalizeStepperInputValue(nextValue, currentRange, currentStep, valueRef.current);
+	const commitValue = React.useCallback(
+		(nextValue: number, emitChangeEnd: boolean, useDragOverride: boolean = false) => {
+			const { range: currentRange, step: currentStep, controlled } = configRef.current;
+			const normalizedValue = normalizeStepperInputValue(nextValue, currentRange, currentStep, valueRef.current);
 
-		dragValueRef.current = normalizedValue;
-		if (useDragOverride === true) {
-			setDragValueOverride(normalizedValue);
-		}
-
-		if (normalizedValue !== valueRef.current) {
-			valueRef.current = normalizedValue;
-
-			if (!controlled) {
-				setUncontrolledValue(normalizedValue);
+			dragValueRef.current = normalizedValue;
+			if (useDragOverride === true) {
+				setDragValueOverride(normalizedValue);
 			}
 
-			onChangeRef.current?.(normalizedValue);
-		}
+			if (normalizedValue !== valueRef.current) {
+				valueRef.current = normalizedValue;
 
-		if (emitChangeEnd) {
-			onChangeEndRef.current?.(normalizedValue);
-		}
+				if (!controlled) {
+					setUncontrolledValue(normalizedValue);
+				}
 
-		return normalizedValue;
-	}, []);
+				onChangeRef.current?.(normalizedValue);
+			}
+
+			if (emitChangeEnd) {
+				onChangeEndRef.current?.(normalizedValue);
+			}
+
+			return normalizedValue;
+		},
+		[],
+	);
 
 	const updateValueFromPositionX = React.useCallback(
 		(positionX: number) => {
@@ -473,7 +507,15 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 				handleDragEndInput(endedInput);
 			});
 		},
-		[disabled, disconnectDragTracking, handleDragEndInput, handleDragMoveInput, portalTarget, readOnly, updateValueFromInput],
+		[
+			disabled,
+			disconnectDragTracking,
+			handleDragEndInput,
+			handleDragMoveInput,
+			portalTarget,
+			readOnly,
+			updateValueFromInput,
+		],
 	);
 
 	const commitStep = React.useCallback(
@@ -492,13 +534,17 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 	const decrementDisabled = !canEdit || stepStepperInputValue(resolvedValue, -1, range, resolvedStep) === resolvedValue;
 	const incrementDisabled = !canEdit || stepStepperInputValue(resolvedValue, 1, range, resolvedStep) === resolvedValue;
 	const frameState = disabled ? "disabled" : dragging ? "focused" : hovered ? "hovered" : "idle";
-	const frameVisualStyles = applyStyleOverride(resolveStepperInputFrameVisualStyles(theme, variant, frameState, readOnly), styleOverrides?.frame, {
-		theme,
-		variant,
-		size,
-		state: frameState,
-		readOnly,
-	});
+	const frameVisualStyles = applyStyleOverride(
+		resolveStepperInputFrameVisualStyles(theme, variant, frameState, readOnly),
+		styleOverrides?.frame,
+		{
+			theme,
+			variant,
+			size,
+			state: frameState,
+			readOnly,
+		},
+	);
 	const animatedFrame = useMotion({
 		values: {
 			backgroundColor: frameVisualStyles.backgroundColor,
@@ -514,10 +560,34 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 		},
 		transition: resolveStepperInputFrameMotionTransition(frameState),
 	});
-	const decrementState: StepperInputButtonState = decrementDisabled ? "disabled" : decrementPressed ? "pressed" : decrementHovered ? "hovered" : "idle";
-	const incrementState: StepperInputButtonState = incrementDisabled ? "disabled" : incrementPressed ? "pressed" : incrementHovered ? "hovered" : "idle";
-	const decrementStyleOverrideContext: StepperInputButtonStyleOverrideContext = { theme, variant, size, state: decrementState, control: "decrement" };
-	const incrementStyleOverrideContext: StepperInputButtonStyleOverrideContext = { theme, variant, size, state: incrementState, control: "increment" };
+	const decrementState: StepperInputButtonState = decrementDisabled
+		? "disabled"
+		: decrementPressed
+			? "pressed"
+			: decrementHovered
+				? "hovered"
+				: "idle";
+	const incrementState: StepperInputButtonState = incrementDisabled
+		? "disabled"
+		: incrementPressed
+			? "pressed"
+			: incrementHovered
+				? "hovered"
+				: "idle";
+	const decrementStyleOverrideContext: StepperInputButtonStyleOverrideContext = {
+		theme,
+		variant,
+		size,
+		state: decrementState,
+		control: "decrement",
+	};
+	const incrementStyleOverrideContext: StepperInputButtonStyleOverrideContext = {
+		theme,
+		variant,
+		size,
+		state: incrementState,
+		control: "increment",
+	};
 	const decrementVisualStyles = applyStyleOverride(
 		resolveStepperInputButtonVisualStyles(theme, variant, decrementState),
 		styleOverrides?.button,
@@ -542,22 +612,24 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 		paddingLeft,
 		hasPadding,
 	} = useResolvedStyleProps("stepperInput", mergedStyleProps);
-	const computedWidth = fullWidth ? resolveUDimSafe("stepperInput", "100%", "width") : resolvedWidth ?? new UDim(0, sizeStyles.defaultWidth);
+	const computedWidth = fullWidth
+		? resolveUDimSafe("stepperInput", "100%", "width")
+		: (resolvedWidth ?? new UDim(0, sizeStyles.defaultWidth));
 	const computedHeight = resolvedHeight ?? new UDim(0, sizeStyles.minHeight);
 	const computedSize = resolvedSize ?? new UDim2(computedWidth, computedHeight);
 	const computedConstraint =
 		resolvedConstraint === undefined
 			? {
-				min: new Vector2(0, sizeStyles.minHeight),
-				max: undefined,
-			  }
+					min: new Vector2(0, sizeStyles.minHeight),
+					max: undefined,
+				}
 			: {
-				min:
-					resolvedConstraint.min === undefined
-						? new Vector2(0, sizeStyles.minHeight)
-						: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, sizeStyles.minHeight)),
-				max: resolvedConstraint.max,
-			  };
+					min:
+						resolvedConstraint.min === undefined
+							? new Vector2(0, sizeStyles.minHeight)
+							: new Vector2(resolvedConstraint.min.X, math.max(resolvedConstraint.min.Y, sizeStyles.minHeight)),
+					max: resolvedConstraint.max,
+				};
 	const rootSlotProps = slotProps?.root;
 	const frameSlotProps = slotProps?.frame;
 	const railSlotProps = slotProps?.rail;
@@ -577,7 +649,11 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 	const resolvedDecrementTextZIndex = decrementTextSlotProps?.ZIndex ?? resolvedDecrementZIndex;
 	const resolvedIncrementTextZIndex = incrementTextSlotProps?.ZIndex ?? resolvedIncrementZIndex;
 	const resolvedRailValueFont = railValueSlotProps?.Font ?? theme.fontFamily;
-	const resolvedRailValueFontFace = resolveTextFontFace(railValueSlotProps?.Font, railValueSlotProps?.FontFace, theme.fontFamily);
+	const resolvedRailValueFontFace = resolveTextFontFace(
+		railValueSlotProps?.Font,
+		railValueSlotProps?.FontFace,
+		theme.fontFamily,
+	);
 	const displayText = formatStepperInputValue(displayValue, formatValue);
 	const railWidthOffset = -(sizeStyles.buttonWidth * 2 + sizeStyles.gap * 2);
 	const computedPosition = resolvedPosition ?? (props.center ? UDim2.fromScale(0.5, 0.5) : undefined);
@@ -606,17 +682,21 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 		},
 	};
 	const railCursor = props.cursor ?? (canEdit ? HORIZONTAL_DRAG_CURSOR : "default");
-	const railRootEvent = useRootCursorEvent(composeEventMaps(railEvent, Event), railSlotProps?.Event === undefined ? railCursor : undefined, disabled || readOnly);
+	const railRootEvent = useRootCursorEvent(
+		composeEventMaps(railEvent, Event),
+		railSlotProps?.Event === undefined ? railCursor : undefined,
+		disabled || readOnly,
+	);
 	const mouseDragCaptureActive = dragging && isMouseDragActive(dragKindRef.current) && portalTarget !== undefined;
 	const dragCaptureOverlayEvent: TextButtonEventMap | undefined = mouseDragCaptureActive
 		? {
-			InputChanged: (_button, input) => {
-				handleDragMoveInput(input);
-			},
-			InputEnded: (_button, input) => {
-				handleDragEndInput(input);
-			},
-		  }
+				InputChanged: (_button, input) => {
+					handleDragMoveInput(input);
+				},
+				InputEnded: (_button, input) => {
+					handleDragEndInput(input);
+				},
+			}
 		: undefined;
 	const railRefCallback = React.useCallback(
 		(instance: TextButton | undefined) => {
@@ -626,6 +706,12 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 		},
 		[ref],
 	);
+	const decrementRef = React.useCallback((instance: TextButton | undefined) => {
+		setDecrementInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
+	}, []);
+	const incrementRef = React.useCallback((instance: TextButton | undefined) => {
+		setIncrementInstance((currentInstance) => (currentInstance === instance ? currentInstance : instance));
+	}, []);
 	const decrementEvent: TextButtonEventMap = {
 		MouseEnter: () => {
 			if (!decrementDisabled) {
@@ -676,7 +762,9 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 	};
 	const railInstanceProps: Partial<React.InstanceProps<TextButton>> = {
 		Active: !disabled,
-		Selectable: !disabled,
+		// The rail is a pointer/touch scrub target. Controller selection lands on
+		// the decrement/increment actions, where ButtonA has a concrete meaning.
+		Selectable: false,
 		BackgroundColor3: animatedFrame.inputBackgroundColor,
 		BackgroundTransparency: animatedFrame.inputBackgroundTransparency,
 		BorderSizePixel: 0,
@@ -709,7 +797,14 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 				{...rootSlotProps}
 			>
 				{renderSizeConstraintDecorator({ constraint: computedConstraint, slotProps: slotProps?.sizeConstraint })}
-				{renderPaddingDecorator({ enabled: hasPadding, paddingTop, paddingRight, paddingBottom, paddingLeft, slotProps: slotProps?.padding })}
+				{renderPaddingDecorator({
+					enabled: hasPadding,
+					paddingTop,
+					paddingRight,
+					paddingBottom,
+					paddingLeft,
+					slotProps: slotProps?.padding,
+				})}
 				<frame
 					BackgroundColor3={animatedFrame.backgroundColor}
 					BackgroundTransparency={0}
@@ -730,10 +825,22 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 					})}
 					{renderPaddingDecorator({
 						enabled: true,
-						paddingTop: new UDim(0, resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.padding, "spacing", theme.spacing.xs)),
-						paddingRight: new UDim(0, resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.padding, "spacing", theme.spacing.xs)),
-						paddingBottom: new UDim(0, resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.padding, "spacing", theme.spacing.xs)),
-						paddingLeft: new UDim(0, resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.padding, "spacing", theme.spacing.xs)),
+						paddingTop: new UDim(
+							0,
+							resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.padding, "spacing", theme.spacing.xs),
+						),
+						paddingRight: new UDim(
+							0,
+							resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.padding, "spacing", theme.spacing.xs),
+						),
+						paddingBottom: new UDim(
+							0,
+							resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.padding, "spacing", theme.spacing.xs),
+						),
+						paddingLeft: new UDim(
+							0,
+							resolveThemeSizeSafe(theme, "stepperInput", sizeStyles.padding, "spacing", theme.spacing.xs),
+						),
 						slotProps: slotProps?.framePadding,
 					})}
 					<uilistlayout
@@ -757,6 +864,9 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 						sizeStyles={sizeStyles}
 						visualStyles={decrementVisualStyles}
 						event={composeEventMaps(decrementEvent, decrementSlotProps?.Event)}
+						nextSelectionLeft={undefined}
+						nextSelectionRight={decrementDisabled || incrementDisabled ? undefined : incrementInstance}
+						buttonRef={decrementRef}
 						theme={theme}
 					/>
 					<StepperRailView
@@ -791,6 +901,9 @@ const StepperInputBase = React.forwardRef<TextButton, StepperInputProps>((props,
 						sizeStyles={sizeStyles}
 						visualStyles={incrementVisualStyles}
 						event={composeEventMaps(incrementEvent, incrementSlotProps?.Event)}
+						nextSelectionLeft={decrementDisabled || incrementDisabled ? undefined : decrementInstance}
+						nextSelectionRight={undefined}
+						buttonRef={incrementRef}
 						theme={theme}
 					/>
 				</frame>

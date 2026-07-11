@@ -8,6 +8,22 @@ export interface SliderRange {
 
 export type SliderStepDirection = -1 | 1;
 
+/** @internal Maps controller/keyboard value-adjustment inputs without consuming native Up/Down navigation. */
+export function resolveSliderControllerStep(keyCodeName: string): SliderStepDirection | undefined {
+	switch (keyCodeName) {
+		case "Left":
+		case "DPadLeft":
+		case "ButtonL1":
+			return -1;
+		case "Right":
+		case "DPadRight":
+		case "ButtonR1":
+			return 1;
+		default:
+			return undefined;
+	}
+}
+
 export interface SliderStepValueInput {
 	readonly value: number;
 	readonly direction: SliderStepDirection;

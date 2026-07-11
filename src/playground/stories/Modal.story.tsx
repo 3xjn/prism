@@ -1,8 +1,8 @@
 import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
-import { Box, Button, Modal, Stack, Text } from "@prism";
-import type { ModalSize } from "@prism";
-import { useTheme , theme as themeRefs } from "@prism/theme";
+import { Box, Button, Menu, Modal, Stack, Text } from "@prism";
+import type { MenuItem, ModalSize } from "@prism";
+import { useTheme, theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -20,23 +20,35 @@ const controls = {
 		"md",
 	),
 	closeOnBackdropClick: Boolean(true),
+	closeOnBack: Boolean(true),
 	withCloseButton: Boolean(true),
 	fullWidth: Boolean(false),
 };
 
 type ModalStoryControls = InferControls<typeof controls>;
 
-function ModalStoryCanvas({ controls: currentControls }: { readonly controls: ModalStoryControls }): React.ReactElement {
+function ModalStoryCanvas({
+	controls: currentControls,
+}: {
+	readonly controls: ModalStoryControls;
+}): React.ReactElement {
 	const theme = useTheme();
 	const [opened, setOpened] = React.useState(false);
+	const [menuOpened, setMenuOpened] = React.useState(false);
 	const selectedObjectLabel = useSelectedObjectLabel();
 	const resolvedSize = currentControls.size as ModalSize;
 	const closeModal = React.useCallback(() => {
+		setMenuOpened(false);
 		setOpened(false);
 	}, []);
 	const openModal = React.useCallback(() => {
+		setMenuOpened(false);
 		setOpened(true);
 	}, []);
+	const nestedMenuItems: readonly MenuItem[] = [
+		{ value: "resume", label: "Resume mission" },
+		{ value: "restart", label: "Restart checkpoint", color: "warning" },
+	];
 
 	return (
 		<StoryCanvas>
@@ -44,7 +56,7 @@ function ModalStoryCanvas({ controls: currentControls }: { readonly controls: Mo
 				<Stack width="100%" gap="md">
 					<Text text="Modal" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="Select Open modal and press A. The modal asks Roblox to choose its smallest native SelectionOrder, keeps directional navigation inside the content group, and restores the exact opening control as soon as the modal closes. Mouse and touch do not enter selection."
+						text="Open the modal, then open Mission actions. The first B (or Escape) closes only that nested Menu; the next closes the Modal and restores the original trigger. Turn Close On Back off to make the Modal a barrier after its Menu closes."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
@@ -52,7 +64,14 @@ function ModalStoryCanvas({ controls: currentControls }: { readonly controls: Mo
 					<Box width="100%" bg={theme.colors.action.hover} radius="md" p="lg">
 						<Stack align="center" width="100%" gap="sm">
 							<Button label="Open modal" onPress={openModal} selectionOrder={10} />
-							<Text text={selectedObjectLabel} size="sm" weight={600} color={themeRefs.primary.main} wrap width="100%" />
+							<Text
+								text={selectedObjectLabel}
+								size="sm"
+								weight={600}
+								color={themeRefs.primary.main}
+								wrap
+								width="100%"
+							/>
 						</Stack>
 					</Box>
 				</Stack>
@@ -64,6 +83,7 @@ function ModalStoryCanvas({ controls: currentControls }: { readonly controls: Mo
 				size={resolvedSize}
 				fullWidth={currentControls.fullWidth}
 				closeOnBackdropClick={currentControls.closeOnBackdropClick}
+				closeOnBack={currentControls.closeOnBack}
 				withCloseButton={currentControls.withCloseButton}
 			>
 				<Stack width="100%" gap="md">
@@ -80,6 +100,20 @@ function ModalStoryCanvas({ controls: currentControls }: { readonly controls: Mo
 						width="100%"
 					/>
 					<Text text={selectedObjectLabel} size="sm" weight={600} color={themeRefs.primary.main} wrap width="100%" />
+					<Menu
+						items={nestedMenuItems}
+						opened={menuOpened}
+						onOpenedChange={setMenuOpened}
+						closeOnBack
+						placement="bottom"
+						align="start"
+					>
+						<Button
+							label={menuOpened ? "Mission actions open" : "Open mission actions"}
+							onPress={() => setMenuOpened((current) => !current)}
+							selectionOrder={10}
+						/>
+					</Menu>
 					<Button label="Close modal" onPress={closeModal} selectionOrder={20} />
 				</Stack>
 			</Modal>
@@ -90,7 +124,8 @@ function ModalStoryCanvas({ controls: currentControls }: { readonly controls: Mo
 const story = CreateReactStory(
 	{
 		name: "Modal",
-		summary: "Controlled dialog with a portal-backed overlay, dim backdrop dismiss, calm card-like panel styling, size presets, and typed slot escapes.",
+		summary:
+			"Controlled dialog with a portal-backed overlay, dim backdrop dismiss, calm card-like panel styling, size presets, and typed slot escapes.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,
