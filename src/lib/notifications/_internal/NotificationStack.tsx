@@ -123,5 +123,3 @@ export function NotificationStack({ position, zIndex }: NotificationStackProps):
 		</ScreenOverlayLayer>
 	);
 }
-
-NotificationStack.displayName = "NotificationStack";

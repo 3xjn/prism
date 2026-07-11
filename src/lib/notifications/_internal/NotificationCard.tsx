@@ -260,5 +260,3 @@ export function NotificationCard({
 		</frame>
 	);
 }
-
-NotificationCard.displayName = "NotificationCard";
