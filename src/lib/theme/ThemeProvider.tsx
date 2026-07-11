@@ -175,6 +175,7 @@ function mergeTheme(base: Theme, override?: ThemeOverride): Theme {
 			border: mergeBorderColors(base.colors.border, override?.colors?.border),
 			action: mergeActionColors(base.colors.action, override?.colors?.action),
 		}),
+		breakpoints: mergeScale(base.breakpoints, override?.breakpoints),
 		spacing: mergeScale(base.spacing, override?.spacing),
 		radius: mergeScale(base.radius, override?.radius),
 		fontSizes: mergeScale(base.fontSizes, override?.fontSizes),

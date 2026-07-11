@@ -27,5 +27,6 @@ import "./Tooltip.story";
 import "./Slider.story";
 import "./Backdrop.story";
 import "./ScrollArea.story";
+import "./Responsive.story";
 
 export {};

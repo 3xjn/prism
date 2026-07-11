@@ -76,6 +76,35 @@ Sizing is Roblox-native — numbers are pixel offsets, percentage strings are sc
 
 Size tokens (`"xs"` … `"xl"`) cover spacing, radius, and text size. Invalid tokens throw in dev.
 
+## Responsive layout
+
+Prism uses MUI-style mobile-first breakpoints. The defaults are `xs: 0`, `sm: 600`, `md: 900`, `lg: 1200`, and `xl: 1536`; override any threshold through `ThemeProvider`.
+
+Custom thresholds must stay in ascending `xs` → `xl` order so each tier remains reachable.
+
+```tsx
+<ThemeProvider theme={{ breakpoints: { sm: 560, lg: 1100 } }}>
+	<App />
+</ThemeProvider>
+```
+
+`useResponsiveValue` inherits from the nearest smaller defined breakpoint, and requires `xs` so every viewport resolves a value:
+
+```tsx
+const columns = useResponsiveValue({ xs: 2, sm: 4, md: 6, xl: 10 });
+const direction = useResponsiveValue({ xs: "vertical", md: "horizontal" });
+```
+
+By default the hooks observe `Workspace.CurrentCamera.ViewportSize`. For embedded panels, world UI, or ui-labs stories, pass the actual GUI host so breakpoints follow its `AbsoluteSize` instead:
+
+```tsx
+const columns = useResponsiveValue({ xs: 2, md: 6 }, { target: panel });
+```
+
+Use `usePreferredInput()` separately when presentation should respond to Roblox's current touch, gamepad, or keyboard/mouse preference. Breakpoints describe available space, not device identity.
+
+The first responsive release is hook-driven; ordinary component props do not accept responsive objects. Roblox `StyleQuery` remains available for stylesheet and native container-query use cases.
+
 ## Slot props
 
 Escape hatch for instance properties the component API doesn't cover. Applied last.

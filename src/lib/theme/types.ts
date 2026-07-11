@@ -1,5 +1,7 @@
 export type ThemeSize = "xs" | "sm" | "md" | "lg" | "xl";
 
+export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl";
+
 export type ColorShade = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
 export type PaletteColorName = "gray" | "primary" | "red" | "green" | "yellow" | "blue";
@@ -19,6 +21,8 @@ export type ActionColorRole = "hover" | "pressed" | "disabled" | "disabledBackgr
 export type Variant = "filled" | "light" | "outline" | "subtle";
 
 export type ThemeScale<T> = Readonly<Record<ThemeSize, T>>;
+
+export type ThemeBreakpoints = Readonly<Record<Breakpoint, number>>;
 
 export type ColorScale = Readonly<Record<ColorShade, Color3>>;
 
@@ -106,6 +110,7 @@ export interface ThemeMotion {
 
 export interface Theme {
 	readonly colors: ThemeColors;
+	readonly breakpoints: ThemeBreakpoints;
 	readonly spacing: ThemeScale<number>;
 	readonly radius: ThemeScale<number>;
 	readonly fontSizes: ThemeScale<number>;
@@ -116,6 +121,8 @@ export interface Theme {
 }
 
 export type PartialThemeScale<T> = Readonly<Partial<Record<ThemeSize, T>>>;
+
+export type PartialThemeBreakpoints = Readonly<Partial<Record<Breakpoint, number>>>;
 
 export type PartialColorScale = Readonly<Partial<Record<ColorShade, Color3>>>;
 
@@ -160,6 +167,7 @@ export interface PartialThemeMotion {
 
 export interface ThemeOverride {
 	readonly colors?: PartialThemeColors;
+	readonly breakpoints?: PartialThemeBreakpoints;
 	readonly spacing?: PartialThemeScale<number>;
 	readonly radius?: PartialThemeScale<number>;
 	readonly fontSizes?: PartialThemeScale<number>;

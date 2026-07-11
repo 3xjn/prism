@@ -100,9 +100,7 @@ function rawget(value, key) {
 	return value[key];
 }
 
-function loadUnitsModule() {
-	const filePath = path.join(process.cwd(), "src/lib/utils/units.ts");
-	const source = fs.readFileSync(filePath, "utf8");
+function evaluateTypeScriptModule(filePath, source, globals = {}, setupSource) {
 	const compiled = ts.transpileModule(source, {
 		compilerOptions: {
 			module: ts.ModuleKind.CommonJS,
@@ -110,31 +108,40 @@ function loadUnitsModule() {
 		},
 		fileName: filePath,
 	}).outputText;
-
 	const module = { exports: {} };
-	const context = vm.createContext({
-		module,
-		exports: module.exports,
-		require,
-		console,
-		String,
-		UDim,
-		UDim2,
-		rawget,
-		typeIs,
-		tonumber,
-		tostring: String,
-		string: {
-			sub: luaSub,
-			byte: luaByte,
-			find: luaFind,
-		},
-	});
+	const context = vm.createContext({ module, exports: module.exports, require, ...globals });
 
-	vm.runInContext("String.prototype.size = function () { return this.length; };", context);
+	if (setupSource !== undefined) {
+		vm.runInContext(setupSource, context);
+	}
 
 	vm.runInContext(compiled, context, { filename: filePath });
 	return module.exports;
+}
+
+function loadUnitsModule() {
+	const filePath = path.join(process.cwd(), "src/lib/utils/units.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(
+		filePath,
+		source,
+		{
+			console,
+			String,
+			UDim,
+			UDim2,
+			rawget,
+			typeIs,
+			tonumber,
+			tostring: String,
+			string: {
+				sub: luaSub,
+				byte: luaByte,
+				find: luaFind,
+			},
+		},
+		"String.prototype.size = function () { return this.length; };",
+	);
 }
 
 function loadProgressRangeModule() {
@@ -148,27 +155,12 @@ function loadProgressRangeModule() {
 	}
 
 	const sourceSlice = `${source.slice(helpersStart, helpersEnd)}\nexport { resolveProgressRange, resolveProgressValue, resolveProgressPercent };`;
-	const compiled = ts.transpileModule(sourceSlice, {
-		compilerOptions: {
-			module: ts.ModuleKind.CommonJS,
-			target: ts.ScriptTarget.ES2019,
-		},
-		fileName: filePath,
-	}).outputText;
-
-	const module = { exports: {} };
-	const context = vm.createContext({
-		module,
-		exports: module.exports,
-		require,
+	return evaluateTypeScriptModule(filePath, sourceSlice, {
 		math: {
 			clamp: mathClamp,
 			huge: Infinity,
 		},
 	});
-
-	vm.runInContext(compiled, context, { filename: filePath });
-	return module.exports;
 }
 
 function loadSliderRangeModule() {
@@ -180,19 +172,7 @@ function loadSliderRangeModule() {
 		throw new Error("Slider range helpers could not be found.");
 	}
 
-	const compiled = ts.transpileModule(source.slice(helpersStart), {
-		compilerOptions: {
-			module: ts.ModuleKind.CommonJS,
-			target: ts.ScriptTarget.ES2019,
-		},
-		fileName: filePath,
-	}).outputText;
-
-	const module = { exports: {} };
-	const context = vm.createContext({
-		module,
-		exports: module.exports,
-		require,
+	return evaluateTypeScriptModule(filePath, source.slice(helpersStart), {
 		math: {
 			abs: Math.abs,
 			clamp: mathClamp,
@@ -201,9 +181,17 @@ function loadSliderRangeModule() {
 			round: Math.round,
 		},
 	});
+}
 
-	vm.runInContext(compiled, context, { filename: filePath });
-	return module.exports;
+function loadResponsiveModule() {
+	const filePath = path.join(process.cwd(), "src/lib/responsive/resolve.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(filePath, source, {
+		math: {
+			huge: Infinity,
+			max: Math.max,
+		},
+	});
 }
 
 function assertCondition(condition, message) {
@@ -242,6 +230,7 @@ function run() {
 	const { toUDim, toUDim2, toUDimAxis } = loadUnitsModule();
 	const { resolveProgressRange, resolveProgressValue, resolveProgressPercent } = loadProgressRangeModule();
 	const { alphaToValue, normalizeSliderValue, resolveSliderRange, valueToAlpha } = loadSliderRangeModule();
+	const { resolveBreakpoint, resolveResponsiveValue } = loadResponsiveModule();
 	const passthrough1D = new UDim(0.3, 5);
 	const passthrough2D = new UDim2(0.25, 8, 0.75, 16);
 
@@ -275,9 +264,15 @@ function run() {
 	assertFiniteNumber(extremeProgressRange.min, "Progress extreme fallback min");
 	assertFiniteNumber(extremeProgressRange.max, "Progress extreme fallback max");
 	assertFiniteNumber(extremeProgressRange.max - extremeProgressRange.min, "Progress extreme fallback denominator");
-	assertCondition(extremeProgressRange.max > extremeProgressRange.min, "Progress extreme fallback keeps a strict range");
+	assertCondition(
+		extremeProgressRange.max > extremeProgressRange.min,
+		"Progress extreme fallback keeps a strict range",
+	);
 	assertFiniteNumber(extremeProgressPercent, "Progress extreme fallback percent");
-	assertCondition(extremeProgressPercent >= 0 && extremeProgressPercent <= 1, "Progress extreme fallback percent stays clamped");
+	assertCondition(
+		extremeProgressPercent >= 0 && extremeProgressPercent <= 1,
+		"Progress extreme fallback percent stays clamped",
+	);
 
 	console.log("progress: PASS");
 
@@ -298,7 +293,10 @@ function run() {
 	assertFiniteNumber(extremeSliderRange.span, "Slider extreme fallback span");
 	assertCondition(extremeSliderRange.max > extremeSliderRange.min, "Slider extreme fallback keeps a strict range");
 	assertFiniteNumber(equalExtremeSliderRange.span, "Slider equal extreme fallback span");
-	assertCondition(equalExtremeSliderRange.max > equalExtremeSliderRange.min, "Slider equal extreme fallback keeps a strict range");
+	assertCondition(
+		equalExtremeSliderRange.max > equalExtremeSliderRange.min,
+		"Slider equal extreme fallback keeps a strict range",
+	);
 	assertCondition(invertedFiniteSliderRange.min === 10, "Slider inverted finite range keeps supplied min");
 	assertCondition(invertedFiniteSliderRange.max === 10, "Slider inverted finite range clamps max to min");
 	assertCondition(invertedFiniteSliderRange.span === 0, "Slider inverted finite range stays non-interactive");
@@ -308,15 +306,56 @@ function run() {
 	assertCondition(equalFiniteSliderRange.span === 0, "Slider equal finite range stays non-interactive");
 	assertCondition(equalFiniteSliderValue === 10, "Slider equal finite range alpha-to-value stays clamped at min");
 	assertFiniteNumber(extremeSliderValue, "Slider extreme fallback normalized value");
-	assertCondition(extremeSliderValue >= extremeSliderRange.min && extremeSliderValue <= extremeSliderRange.max, "Slider extreme fallback normalized value stays clamped");
+	assertCondition(
+		extremeSliderValue >= extremeSliderRange.min && extremeSliderValue <= extremeSliderRange.max,
+		"Slider extreme fallback normalized value stays clamped",
+	);
 	assertFiniteNumber(extremeSliderAlpha, "Slider extreme fallback display alpha");
-	assertCondition(extremeSliderAlpha >= 0 && extremeSliderAlpha <= 1, "Slider extreme fallback display alpha stays clamped");
+	assertCondition(
+		extremeSliderAlpha >= 0 && extremeSliderAlpha <= 1,
+		"Slider extreme fallback display alpha stays clamped",
+	);
 	assertFiniteNumber(extremeSliderAlphaValue, "Slider extreme fallback alpha-to-value result");
-	assertCondition(extremeSliderAlphaValue >= extremeSliderRange.min && extremeSliderAlphaValue <= extremeSliderRange.max, "Slider extreme fallback alpha-to-value result stays clamped");
+	assertCondition(
+		extremeSliderAlphaValue >= extremeSliderRange.min && extremeSliderAlphaValue <= extremeSliderRange.max,
+		"Slider extreme fallback alpha-to-value result stays clamped",
+	);
 	assertFiniteNumber(unusableSliderAlpha, "Slider unusable range alpha fallback");
 	assertFiniteNumber(unusableSliderValue, "Slider unusable range value fallback");
 
 	console.log("slider: PASS");
+
+	const defaultBreakpoints = { xs: 0, sm: 600, md: 900, lg: 1200, xl: 1536 };
+	const customBreakpoints = { xs: 0, sm: 320, md: 640, lg: 960, xl: 1280 };
+	const objectValue = { columns: 8 };
+
+	assertCondition(resolveBreakpoint(0, defaultBreakpoints) === "xs", "responsive resolves the xs boundary");
+	assertCondition(resolveBreakpoint(599, defaultBreakpoints) === "xs", "responsive stays below the sm boundary");
+	assertCondition(resolveBreakpoint(600, defaultBreakpoints) === "sm", "responsive resolves the sm boundary");
+	assertCondition(resolveBreakpoint(899, defaultBreakpoints) === "sm", "responsive stays below the md boundary");
+	assertCondition(resolveBreakpoint(900, defaultBreakpoints) === "md", "responsive resolves the md boundary");
+	assertCondition(resolveBreakpoint(1199, defaultBreakpoints) === "md", "responsive stays below the lg boundary");
+	assertCondition(resolveBreakpoint(1200, defaultBreakpoints) === "lg", "responsive resolves the lg boundary");
+	assertCondition(resolveBreakpoint(1535, defaultBreakpoints) === "lg", "responsive stays below the xl boundary");
+	assertCondition(resolveBreakpoint(1536, defaultBreakpoints) === "xl", "responsive resolves the xl boundary");
+	assertCondition(resolveBreakpoint(-10, defaultBreakpoints) === "xs", "responsive clamps negative widths to xs");
+	assertCondition(resolveBreakpoint(Number.NaN, defaultBreakpoints) === "xs", "responsive handles NaN widths");
+	assertCondition(resolveBreakpoint(Infinity, defaultBreakpoints) === "xs", "responsive handles infinite widths");
+	assertCondition(resolveBreakpoint(640, customBreakpoints) === "md", "responsive honors custom thresholds");
+	assertCondition(
+		resolveResponsiveValue({ xs: 2, md: 6, xl: 10 }, "lg") === 6,
+		"responsive values inherit from the nearest smaller breakpoint",
+	);
+	assertCondition(
+		resolveResponsiveValue({ xs: "vertical", lg: "horizontal" }, "md") === "vertical",
+		"responsive values retain the xs fallback",
+	);
+	assertCondition(
+		resolveResponsiveValue({ xs: objectValue }, "xl") === objectValue,
+		"responsive object values retain identity",
+	);
+
+	console.log("responsive: PASS");
 }
 
 run();

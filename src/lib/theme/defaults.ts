@@ -7,6 +7,7 @@ import type {
 	SemanticIntentColors,
 	TextColors,
 	Theme,
+	ThemeBreakpoints,
 	ThemeMotion,
 	ThemeMotionDurations,
 	ThemeMotionEasing,
@@ -48,6 +49,10 @@ function createThemeScale<T>(xs: T, sm: T, md: T, lg: T, xl: T): ThemeScale<T> {
 		lg,
 		xl,
 	});
+}
+
+function createThemeBreakpoints(xs: number, sm: number, md: number, lg: number, xl: number): ThemeBreakpoints {
+	return table.freeze({ xs, sm, md, lg, xl });
 }
 
 function createShadow(color: Color3, thickness: number, transparency: number): ThemeShadow {
@@ -225,6 +230,7 @@ export const DEFAULT_THEME: Theme = table.freeze({
 		border: createBorderColors(PALETTE.gray["2"], PALETTE.gray["4"], PALETTE.gray["6"]),
 		action: createActionColors(PALETTE.gray["2"], PALETTE.gray["3"], PALETTE.gray["5"], PALETTE.gray["2"]),
 	}),
+	breakpoints: createThemeBreakpoints(0, 600, 900, 1_200, 1_536),
 	spacing: createThemeScale(4, 8, 12, 16, 24),
 	radius: createThemeScale(2, 4, 8, 16, 24),
 	fontSizes: createThemeScale(12, 14, 16, 18, 24),

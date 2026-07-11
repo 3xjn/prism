@@ -103,6 +103,21 @@ Prism uses simple, predictable sizing rules that match Roblox datatypes.
 - mixed scale and offset values are not inferred from strings, use raw `UDim` or `UDim2` instead
 - `0` is valid and should not be treated as missing input
 
+## Responsive layout
+
+Prism keeps responsive structure explicit and mobile-first.
+
+### Breakpoint rules
+
+1. `Theme.breakpoints` is the closed `xs | sm | md | lg | xl` scale, with MUI-compatible defaults of `0`, `600`, `900`, `1200`, and `1536` pixels.
+2. Breakpoints describe available width, not device identity. Input adaptation uses Roblox `PreferredInput` separately.
+3. Responsive values require an `xs` value and inherit from the nearest defined smaller breakpoint.
+4. A supplied `GuiBase2d` target is measured through `AbsoluteSize`; otherwise hooks observe the current camera viewport and reconnect when Roblox replaces the camera.
+5. Responsive objects are not accepted by every Prism prop. Callers resolve values through hooks and pass ordinary typed props to components.
+6. Native `StyleQuery` remains the right lower-level tool for stylesheet and parent-size container conditions; Prism's hooks cover React structural decisions.
+
+This keeps the responsive module deep: one small interface resolves layout, application state, and composition choices without widening every component type or duplicating subscriptions across component implementations.
+
 ## Composition
 
 Prism favors a small set of composition rules over highly dynamic polymorphism.
