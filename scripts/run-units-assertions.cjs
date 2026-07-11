@@ -209,6 +209,21 @@ function loadResponsiveModule() {
 	});
 }
 
+function loadFixedVirtualGeometryModule() {
+	const filePath = path.join(process.cwd(), "src/lib/virtualization/_internal/fixedVirtualGeometry.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(filePath, source, {
+		math: {
+			ceil: Math.ceil,
+			clamp: mathClamp,
+			floor: Math.floor,
+			huge: Infinity,
+			max: Math.max,
+			min: Math.min,
+		},
+	});
+}
+
 function loadSelectionModule() {
 	const filePath = path.join(process.cwd(), "src/lib/components/_shared/selection.ts");
 	const source = fs.readFileSync(filePath, "utf8");
@@ -350,6 +365,352 @@ function assertUDim(actual, expected, label) {
 function assertUDim2(actual, expected, label) {
 	assertUDim(actual.X, expected.X, `${label} (x)`);
 	assertUDim(actual.Y, expected.Y, `${label} (y)`);
+}
+
+function assertVirtualLineRange(actual, startLine, endLine, label) {
+	assertCondition(
+		actual.startLine === startLine && actual.endLine === endLine,
+		`${label}: expected [${startLine}, ${endLine}), got [${actual.startLine}, ${actual.endLine})`,
+	);
+}
+
+function assertVirtualItemRange(actual, startIndex, endIndex, label) {
+	assertCondition(
+		actual.startIndex === startIndex && actual.endIndex === endIndex,
+		`${label}: expected [${startIndex}, ${endIndex}), got [${actual.startIndex}, ${actual.endIndex})`,
+	);
+}
+
+function runFixedVirtualGeometryAssertions() {
+	const {
+		resolveFixedGridLaneCount,
+		resolveFixedVirtualGeometry,
+		resolveFixedVirtualRange,
+		resolveFixedVirtualScrollOffset,
+	} = loadFixedVirtualGeometryModule();
+
+	const emptyGeometry = resolveFixedVirtualGeometry({ itemCount: 0, itemExtent: 20 });
+	assertCondition(emptyGeometry.itemCount === 0, "virtual geometry preserves an empty item count");
+	assertCondition(emptyGeometry.laneCount === 1, "virtual geometry defaults to one lane");
+	assertCondition(emptyGeometry.lineCount === 0, "virtual geometry gives empty collections zero lines");
+	assertCondition(emptyGeometry.canvasExtent === 0, "virtual geometry gives empty collections zero canvas extent");
+
+	const listGeometry = resolveFixedVirtualGeometry({
+		itemCount: 3,
+		itemExtent: 20,
+		lineGap: 4,
+	});
+	assertCondition(listGeometry.lineCount === 3, "single-lane geometry creates one line per item");
+	assertCondition(listGeometry.lineStride === 24, "single-lane geometry includes the gap in its stride");
+	assertCondition(listGeometry.canvasExtent === 68, "canvas extent excludes a trailing line gap");
+
+	const sparseGridGeometry = resolveFixedVirtualGeometry({
+		itemCount: 10,
+		itemExtent: 20,
+		lineGap: 4,
+		laneCount: 3,
+	});
+	assertCondition(sparseGridGeometry.lineCount === 4, "multi-lane geometry keeps a sparse final line");
+	assertCondition(sparseGridGeometry.canvasExtent === 92, "multi-lane canvas extent is based on line count");
+
+	const normalizedGeometry = resolveFixedVirtualGeometry({
+		itemCount: -10,
+		itemExtent: -20,
+		lineGap: -4,
+		laneCount: 0,
+	});
+	assertCondition(normalizedGeometry.itemCount === 0, "virtual geometry clamps negative item counts");
+	assertCondition(normalizedGeometry.itemExtent === 0, "virtual geometry clamps negative item extents");
+	assertCondition(normalizedGeometry.lineGap === 0, "virtual geometry clamps negative gaps");
+	assertCondition(normalizedGeometry.laneCount === 1, "virtual geometry clamps lane count to at least one");
+
+	const boundaryGeometry = resolveFixedVirtualGeometry({
+		itemCount: 10,
+		itemExtent: 10,
+		lineGap: 2,
+	});
+	const firstRange = resolveFixedVirtualRange(boundaryGeometry, {
+		scrollOffset: -100,
+		viewportExtent: 10,
+		overscanLines: 2,
+	});
+	assertCondition(firstRange.scrollOffset === 0, "virtual ranges clamp negative scroll offsets");
+	assertVirtualLineRange(firstRange.visibleLineRange, 0, 1, "first line is visible at the canvas start");
+	assertVirtualItemRange(firstRange.visibleItemRange, 0, 1, "first item is visible at the canvas start");
+	assertVirtualItemRange(firstRange.renderedItemRange, 0, 3, "leading overscan clamps at item zero");
+
+	const lastRange = resolveFixedVirtualRange(boundaryGeometry, {
+		scrollOffset: 10_000,
+		viewportExtent: 10,
+		overscanLines: 2,
+	});
+	assertCondition(lastRange.scrollOffset === 108, "virtual ranges clamp offsets to the maximum scroll");
+	assertVirtualItemRange(lastRange.visibleItemRange, 9, 10, "last item is visible at maximum scroll");
+	assertVirtualItemRange(lastRange.renderedItemRange, 7, 10, "trailing overscan clamps at item count");
+
+	const zeroViewportRange = resolveFixedVirtualRange(boundaryGeometry, {
+		scrollOffset: 24,
+		viewportExtent: 0,
+		overscanLines: 4,
+	});
+	assertVirtualLineRange(zeroViewportRange.visibleLineRange, 2, 2, "zero viewport has an empty visible line range");
+	assertVirtualItemRange(zeroViewportRange.visibleItemRange, 2, 2, "zero viewport has an empty visible item range");
+	assertVirtualItemRange(zeroViewportRange.renderedItemRange, 2, 2, "zero viewport does not mount overscan");
+
+	const exactItemRange = resolveFixedVirtualRange(boundaryGeometry, {
+		scrollOffset: 0,
+		viewportExtent: 10,
+	});
+	assertVirtualItemRange(exactItemRange.visibleItemRange, 0, 1, "viewport ending at item end includes that item");
+
+	const exactGapRange = resolveFixedVirtualRange(boundaryGeometry, {
+		scrollOffset: 10,
+		viewportExtent: 2,
+	});
+	assertVirtualItemRange(exactGapRange.visibleItemRange, 1, 1, "viewport covering only an exact gap is empty");
+
+	const boundaryBeforeNextLine = resolveFixedVirtualRange(boundaryGeometry, {
+		scrollOffset: 9,
+		viewportExtent: 3,
+	});
+	assertVirtualItemRange(
+		boundaryBeforeNextLine.visibleItemRange,
+		0,
+		1,
+		"line starting exactly at viewport end remains excluded",
+	);
+
+	const boundaryPastNextLine = resolveFixedVirtualRange(boundaryGeometry, {
+		scrollOffset: 10,
+		viewportExtent: 2.01,
+	});
+	assertVirtualItemRange(
+		boundaryPastNextLine.visibleItemRange,
+		1,
+		2,
+		"crossing a line boundary includes the next item",
+	);
+
+	const exactSecondLine = resolveFixedVirtualRange(boundaryGeometry, {
+		scrollOffset: 12,
+		viewportExtent: 10,
+		overscanLines: -2,
+	});
+	assertVirtualItemRange(exactSecondLine.visibleItemRange, 1, 2, "exact line starts resolve to that line");
+	assertVirtualItemRange(exactSecondLine.renderedItemRange, 1, 2, "negative overscan normalizes to zero");
+
+	const emptyRange = resolveFixedVirtualRange(emptyGeometry, {
+		scrollOffset: Number.POSITIVE_INFINITY,
+		viewportExtent: 100,
+		overscanLines: 5,
+	});
+	assertVirtualItemRange(emptyRange.visibleItemRange, 0, 0, "empty collections keep empty visible ranges");
+	assertVirtualItemRange(emptyRange.renderedItemRange, 0, 0, "empty collections keep empty rendered ranges");
+
+	const zeroExtentGeometry = resolveFixedVirtualGeometry({
+		itemCount: 3,
+		itemExtent: 0,
+		lineGap: 5,
+	});
+	const zeroExtentRange = resolveFixedVirtualRange(zeroExtentGeometry, {
+		scrollOffset: Number.POSITIVE_INFINITY,
+		viewportExtent: 2,
+		overscanLines: 2,
+	});
+	assertCondition(zeroExtentRange.scrollOffset === 8, "zero-extent geometry still clamps its gap canvas offset");
+	assertVirtualItemRange(zeroExtentRange.visibleItemRange, 0, 0, "zero-extent items are never visible");
+	assertVirtualItemRange(zeroExtentRange.renderedItemRange, 0, 0, "zero-extent items are never rendered");
+
+	const gridGeometry = resolveFixedVirtualGeometry({
+		itemCount: 10,
+		itemExtent: 10,
+		lineGap: 2,
+		laneCount: 3,
+	});
+	const firstTwoGridLines = resolveFixedVirtualRange(gridGeometry, {
+		scrollOffset: 0,
+		viewportExtent: 22,
+	});
+	assertVirtualLineRange(firstTwoGridLines.visibleLineRange, 0, 2, "grid range includes two exact-fit lines");
+	assertVirtualItemRange(firstTwoGridLines.visibleItemRange, 0, 6, "grid lines map to every lane item");
+
+	const sparseFinalGridLine = resolveFixedVirtualRange(gridGeometry, {
+		scrollOffset: Number.POSITIVE_INFINITY,
+		viewportExtent: 10,
+	});
+	assertVirtualLineRange(
+		sparseFinalGridLine.visibleLineRange,
+		3,
+		4,
+		"grid maximum scroll reaches its sparse final line",
+	);
+	assertVirtualItemRange(sparseFinalGridLine.visibleItemRange, 9, 10, "sparse final line clamps to item count");
+
+	const overscannedGridRange = resolveFixedVirtualRange(gridGeometry, {
+		scrollOffset: 12,
+		viewportExtent: 10,
+		overscanLines: 1,
+	});
+	assertVirtualItemRange(
+		overscannedGridRange.visibleItemRange,
+		3,
+		6,
+		"grid visible range maps one line to three items",
+	);
+	assertVirtualItemRange(overscannedGridRange.renderedItemRange, 0, 9, "grid overscan expands by complete lines");
+
+	assertCondition(
+		resolveFixedGridLaneCount({ viewportWidth: 320, minimumCellWidth: 100, columnGap: 10 }) === 3,
+		"grid lane count includes an exact three-column fit",
+	);
+	assertCondition(
+		resolveFixedGridLaneCount({ viewportWidth: 319, minimumCellWidth: 100, columnGap: 10 }) === 2,
+		"grid lane count drops one lane a pixel below the threshold",
+	);
+	assertCondition(
+		resolveFixedGridLaneCount({ viewportWidth: 99, minimumCellWidth: 100, columnGap: 10 }) === 1,
+		"grid lane count keeps one lane in a narrow viewport",
+	);
+	assertCondition(
+		resolveFixedGridLaneCount({
+			viewportWidth: 1_000,
+			minimumCellWidth: 100,
+			columnGap: 10,
+			maximumLaneCount: 4,
+		}) === 4,
+		"grid lane count respects its optional maximum",
+	);
+	assertCondition(
+		resolveFixedGridLaneCount({ viewportWidth: Number.NaN, minimumCellWidth: 100 }) === 1,
+		"grid lane count handles invalid viewport widths",
+	);
+	assertCondition(
+		resolveFixedGridLaneCount({ viewportWidth: 500, minimumCellWidth: 0 }) === 1,
+		"grid lane count handles invalid minimum cell widths",
+	);
+
+	const thousandGeometry = resolveFixedVirtualGeometry({
+		itemCount: 1_000,
+		itemExtent: 32,
+		lineGap: 8,
+		laneCount: 4,
+	});
+	const tenThousandGeometry = resolveFixedVirtualGeometry({
+		itemCount: 10_000,
+		itemExtent: 32,
+		lineGap: 8,
+		laneCount: 4,
+	});
+	const plateauInput = { scrollOffset: 1_000, viewportExtent: 180, overscanLines: 2 };
+	const thousandWindow = resolveFixedVirtualRange(thousandGeometry, plateauInput).renderedItemRange;
+	const tenThousandWindow = resolveFixedVirtualRange(tenThousandGeometry, plateauInput).renderedItemRange;
+	const thousandMountedCount = thousandWindow.endIndex - thousandWindow.startIndex;
+	const tenThousandMountedCount = tenThousandWindow.endIndex - tenThousandWindow.startIndex;
+	assertCondition(thousandMountedCount === 36, "virtual window has the expected fixed geometry bound");
+	assertCondition(
+		thousandMountedCount === tenThousandMountedCount,
+		"1,000 and 10,000 items produce the same mounted-window size",
+	);
+
+	const alignmentGeometry = resolveFixedVirtualGeometry({
+		itemCount: 20,
+		itemExtent: 20,
+		lineGap: 5,
+		laneCount: 2,
+	});
+	const alignmentBase = { index: 8, viewportExtent: 50, currentScrollOffset: 80 };
+	assertCondition(
+		resolveFixedVirtualScrollOffset(alignmentGeometry, { ...alignmentBase, alignment: "start" }) === 100,
+		"start alignment places the item line at viewport start",
+	);
+	assertCondition(
+		resolveFixedVirtualScrollOffset(alignmentGeometry, { ...alignmentBase, alignment: "center" }) === 85,
+		"center alignment centers the item extent",
+	);
+	assertCondition(
+		resolveFixedVirtualScrollOffset(alignmentGeometry, { ...alignmentBase, alignment: "end" }) === 70,
+		"end alignment places the item line at viewport end",
+	);
+	assertCondition(
+		resolveFixedVirtualScrollOffset(alignmentGeometry, { ...alignmentBase, alignment: "nearest" }) === 80,
+		"nearest alignment preserves an already-visible line",
+	);
+	assertCondition(
+		resolveFixedVirtualScrollOffset(alignmentGeometry, {
+			...alignmentBase,
+			currentScrollOffset: 0,
+			alignment: "nearest",
+		}) === 70,
+		"nearest alignment uses the smallest forward scroll",
+	);
+	assertCondition(
+		resolveFixedVirtualScrollOffset(alignmentGeometry, {
+			...alignmentBase,
+			currentScrollOffset: 150,
+			alignment: "nearest",
+		}) === 100,
+		"nearest alignment uses the smallest backward scroll",
+	);
+	assertCondition(
+		resolveFixedVirtualScrollOffset(alignmentGeometry, {
+			index: 9,
+			viewportExtent: 50,
+			currentScrollOffset: 0,
+			alignment: "start",
+		}) === 100,
+		"items in the same lane line share a scroll target",
+	);
+	assertCondition(
+		resolveFixedVirtualScrollOffset(alignmentGeometry, {
+			index: 0,
+			viewportExtent: 50,
+			currentScrollOffset: 0,
+			alignment: "center",
+		}) === 0,
+		"alignment clamps at the canvas start",
+	);
+	assertCondition(
+		resolveFixedVirtualScrollOffset(alignmentGeometry, {
+			index: 19,
+			viewportExtent: 50,
+			currentScrollOffset: 0,
+			alignment: "start",
+		}) === 195,
+		"alignment clamps at the canvas end",
+	);
+
+	const oversizedGeometry = resolveFixedVirtualGeometry({ itemCount: 5, itemExtent: 100, lineGap: 10 });
+	assertCondition(
+		resolveFixedVirtualScrollOffset(oversizedGeometry, {
+			index: 2,
+			viewportExtent: 40,
+			currentScrollOffset: 250,
+			alignment: "nearest",
+		}) === 250,
+		"nearest alignment keeps a viewport already inside an oversized item",
+	);
+	assertCondition(
+		resolveFixedVirtualScrollOffset(oversizedGeometry, {
+			index: 2,
+			viewportExtent: 40,
+			currentScrollOffset: 0,
+			alignment: "nearest",
+		}) === 220,
+		"nearest alignment reaches an oversized item with minimum movement",
+	);
+
+	for (const invalidIndex of [-1, 20, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+		assertCondition(
+			resolveFixedVirtualScrollOffset(alignmentGeometry, {
+				index: invalidIndex,
+				viewportExtent: 50,
+				currentScrollOffset: 0,
+			}) === undefined,
+			`invalid virtual index ${invalidIndex} returns undefined`,
+		);
+	}
+
+	console.log("fixed virtual geometry: PASS");
 }
 
 function runOutsidePressAssertions() {
@@ -1070,6 +1431,7 @@ function run() {
 	assertCondition(selectionGroup.SelectionBehaviorRight === "Stop", "selection preserves native group behavior");
 
 	console.log("selection: PASS");
+	runFixedVirtualGeometryAssertions();
 	runOutsidePressAssertions();
 
 	runNotificationStoreAssertions();

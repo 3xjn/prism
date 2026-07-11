@@ -30,5 +30,6 @@ import "./Backdrop.story";
 import "./ScrollArea.story";
 import "./Responsive.story";
 import "./Notifications.story";
+import "./VirtualizationBenchmark.story";
 
 export {};

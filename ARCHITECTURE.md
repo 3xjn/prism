@@ -236,6 +236,8 @@ Shipped today in this repo:
 
 The current ui-labs integration is file-discovery based. `index.storybook.ts` exports the `Storybook` config and points `storyRoots` at the stories folder, while `src/playground/stories/index.ts` imports each story module so they are emitted and discoverable. Prism does not mount a separate PlayerGui playground app at runtime.
 
+The internal Virtualization Benchmark story is a proof harness, not public API. Its local fixed-window strategy uses manual `CanvasSize`, direct `CanvasPosition`/`AbsoluteWindowSize` observation, and absolutely positioned item wrappers; sparse virtual cells must not use `AutomaticCanvasSize`, `UIListLayout`, or `UIGridLayout`, because those mechanisms assume every layout sibling is mounted. The pure engine works in lines and lanes so both lists and uniform grids share O(1) range math while keeping public adapters separate.
+
 ### Known debts and follow-ups
 
 Deliberate next steps, roughly in priority order:
