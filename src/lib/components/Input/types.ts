@@ -3,6 +3,7 @@ import type React from "@rbxts/react";
 import type { SemanticIntent, Theme, ThemeSize, Variant } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { SelectionProps } from "../_shared/selection";
 import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
@@ -52,7 +53,7 @@ export interface InputStyleProps extends Omit<SharedStyleProps, "bg" | "bgTransp
 	readonly styleOverrides?: InputStyleOverride;
 }
 
-export interface InputProps extends InputStyleProps {
+export interface InputProps extends InputStyleProps, SelectionProps {
 	readonly value?: string;
 	readonly defaultValue?: string;
 	readonly onChange?: (value: string) => void;

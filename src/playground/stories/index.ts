@@ -25,6 +25,7 @@ import "./Select.story";
 import "./Modal.story";
 import "./Tooltip.story";
 import "./Slider.story";
+import "./ControllerSelection.story";
 import "./Backdrop.story";
 import "./ScrollArea.story";
 import "./Responsive.story";

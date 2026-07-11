@@ -3,6 +3,7 @@ import type React from "@rbxts/react";
 import type { ConcreteColorValue, ThemeSize } from "@prism/theme";
 import type { SizeValue, SizeValue2D } from "@prism/utils";
 
+import type { SelectionGroupProps } from "../_shared/selection";
 import type { RawSlotProps } from "../_shared/slotProps";
 import type { SharedSizeConstraint, SharedSpacingValue, SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
@@ -49,7 +50,7 @@ export interface BoxStyleProps extends SharedStyleProps {
 	readonly sizeConstraint?: BoxSizeConstraint;
 }
 
-export interface BoxProps extends BoxStyleProps {
+export interface BoxProps extends BoxStyleProps, SelectionGroupProps {
 	readonly children?: React.ReactNode;
 	readonly Event?: React.InstanceProps<Frame>["Event"];
 	readonly Change?: React.InstanceProps<Frame>["Change"];

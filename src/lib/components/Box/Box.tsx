@@ -10,6 +10,7 @@ import {
 	renderSizeConstraintDecorator,
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
+import { resolveSelectionGroupProps } from "../_shared/selection";
 import {
 	resolveColorSafe,
 	resolveThemeSizeSafe,
@@ -141,6 +142,7 @@ export const Box = React.forwardRef<Frame, BoxProps>((props, ref) => {
 	const computedPosition = resolvedPosition ?? (props.center ? UDim2.fromScale(0.5, 0.5) : undefined);
 	const rootEvent = useRootCursorEvent(props.Event, rootSlotProps?.Event === undefined ? props.cursor : undefined);
 	const frameInstanceProps: Partial<React.InstanceProps<Frame>> = {
+		...resolveSelectionGroupProps(props),
 		BorderSizePixel: 0,
 		BackgroundTransparency: props.bgTransparency ?? (props.bg !== undefined ? 0 : 1),
 		Size: computedSize,

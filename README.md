@@ -105,6 +105,24 @@ Use `usePreferredInput()` separately when presentation should respond to Roblox'
 
 The first responsive release is hook-driven; ordinary component props do not accept responsive objects. Roblox `StyleQuery` remains available for stylesheet and native container-query use cases.
 
+## Controller selection
+
+Prism exposes Roblox's native selection surface instead of requiring a `SelectionScope`, provider, or custom navigation graph. Interactive controls accept `selectable`, `selectionOrder`, and the four `nextSelection*` neighbors. `Box`, `Stack`, and `ScrollArea` independently expose `selectionGroup` and the four `selectionBehavior*` boundary rules.
+
+When one control needs another control's backing instance as a neighbor, keep that instance in callback state:
+
+```tsx
+const [primary, setPrimary] = React.useState<TextButton>();
+const [secondary, setSecondary] = React.useState<TextButton>();
+
+<Button ref={setPrimary} label="Primary" nextSelectionRight={secondary} />
+<Button ref={setSecondary} label="Secondary" nextSelectionLeft={primary} />
+```
+
+Assigning only to `ref.current` does not trigger a React render. Callback state does, so the neighboring control receives the native instance after mount. Disabled controls resolve to `Selectable={false}`; as elsewhere in Prism, a raw `slotProps` override remains the final escape hatch.
+
+This slice delegates directional navigation and focus visuals to Roblox. Prism does not mutate `GuiService.SelectedObject`, install a global selection coordinator, or replace the native `SelectionImageObject`.
+
 ## Slot props
 
 Escape hatch for instance properties the component API doesn't cover. Applied last.

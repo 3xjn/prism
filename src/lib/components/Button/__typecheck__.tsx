@@ -42,6 +42,14 @@ const validButtonProps: ButtonProps[] = [
 	{ label: "Cursor default", cursor: "default" },
 	{ label: "Cursor raw", cursor: "rbxasset://SystemCursors/PointingHand" },
 	{ label: "Wide", fullWidth: true },
+	{
+		label: "Navigation",
+		selectable: true,
+		selectionOrder: 10,
+		nextSelectionUp: buttonRef.current,
+		nextSelectionRight: buttonRef.current,
+	},
+	{ label: "Disabled slot escape", disabled: true, selectable: true, slotProps: { root: { Selectable: true } } },
 	{ label: "Override", styleOverrides: buttonStyleOverride },
 	{ label: "Layout", position: { x: "50%", y: 0 }, p: "md", zIndex: 3 },
 	{ label: "Root slot", slotProps: { root: { AutoButtonColor: true, TextTransparency: 0.1 } } },
@@ -59,6 +67,7 @@ const validButtonProps: ButtonProps[] = [
 const validExportedButtonProps: ExportedButtonProps[] = [
 	{ label: "Save" },
 	{ label: "Pointer", cursor: "pointer" },
+	{ label: "Ordered", selectionOrder: 20, nextSelectionDown: buttonRef.current },
 	{ children: "Save", variant: "light", color: "secondary" },
 	{ children: 42 },
 	{ label: 42 },

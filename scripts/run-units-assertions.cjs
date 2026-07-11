@@ -194,6 +194,12 @@ function loadResponsiveModule() {
 	});
 }
 
+function loadSelectionModule() {
+	const filePath = path.join(process.cwd(), "src/lib/components/_shared/selection.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(filePath, source);
+}
+
 function assertCondition(condition, message) {
 	if (!condition) {
 		throw new Error(message);
@@ -231,6 +237,7 @@ function run() {
 	const { resolveProgressRange, resolveProgressValue, resolveProgressPercent } = loadProgressRangeModule();
 	const { alphaToValue, normalizeSliderValue, resolveSliderRange, valueToAlpha } = loadSliderRangeModule();
 	const { resolveBreakpoint, resolveResponsiveValue } = loadResponsiveModule();
+	const { resolveSelectionGroupProps, resolveSelectionProps } = loadSelectionModule();
 	const passthrough1D = new UDim(0.3, 5);
 	const passthrough2D = new UDim2(0.25, 8, 0.75, 16);
 
@@ -356,6 +363,28 @@ function run() {
 	);
 
 	console.log("responsive: PASS");
+
+	const neighbor = {};
+	const enabledSelection = resolveSelectionProps({
+		selectionOrder: 12,
+		nextSelectionRight: neighbor,
+	});
+	const disabledSelection = resolveSelectionProps({ selectable: true }, false);
+	const optedOutSelection = resolveSelectionProps({ selectable: false }, true);
+	const selectionGroup = resolveSelectionGroupProps({
+		selectionGroup: true,
+		selectionBehaviorRight: "Stop",
+	});
+
+	assertCondition(enabledSelection.Selectable === true, "selection defaults enabled controls to selectable");
+	assertCondition(enabledSelection.SelectionOrder === 12, "selection preserves native order");
+	assertCondition(enabledSelection.NextSelectionRight === neighbor, "selection preserves native neighbor identity");
+	assertCondition(disabledSelection.Selectable === false, "selection keeps disabled controls non-selectable");
+	assertCondition(optedOutSelection.Selectable === false, "selection supports an explicit selectable opt-out");
+	assertCondition(selectionGroup.SelectionGroup === true, "selection preserves native group state");
+	assertCondition(selectionGroup.SelectionBehaviorRight === "Stop", "selection preserves native group behavior");
+
+	console.log("selection: PASS");
 }
 
 run();

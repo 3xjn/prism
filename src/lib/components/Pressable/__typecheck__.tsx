@@ -20,6 +20,8 @@ const validPressableProps: PressableProps[] = [
 	{ cursor: "default" },
 	{ cursor: "pointer" },
 	{ cursor: "rbxasset://SystemCursors/PointingHand" },
+	{ selectable: true, selectionOrder: 10, nextSelectionDown: pressableRef.current, nextSelectionLeft: pressableRef.current },
+	{ disabled: true, selectable: true, slotProps: { root: { Selectable: true } } },
 	{ width: 200, height: 48, position: { x: "50%", y: 0 }, p: "md", zIndex: 3 },
 	{ bg: themeRefs.background.surface, bgTransparency: 0.1, clip: true },
 	{ slotProps: { root: { AutoButtonColor: true }, padding: { PaddingLeft: new UDim(0, 18) } } },
@@ -32,6 +34,7 @@ const validPressableProps: PressableProps[] = [
 const validExportedPressableProps: ExportedPressableProps[] = [
 	{ children: <PressableChild key="exported-child" /> },
 	{ render: (state: PressableRenderState) => <Box key={state.state} /> },
+	{ selectionOrder: 20, nextSelectionRight: pressableRef.current },
 	{ disabled: true },
 ];
 

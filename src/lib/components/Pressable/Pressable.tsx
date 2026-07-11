@@ -2,6 +2,7 @@ import React from "@rbxts/react";
 
 import { pushDecorator, renderPaddingDecorator, renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
 import { composeEventMaps } from "../_shared/interaction";
+import { resolveSelectionProps } from "../_shared/selection";
 import { usePressInteraction } from "../_shared/usePressInteraction";
 import { mergeSharedStyleProps, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
@@ -77,7 +78,7 @@ export const Pressable = React.forwardRef<TextButton, PressableProps>((props, re
 	const textButtonInstanceProps: Partial<React.InstanceProps<TextButton>> = {
 		AutoButtonColor: false,
 		Active: interactive,
-		Selectable: interactive,
+		...resolveSelectionProps(props, interactive),
 		BorderSizePixel: 0,
 		BackgroundTransparency: props.bgTransparency ?? (props.bg !== undefined ? 0 : 1),
 		BackgroundColor3: resolvedBackgroundColor,

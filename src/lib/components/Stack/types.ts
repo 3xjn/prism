@@ -1,5 +1,6 @@
 import type React from "@rbxts/react";
 
+import type { SelectionGroupProps } from "../_shared/selection";
 import type { RawSlotProps } from "../_shared/slotProps";
 import type { SharedSpacingValue, SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
@@ -28,7 +29,7 @@ export interface StackSlots {
 
 export type StackSlotProps = RawSlotProps<StackSlots>;
 
-export interface StackProps extends StackStyleProps {
+export interface StackProps extends StackStyleProps, SelectionGroupProps {
 	readonly children?: React.ReactNode;
 	readonly Event?: React.InstanceProps<Frame>["Event"];
 	readonly Change?: React.InstanceProps<Frame>["Change"];

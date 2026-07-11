@@ -33,6 +33,14 @@ const validSliderProps: SliderProps[] = [
 	{ disabled: true, defaultValue: 18 },
 	{ fullWidth: true, defaultValue: 55 },
 	{ color: "secondary", size: "sm", defaultValue: 12 },
+	{
+		defaultValue: 42,
+		selectable: true,
+		selectionOrder: 10,
+		nextSelectionUp: sliderRef.current,
+		nextSelectionDown: sliderRef.current,
+	},
+	{ defaultValue: 42, disabled: true, selectable: true, slotProps: { hitbox: { Selectable: true } } },
 	{ defaultValue: 33, tooltip: true },
 	{ defaultValue: 38, tooltip: "Volume locked" },
 	{ defaultValue: 44, tooltip: (currentValue) => `Value ${tostring(currentValue)}` },
@@ -66,6 +74,7 @@ const validExportedSliderProps: ExportedSliderProps[] = [
 	{ value: 24, onChange: () => undefined, color: "primary" },
 	{ defaultValue: 12, step: 2, size: "lg" },
 	{ defaultValue: 20, tooltip: true },
+	{ defaultValue: 40, selectionOrder: 20, nextSelectionLeft: sliderRef.current },
 	{ defaultValue: 55, fullWidth: true, min: 0, max: 100 },
 ];
 

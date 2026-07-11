@@ -17,6 +17,13 @@ const validScrollAreaProps: ScrollAreaProps[] = [
 	{ direction: "both", canvasPosition: new Vector2(12, 20) },
 	{ scrollbarSize: 8, scrollbarTransparency: 0.1, scrollbarColor: themeRefs.text.secondary },
 	{ scrollingEnabled: false },
+	{
+		selectionGroup: true,
+		selectionBehaviorUp: Enum.SelectionBehavior.Stop,
+		selectionBehaviorDown: Enum.SelectionBehavior.Escape,
+		selectionBehaviorLeft: Enum.SelectionBehavior.Stop,
+		selectionBehaviorRight: Enum.SelectionBehavior.Escape,
+	},
 	{ onCanvasPositionChange: () => undefined },
 	{ p: "sm", bg: themeRefs.background.surface },
 	{ slotProps: { root: { ScrollBarThickness: 12 }, content: { BackgroundTransparency: 1 }, padding: { PaddingLeft: new UDim(0, 12) } } },
@@ -32,6 +39,14 @@ const validExportedScrollAreaProps: ExportedScrollAreaProps[] = [
 const validScrollAreaExamples = [
 	<ScrollArea key="basic" height={120}><Text text="Scrollable content" /></ScrollArea>,
 	<ScrollArea key="horizontal" direction="horizontal" width={200} height={80} />,
+	<ScrollArea
+		key="selection-group"
+		selectionGroup
+		selectionBehaviorUp={Enum.SelectionBehavior.Stop}
+		selectionBehaviorDown={Enum.SelectionBehavior.Escape}
+		selectionBehaviorLeft={Enum.SelectionBehavior.Stop}
+		selectionBehaviorRight={Enum.SelectionBehavior.Escape}
+	/>,
 	<ScrollArea key="slots" slotProps={{ root: { ScrollBarThickness: 10 }, content: { ZIndex: 2 } }} />,
 	<ScrollArea key="ref" ref={scrollAreaRef} />,
 ];

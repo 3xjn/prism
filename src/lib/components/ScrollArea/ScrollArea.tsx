@@ -1,6 +1,7 @@
 import React from "@rbxts/react";
 
 import { renderPaddingDecorator, renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
+import { resolveSelectionGroupProps } from "../_shared/selection";
 import { resolveColorSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
@@ -114,6 +115,7 @@ export const ScrollArea = React.forwardRef<ScrollingFrame, ScrollAreaProps>((pro
 		},
 	};
 	const rootInstanceProps: Partial<React.InstanceProps<ScrollingFrame>> = {
+		...resolveSelectionGroupProps(props),
 		Active: props.scrollingEnabled ?? true,
 		AutomaticCanvasSize: resolveAutomaticCanvasSize(props.direction, props.automaticCanvasSize),
 		BackgroundColor3: resolvedBackgroundColor,

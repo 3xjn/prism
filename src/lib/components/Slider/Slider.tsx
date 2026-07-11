@@ -4,6 +4,7 @@ import { useTheme } from "@prism/theme";
 
 import { CaptureOverlay, usePortalTarget } from "../_shared/layering";
 import { incrementZIndex, type GuiZIndex } from "../_shared/overlayLayerPolicy";
+import { resolveSelectionProps } from "../_shared/selection";
 import {
 	mergeSharedStyleProps,
 	resolveUDimSafe,
@@ -583,7 +584,7 @@ const SliderBase = React.forwardRef<TextButton, SliderProps>((props, ref) => {
 					<textbutton
 						AutoButtonColor={false}
 						Active={!disabled}
-						Selectable={!disabled}
+						{...resolveSelectionProps(props, !disabled)}
 						BackgroundTransparency={1}
 						BorderSizePixel={0}
 						Size={UDim2.fromScale(1, 1)}

@@ -13,6 +13,7 @@ import {
 } from "../_shared/foundationDecorators";
 import { resolveMinimumHeightConstraint } from "../_shared/frameSize";
 import { composeEventMaps } from "../_shared/interaction";
+import { resolveSelectionProps } from "../_shared/selection";
 import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveTextFontFace } from "../_shared/textFont";
 import {
@@ -321,7 +322,7 @@ const InputBase = React.forwardRef<TextBox, InputProps>((props, ref) => {
 	};
 	const textboxInstanceProps: Partial<React.InstanceProps<TextBox>> = {
 		Active: !disabled,
-		Selectable: !disabled,
+		...resolveSelectionProps(props, !disabled),
 		BackgroundTransparency: 1,
 		BorderSizePixel: 0,
 		Size: UDim2.fromScale(1, 1),

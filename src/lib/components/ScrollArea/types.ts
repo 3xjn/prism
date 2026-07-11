@@ -2,6 +2,7 @@ import type React from "@rbxts/react";
 
 import type { ConcreteColorValue } from "@prism/theme";
 
+import type { SelectionGroupProps } from "../_shared/selection";
 import type { RawSlotProps } from "../_shared/slotProps";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
@@ -29,7 +30,7 @@ export interface ScrollAreaStyleProps extends Omit<SharedStyleProps, "clip"> {
 	readonly scrollingEnabled?: boolean;
 }
 
-export interface ScrollAreaProps extends ScrollAreaStyleProps {
+export interface ScrollAreaProps extends ScrollAreaStyleProps, SelectionGroupProps {
 	readonly children?: React.ReactNode;
 	readonly onCanvasPositionChange?: (position: Vector2) => void;
 	readonly Event?: React.InstanceProps<ScrollingFrame>["Event"];

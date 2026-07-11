@@ -25,6 +25,14 @@ const validBoxExamples = [
 	<Box key="stroke-ref" stroke={{ color: themeRefs.border.strong, thickness: 2 }} />,
 	<Box key="padding" p="md" />,
 	<Box key="padding-axes" px="lg" py="sm" />,
+	<Box
+		key="selection-group"
+		selectionGroup
+		selectionBehaviorUp={Enum.SelectionBehavior.Stop}
+		selectionBehaviorDown={Enum.SelectionBehavior.Escape}
+		selectionBehaviorLeft={Enum.SelectionBehavior.Stop}
+		selectionBehaviorRight={Enum.SelectionBehavior.Escape}
+	/>,
 	<Box key="slot-props-root" bg={themeRefs.background.surface} slotProps={{ root: { BackgroundColor3: Color3.fromRGB(255, 0, 0) } }} />,
 	<Box key="slot-props-stroke" slotProps={{ stroke: { Thickness: 3 } }} />,
 	<Box key="ref" ref={boxRef} />,

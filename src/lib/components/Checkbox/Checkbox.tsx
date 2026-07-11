@@ -14,6 +14,7 @@ import {
 } from "../_shared/foundationDecorators";
 import { resolveFrameSizeProps, resolveMinimumHeightConstraint } from "../_shared/frameSize";
 import { composeEventMaps } from "../_shared/interaction";
+import { resolveSelectionProps } from "../_shared/selection";
 import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveTextFontFace } from "../_shared/textFont";
 import { useControllableState } from "../_shared/useControllableState";
@@ -148,7 +149,7 @@ const CheckboxBase = React.forwardRef<TextButton, CheckboxProps>((props, ref) =>
 	const textButtonInstanceProps: Partial<React.InstanceProps<TextButton>> = {
 		AutoButtonColor: false,
 		Active: !disabled,
-		Selectable: !disabled,
+		...resolveSelectionProps(props, !disabled),
 		BorderSizePixel: 0,
 		BackgroundTransparency: 1,
 		Text: "",

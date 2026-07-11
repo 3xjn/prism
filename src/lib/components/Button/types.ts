@@ -3,6 +3,7 @@ import type React from "@rbxts/react";
 import type { SemanticIntent, Theme, ThemeSize, Variant } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { SelectionProps } from "../_shared/selection";
 import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
@@ -48,7 +49,7 @@ export interface ButtonStyleProps extends Omit<SharedStyleProps, "bg" | "bgTrans
 	readonly styleOverrides?: ButtonStyleOverride;
 }
 
-export interface ButtonProps extends ButtonStyleProps {
+export interface ButtonProps extends ButtonStyleProps, SelectionProps {
 	readonly label?: string | number;
 	readonly children?: React.ReactNode | string | number;
 	readonly onPress?: () => void;

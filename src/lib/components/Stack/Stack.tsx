@@ -3,6 +3,7 @@ import React from "@rbxts/react";
 import type { Theme } from "@prism/theme";
 
 import { pushDecorator, renderPaddingDecorator, renderSizeConstraintDecorator } from "../_shared/foundationDecorators";
+import { resolveSelectionGroupProps } from "../_shared/selection";
 import { resolveThemeSizeSafe, resolveUDimSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
@@ -223,6 +224,7 @@ export const Stack = React.forwardRef<Frame, StackProps>((props, ref) => {
 	const computedPosition = resolvedPosition ?? (props.center ? UDim2.fromScale(0.5, 0.5) : undefined);
 	const rootEvent = useRootCursorEvent(props.Event, rootSlotProps?.Event === undefined ? props.cursor : undefined);
 	const frameInstanceProps: Partial<React.InstanceProps<Frame>> = {
+		...resolveSelectionGroupProps(props),
 		BorderSizePixel: 0,
 		BackgroundTransparency: props.bgTransparency ?? (props.bg !== undefined ? 0 : 1),
 		Size: computedSize,

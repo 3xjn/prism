@@ -3,6 +3,7 @@ import type React from "@rbxts/react";
 import type { SemanticIntent, Theme, ThemeSize } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { SelectionProps } from "../_shared/selection";
 import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
@@ -66,7 +67,7 @@ export interface SliderStyleProps extends Omit<SharedStyleProps, "bg" | "bgTrans
 	readonly styleOverrides?: SliderStyleOverride;
 }
 
-export interface SliderProps extends SliderStyleProps {
+export interface SliderProps extends SliderStyleProps, SelectionProps {
 	readonly value?: number;
 	readonly defaultValue?: number;
 	readonly tooltip?: boolean | string | ((value: number) => string);

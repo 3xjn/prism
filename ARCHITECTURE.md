@@ -118,6 +118,22 @@ Prism keeps responsive structure explicit and mobile-first.
 
 This keeps the responsive module deep: one small interface resolves layout, application state, and composition choices without widening every component type or duplicating subscriptions across component implementations.
 
+## Native selection
+
+Prism's first controller-navigation layer is native-first and deliberately small.
+
+### Selection rules
+
+1. Interactive controls mirror Roblox's `Selectable`, `SelectionOrder`, and four `NextSelection*` properties through typed camel-case props.
+2. Layout primitives expose `SelectionGroup` and the four `SelectionBehavior*` axes independently from controls.
+3. Managed selection props land on the component's real interactive instance: the button root, input textbox, keybind trigger, or slider hitbox. Disabled controls resolve managed `Selectable` to `false`.
+4. Raw `slotProps` remain last-write-wins, including for selection properties. This is the same explicit low-level escape policy used throughout Prism.
+5. Explicit neighbors should be held in callback state. Updating `ref.current` alone does not schedule a render, so a neighbor read during the first render would otherwise remain `undefined`.
+6. Prism does not require a `SelectionScope`, provider, custom graph solver, or global `GuiService` configuration.
+7. Roblox owns navigation and the focus visual in this slice. A styled `SelectionImageObject`, overlay entry/restoration, and topmost back dismissal are separate follow-up layers.
+
+This boundary keeps selection composable: ordinary controls expose the native graph where precision is needed, while `Box`, `Stack`, and `ScrollArea` can define native group boundaries without becoming stateful navigation coordinators.
+
 ## Composition
 
 Prism favors a small set of composition rules over highly dynamic polymorphism.

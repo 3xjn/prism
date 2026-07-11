@@ -38,6 +38,14 @@ const validInputProps: InputProps[] = [
 	{ placeholder: "Cursor pointer", cursor: "pointer" },
 	{ placeholder: "Wide", fullWidth: true },
 	{ placeholder: "Tone", variant: "subtle", color: "secondary", size: "sm" },
+	{
+		placeholder: "Navigation",
+		selectable: true,
+		selectionOrder: 10,
+		nextSelectionUp: inputRef.current,
+		nextSelectionDown: inputRef.current,
+	},
+	{ placeholder: "Disabled slot escape", disabled: true, selectable: true, slotProps: { textbox: { Selectable: true } } },
 	{ placeholder: "Layout", width: 240, minWidth: 180, maxWidth: 320, p: "xs", layoutOrder: 2 },
 	{ placeholder: "Root slot", slotProps: { root: { BackgroundTransparency: 0.05 } } },
 	{ placeholder: "Textbox slot", slotProps: { textbox: { ClearTextOnFocus: true, TextXAlignment: Enum.TextXAlignment.Center } } },
@@ -51,6 +59,7 @@ const validExportedInputProps: ExportedInputProps[] = [
 	{ placeholder: "Search" },
 	{ placeholder: "Override", styleOverrides: inputStyleOverride },
 	{ placeholder: "Pointer", cursor: "pointer" },
+	{ placeholder: "Ordered", selectionOrder: 20, nextSelectionRight: inputRef.current },
 	{ value: "Prism", onChange: () => undefined, variant: "outline", color: "primary", maxLength: 20 },
 	{ defaultValue: "Theme", size: "lg", readOnly: true },
 ];

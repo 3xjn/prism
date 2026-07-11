@@ -27,6 +27,7 @@ export * from "./components/Slider";
 export * from "./components/Tooltip";
 export * from "./components/Backdrop";
 export * from "./components/ScrollArea";
+export type { SelectionGroupProps, SelectionProps } from "./components/_shared/selection";
 export * from "./bridge";
 export * from "./theme";
 export * from "./motion";

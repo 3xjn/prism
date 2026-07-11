@@ -13,6 +13,7 @@ import {
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
 import { assignRef, composeEventMaps, isPressInput } from "../_shared/interaction";
+import { resolveSelectionProps } from "../_shared/selection";
 import { applyStyleOverride } from "../_shared/styleOverride";
 import { resolveTextFontFace } from "../_shared/textFont";
 import {
@@ -1085,7 +1086,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 	const triggerInstanceProps: Partial<React.InstanceProps<TextButton>> = {
 		AutoButtonColor: false,
 		Active: !disabled && !readOnly,
-		Selectable: !disabled,
+		...resolveSelectionProps(props, !disabled),
 		BackgroundColor3: animated.backgroundColor,
 		BackgroundTransparency: 1,
 		BorderSizePixel: 0,

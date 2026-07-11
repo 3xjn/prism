@@ -3,6 +3,7 @@ import type React from "@rbxts/react";
 import type { SemanticIntent, Theme, ThemeSize } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { SelectionProps } from "../_shared/selection";
 import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
@@ -52,7 +53,7 @@ export interface CheckboxStyleProps extends Omit<SharedStyleProps, "bg" | "bgTra
 	readonly styleOverrides?: CheckboxStyleOverride;
 }
 
-export interface CheckboxProps extends CheckboxStyleProps {
+export interface CheckboxProps extends CheckboxStyleProps, SelectionProps {
 	readonly checked?: boolean;
 	readonly defaultChecked?: boolean;
 	readonly onChange?: (checked: boolean) => void;

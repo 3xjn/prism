@@ -1,6 +1,7 @@
 import type React from "@rbxts/react";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { SelectionProps } from "../_shared/selection";
 import type { InteractionState } from "../_shared/usePressInteraction";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
@@ -27,7 +28,7 @@ export interface PressableStyleProps extends SharedStyleProps {
 	readonly active?: boolean;
 }
 
-export interface PressableProps extends PressableStyleProps {
+export interface PressableProps extends PressableStyleProps, SelectionProps {
 	readonly children?: React.ReactNode;
 	readonly render?: (state: PressableRenderState) => React.ReactNode;
 	readonly onPress?: () => void;

@@ -27,6 +27,8 @@ const validCheckboxProps: CheckboxProps[] = [
 	{ label: "Disabled", disabled: true, checked: false, onChange: () => undefined },
 	{ label: "Cursor default", cursor: "default", defaultChecked: true },
 	{ color: "secondary", size: "sm", defaultChecked: true },
+	{ label: "Navigation", selectable: true, selectionOrder: 10, nextSelectionLeft: checkboxRef.current },
+	{ label: "Disabled slot escape", disabled: true, selectable: true, slotProps: { root: { Selectable: true } } },
 	{ width: 260, minWidth: 180, layoutOrder: 2, p: "xs" },
 	{ slotProps: { root: { AutoButtonColor: true } } },
 	{ slotProps: { mark: { BackgroundTransparency: 0.05 }, fill: { BackgroundTransparency: 0.08 } } },
@@ -44,6 +46,7 @@ const validExportedCheckboxProps: ExportedCheckboxProps[] = [
 	{ defaultChecked: true, cursor: "rbxasset://SystemCursors/PointingHand" },
 	{ checked: false, onChange: () => undefined, color: "primary" },
 	{ label: "Presence", size: "lg" },
+	{ label: "Ordered", selectionOrder: 20, nextSelectionUp: checkboxRef.current },
 	{ label: 42 },
 ];
 

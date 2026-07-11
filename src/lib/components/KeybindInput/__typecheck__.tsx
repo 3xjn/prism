@@ -36,6 +36,13 @@ const validKeybindInputProps: KeybindInputProps[] = [
 	{ defaultValue: Enum.KeyCode.ButtonB, captureDevice: "gamepad", cancelKeyCodes: [Enum.KeyCode.ButtonSelect] },
 	{ disabled: true, readOnly: true, fullWidth: true },
 	{ variant: "light", color: "success", size: "lg" },
+	{
+		selectable: true,
+		selectionOrder: 10,
+		nextSelectionLeft: keybindRef.current,
+		nextSelectionRight: keybindRef.current,
+	},
+	{ disabled: true, selectable: true, slotProps: { trigger: { Selectable: true } } },
 	{ displayDevice: "mouse", slotProps: { label: { Text: "Mouse4" } } },
 	{ allowedKeyCodes: [Enum.KeyCode.E, Enum.KeyCode.F], blockedKeyCodes: [Enum.KeyCode.Escape] },
 	{
@@ -60,6 +67,7 @@ const validKeybindInputProps: KeybindInputProps[] = [
 const validExportedKeybindInputProps: ExportedKeybindInputProps[] = [
 	{},
 	{ value: Enum.KeyCode.Space, onChange: () => undefined },
+	{ selectionOrder: 20, nextSelectionUp: keybindRef.current },
 	{ defaultValue: Enum.KeyCode.ButtonR1, captureDevice: "both" },
 ];
 

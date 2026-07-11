@@ -3,6 +3,7 @@ import type React from "@rbxts/react";
 import type { SemanticIntent, Theme, ThemeSize, Variant } from "@prism/theme";
 
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { SelectionProps } from "../_shared/selection";
 import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
@@ -68,7 +69,7 @@ export interface KeybindInputStyleProps extends Omit<SharedStyleProps, "bg" | "b
 	readonly styleOverrides?: KeybindInputStyleOverride;
 }
 
-export interface KeybindInputProps extends KeybindInputStyleProps {
+export interface KeybindInputProps extends KeybindInputStyleProps, SelectionProps {
 	readonly value?: Enum.KeyCode;
 	readonly defaultValue?: Enum.KeyCode;
 	readonly onChange?: (value: Enum.KeyCode) => void;

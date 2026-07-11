@@ -4,6 +4,7 @@ import type { SemanticIntent, Theme, ThemeSize } from "@prism/theme";
 
 import type { IconName } from "../Icon/types";
 import type { RawSlotProps } from "../_shared/slotProps";
+import type { SelectionProps } from "../_shared/selection";
 import type { StyleOverride } from "../_shared/styleOverride";
 import type { SharedStyleProps } from "../_shared/useResolvedStyleProps";
 
@@ -63,7 +64,7 @@ export interface SwitchStyleProps extends Omit<SharedStyleProps, "bg" | "bgTrans
 	readonly styleOverrides?: SwitchStyleOverride;
 }
 
-export interface SwitchProps extends SwitchStyleProps {
+export interface SwitchProps extends SwitchStyleProps, SelectionProps {
 	readonly checked?: boolean;
 	readonly defaultChecked?: boolean;
 	readonly onChange?: (checked: boolean) => void;

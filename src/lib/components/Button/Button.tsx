@@ -12,6 +12,7 @@ import {
 } from "../_shared/foundationDecorators";
 import { resolveMinimumHeightConstraint } from "../_shared/frameSize";
 import { composeEventMaps } from "../_shared/interaction";
+import { resolveSelectionProps } from "../_shared/selection";
 import { applyStyleOverride } from "../_shared/styleOverride";
 import { usePressInteraction } from "../_shared/usePressInteraction";
 import { mergeSharedStyleProps, resolveUDimSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
@@ -218,7 +219,7 @@ const ButtonBase = React.forwardRef<TextButton, ButtonProps>((props, ref) => {
 	const textButtonInstanceProps: Partial<React.InstanceProps<TextButton>> = {
 		AutoButtonColor: false,
 		Active: !disabled,
-		Selectable: !disabled,
+		...resolveSelectionProps(props, !disabled),
 		BorderSizePixel: 0,
 		BackgroundTransparency: 1,
 		BackgroundColor3: resolvedBackgroundColor,
