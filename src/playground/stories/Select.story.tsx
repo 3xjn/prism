@@ -3,7 +3,7 @@ import ReactRoblox from "@rbxts/react-roblox";
 import { Box, Select, Stack, Text } from "@prism";
 import type { SelectColor, SelectOption, SelectSize, SelectStyleOverrides } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme , theme as themeRefs } from "@prism/theme";
+import { theme as themeRefs, useTheme } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
@@ -53,6 +53,7 @@ const controls = {
 		"md",
 	),
 	maxVisibleOptions: Number(6, 1, 8, 1),
+	closeOnOutsidePress: Boolean(true),
 	disabled: Boolean(false),
 	fullWidth: Boolean(false),
 };
@@ -125,11 +126,29 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 	const theme = useTheme();
 	const [previewValue, setPreviewValue] = React.useState("");
 	const [labValue, setLabValue] = React.useState("harbor");
+	const [observedOpen, setObservedOpen] = React.useState(false);
+	const [triggerActivations, setTriggerActivations] = React.useState(0);
+	const [outsideDismissals, setOutsideDismissals] = React.useState(0);
+	const [selectionChanges, setSelectionChanges] = React.useState(0);
 	const resolvedVariant = currentControls.variant as Variant;
 	const resolvedColor = currentControls.color as SelectColor;
 	const resolvedSize = currentControls.size as SelectSize;
 	const currentOption = previewOptions.find((option) => option.value === previewValue);
 	const currentValueLabel = currentOption === undefined ? "Current value: (none)" : `Current value: ${currentOption.label}`;
+	const dismissalLabel = currentControls.closeOnOutsidePress
+		? "Outside press dismissal: enabled"
+		: "Outside press dismissal: disabled (the list stays open)";
+	const observedBehavior = `Observed: ${observedOpen ? "open" : "closed"}, ${triggerActivations} trigger activations, ${outsideDismissals} outside dismissals, ${selectionChanges} selection changes`;
+	const handlePreviewChange = (nextValue: string) => {
+		setPreviewValue(nextValue);
+		setObservedOpen(false);
+		setSelectionChanges((current) => current + 1);
+	};
+	React.useEffect(() => {
+		if (currentControls.disabled) {
+			setObservedOpen(false);
+		}
+	}, [currentControls.disabled]);
 
 	return (
 		<StoryCanvas>
@@ -137,7 +156,7 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 				<Stack width="100%" gap="md">
 					<Text text="Select" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="Inspect one live dropdown-style choice control. Choose from the dropdown to update the live local selection; use the other controls to adjust its styling and behavior."
+						text="Open the live Select, choose an option, or press the surrounding panel to inspect trigger anchoring, scrolling, selection, and outside dismissal."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
@@ -145,18 +164,37 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 					<Box width="100%" bg={theme.colors.action.hover} radius="md" p="lg">
 						<Stack width="100%" gap="sm">
 							<Select
-							selected={previewValue}
-							onChange={setPreviewValue}
-							options={previewOptions}
-							placeholder={currentControls.placeholder}
-							variant={resolvedVariant}
-							color={resolvedColor}
-							size={resolvedSize}
-							maxVisibleOptions={currentControls.maxVisibleOptions}
-							disabled={currentControls.disabled}
-							fullWidth={currentControls.fullWidth}
-						/>
+								selected={previewValue}
+								onChange={handlePreviewChange}
+								options={previewOptions}
+								placeholder={currentControls.placeholder}
+								variant={resolvedVariant}
+								color={resolvedColor}
+								size={resolvedSize}
+								maxVisibleOptions={currentControls.maxVisibleOptions}
+								closeOnOutsidePress={currentControls.closeOnOutsidePress}
+								disabled={currentControls.disabled}
+								fullWidth={currentControls.fullWidth}
+								Event={{
+									Activated: () => {
+										setObservedOpen((current) => !current);
+										setTriggerActivations((current) => current + 1);
+									},
+								}}
+								slotProps={{
+									outsideCapture: {
+										Event: {
+											Activated: () => {
+												setObservedOpen(false);
+												setOutsideDismissals((current) => current + 1);
+											},
+										},
+									},
+								}}
+							/>
 							<Text text={currentValueLabel} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
+							<Text text={dismissalLabel} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
+							<Text text={observedBehavior} size="sm" color={themeRefs.text.secondary} wrap width="100%" />
 						</Stack>
 					</Box>
 					<Box width="100%" bg={themeRefs.background.surface} radius="md" p="lg">
@@ -217,7 +255,7 @@ function SelectStoryCanvas({ controls: currentControls }: { readonly controls: S
 const story = CreateReactStory(
 	{
 		name: "Select",
-		summary: "Single-value dropdown trigger with semantic tones, a portal-backed overlay list, disabled-safe options, and capped scrolling for longer choice sets.",
+		summary: "Single-value dropdown with shared trigger anchoring, configurable outside dismissal, disabled-safe options, and capped scrolling for longer choice sets.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,

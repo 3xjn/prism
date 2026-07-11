@@ -58,7 +58,7 @@ const [query, setQuery] = React.useState("");
 
 ## Overlay behavior
 
-`Popover` and `Menu` dismiss on a mouse or touch press outside their panel by default; set `closeOnOutsidePress={false}` when the surrounding surface should remain interactive without closing them. Their invisible input catcher is separate from `Backdrop`, which remains the visual dimming surface used by components such as `Modal`.
+`Select`, `Popover`, and `Menu` share trigger-relative portal anchoring and dismiss on a mouse or touch press outside their panel by default. Set `closeOnOutsidePress={false}` when the surrounding surface should remain interactive without closing them. Their invisible, interaction-only input catcher is separate from `Backdrop`, which remains the visual dimming surface used by components such as `Modal`.
 
 ## Tokens and units
 

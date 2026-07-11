@@ -12,8 +12,9 @@ import {
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
 import { resolveMinimumHeightConstraint } from "../_shared/frameSize";
-import { useTriggerOverlayLayout } from "../_shared/layering";
+import type { TriggerOverlayLayout } from "../_shared/layering";
 import { applyStyleOverride } from "../_shared/styleOverride";
+import { TriggerOverlayLayer } from "../_shared/TriggerOverlayLayer";
 import { usePressInteraction } from "../_shared/usePressInteraction";
 import { mergeSharedStyleProps, resolveUDimSafe, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
@@ -31,9 +32,8 @@ import {
 	composeEventMaps,
 	findSelectedOption,
 	incrementZIndex,
-	resolveSelectOverlayLayout,
+	resolveSelectOverlayPlacement,
 	resolveTextFontFace,
-	type SelectOverlayLayout,
 } from "./utils";
 
 type SelectComponent = ((props: SelectProps) => React.ReactElement) & React.ForwardRefExoticComponent<SelectProps>;
@@ -54,6 +54,7 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 		defaultValue,
 		onChange,
 		maxVisibleOptions = 6,
+		closeOnOutsidePress = true,
 		styleOverrides,
 		Event,
 		Change,
@@ -102,7 +103,6 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 	const triggerTextSlotProps = slotProps?.triggerText;
 	const indicatorSlotProps = slotProps?.indicator;
 	const indicatorAsset = getLucideIconAsset("chevron-right", sizeStyles.indicatorSize);
-	const triggerOverlayLayout = useTriggerOverlayLayout(triggerInstance, open);
 	React.useEffect(() => {
 		if (controlledValue !== undefined) {
 			setUncontrolledValue(controlledValue);
@@ -130,9 +130,10 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 		: (resolvedSize?.X ?? resolvedWidth ?? new UDim(0, sizeStyles.defaultWidth));
 	const triggerHeight = resolvedSize?.Y ?? resolvedHeight ?? new UDim(0, sizeStyles.minHeight);
 	const minimumTriggerHeight = math.max(sizeStyles.minHeight, triggerHeight.Offset);
-	const overlayLayout = React.useMemo<SelectOverlayLayout | undefined>(
-		() => resolveSelectOverlayLayout(triggerOverlayLayout, sizeStyles.listGap, minimumTriggerHeight),
-		[minimumTriggerHeight, sizeStyles.listGap, triggerOverlayLayout],
+	const resolveDropdownPlacement = React.useCallback(
+		(layout: TriggerOverlayLayout) =>
+			resolveSelectOverlayPlacement(layout, sizeStyles.listGap, minimumTriggerHeight),
+		[minimumTriggerHeight, sizeStyles.listGap],
 	);
 	const computedConstraint = resolveMinimumHeightConstraint(resolvedConstraint, sizeStyles.minHeight);
 	const triggerState: SelectTriggerState = disabled
@@ -175,7 +176,10 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 	const resolvedTriggerZIndex = triggerSlotProps?.ZIndex ?? resolvedRootZIndex;
 	const resolvedTriggerTextZIndex = triggerTextSlotProps?.ZIndex ?? resolvedTriggerZIndex;
 	const resolvedIndicatorZIndex = indicatorSlotProps?.ZIndex ?? resolvedTriggerZIndex;
-	const resolvedDropdownZIndex = incrementZIndex(resolvedTriggerZIndex ?? overlayLayout?.zIndexBase, 1);
+	const resolveDropdownZIndex = React.useCallback(
+		(layout: TriggerOverlayLayout) => incrementZIndex(resolvedTriggerZIndex ?? layout.zIndexBase, 1),
+		[resolvedTriggerZIndex],
+	);
 	const triggerEvent = useRootCursorEvent(
 		composeEventMaps(press.eventMap, Event),
 		triggerSlotProps?.Event === undefined ? mergedStyleProps.cursor : undefined,
@@ -320,23 +324,33 @@ const SelectBase = React.forwardRef<TextButton, SelectProps>((props, ref) => {
 					</frame>
 				</textbutton>
 			</frame>
-			{open && options.size() > 0 && overlayLayout !== undefined ? (
-				<SelectDropdown
-					layout={overlayLayout}
-					variant={variant}
-					color={color}
-					size={size}
-					options={options}
-					currentValue={currentValue}
-					sizeStyles={sizeStyles}
-					maxVisibleOptions={maxVisibleOptions}
-					slotProps={slotProps}
-					styleOverrides={styleOverrides}
-					cursor={mergedStyleProps.cursor}
-					zIndex={resolvedDropdownZIndex}
-					onSelect={handleSelect}
-				/>
-			) : undefined}
+			<TriggerOverlayLayer
+				trigger={triggerInstance}
+				enabled={open && options.size() > 0}
+				resolvePlacement={resolveDropdownPlacement}
+				resolveZIndex={resolveDropdownZIndex}
+				slotProps={slotProps?.overlay}
+				render={({ placement, localAnchorPosition, overlayZIndex }) => (
+					<SelectDropdown
+						placement={placement}
+						localAnchorPosition={localAnchorPosition}
+						overlayZIndex={overlayZIndex}
+						variant={variant}
+						color={color}
+						size={size}
+						options={options}
+						currentValue={currentValue}
+						sizeStyles={sizeStyles}
+						maxVisibleOptions={maxVisibleOptions}
+						slotProps={slotProps}
+						styleOverrides={styleOverrides}
+						cursor={mergedStyleProps.cursor}
+						closeOnOutsidePress={closeOnOutsidePress}
+						onOutsidePress={() => setOpen(false)}
+						onSelect={handleSelect}
+					/>
+				)}
+			/>
 		</>
 	);
 });

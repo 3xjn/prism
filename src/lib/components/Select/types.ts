@@ -31,6 +31,7 @@ export interface SelectSlots {
 	readonly triggerText: TextLabel;
 	readonly indicator: ImageLabel;
 	readonly overlay: Frame;
+	readonly outsideCapture: TextButton;
 	readonly list: Frame;
 	readonly listCorner: UICorner;
 	readonly listStroke: UIStroke;
@@ -101,6 +102,8 @@ export interface SelectProps extends SelectStyleProps {
 	readonly defaultValue?: string;
 	readonly onChange?: (value: string) => void;
 	readonly maxVisibleOptions?: number;
+	/** Close the dropdown when a mouse or touch press lands outside the list. Defaults to true. */
+	readonly closeOnOutsidePress?: boolean;
 	readonly Event?: React.InstanceProps<TextButton>["Event"];
 	readonly Change?: React.InstanceProps<TextButton>["Change"];
 	readonly slotProps?: SelectSlotProps;

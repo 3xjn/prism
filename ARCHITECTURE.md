@@ -177,7 +177,7 @@ Components whose semantics genuinely differ (for example per-item hover maps key
 
 ### Host requirements
 
-Trigger overlays keep positioning, input capture, and visuals as separate adapters. `TriggerOverlayLayer` owns portal-relative placement; `OutsidePressLayer` is a transparent, non-selectable mouse/touch catcher used by Popover and therefore Menu; `Backdrop` owns visible dimming and remains the right primitive for Modal. This separation is intentionally concrete rather than a mode-driven overlay runtime.
+Trigger overlays keep positioning, input capture, and visuals as separate adapters. `TriggerOverlayLayer` owns portal-relative placement for Select, Popover, and therefore Menu; `OutsidePressLayer` is their transparent, non-selectable mouse/touch catcher; `Backdrop` owns visible dimming and remains the right primitive for Modal. This separation is intentionally concrete rather than a mode-driven overlay runtime.
 
 Prism's overlay stacking (`incrementZIndex` ladders in Select, Popover, Menu, Modal, Tooltip) assumes the hosting `ScreenGui` uses `ZIndexBehavior.Sibling`. Under `Global` behavior, inner content whose `ZIndex` is not explicitly laddered can render beneath ancestor surfaces (a `ScreenGui` created via `Instance.new` defaults to `Global` — set it to `Sibling`).
 
@@ -240,7 +240,6 @@ The current ui-labs integration is file-discovery based. `index.storybook.ts` ex
 
 Deliberate next steps, roughly in priority order:
 
-- unify `Select`'s dropdown on the shared `TriggerOverlayLayer`/`Popover` machinery used by Popover, Tooltip, and Menu instead of its bespoke bottom-only overlay
 - extract a shared intent-surface color resolver so per-component `styles.ts` files stop hand-tuning the same `mixColor` hover/pressed blends
 - split the outsized files: `KeybindInput.tsx` (~1,100 lines), `Draggable.tsx` (~1,000 lines), and `LuauBridge.tsx` (~1,100 lines, with heavy internal duplication across its per-prop validators)
 - converge `Tabs` and `SegmentedControl` per-item hover tracking with the shared interaction hook where their keyed-map semantics allow

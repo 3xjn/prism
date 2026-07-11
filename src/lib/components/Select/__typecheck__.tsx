@@ -53,11 +53,13 @@ const validSelectProps: SelectProps[] = [
 	{ options, cursor: "pointer" },
 	{ options, variant: "subtle", color: "secondary", size: "sm" },
 	{ options: longOptions, maxVisibleOptions: 4 },
+	{ options, closeOnOutsidePress: false },
 	{ options, width: 260, minWidth: 220, maxWidth: 320, p: "xs", layoutOrder: 2 },
 	{ options, slotProps: { root: { BackgroundTransparency: 0.1 } } },
 	{ options, slotProps: { trigger: { AutoButtonColor: true } } },
 	{ options, slotProps: { triggerText: { TextXAlignment: Enum.TextXAlignment.Center } } },
 	{ options, slotProps: { overlay: { ZIndex: 9 }, list: { BackgroundTransparency: 0.02 }, listViewport: { ScrollBarThickness: 10 }, optionsLayout: { Padding: new UDim(0, 10) } } },
+	{ options, slotProps: { outsideCapture: { ZIndex: 10, AutoButtonColor: false } } },
 	{ options, slotProps: { option: { AutoButtonColor: true }, optionText: { TextColor3: Color3.fromRGB(96, 108, 134) } } },
 	{ options, slotProps: { triggerCorner: { CornerRadius: new UDim(0, 12) }, optionCorner: { CornerRadius: new UDim(0, 10) } } },
 	{ options, slotProps: { triggerPadding: { PaddingLeft: new UDim(0, 18) }, optionPadding: { PaddingRight: new UDim(0, 18) } } },
@@ -71,7 +73,7 @@ const validExportedSelectProps: ExportedSelectProps[] = [
 	{ options, defaultValue: "aurora", cursor: "default" },
 	{ options, selected: "aurora", onChange: () => undefined },
 	{ options, value: "harbor", onChange: () => undefined, color: "primary", variant: "outline" },
-	{ options, size: "lg", fullWidth: true, maxVisibleOptions: 5 },
+	{ options, size: "lg", fullWidth: true, maxVisibleOptions: 5, closeOnOutsidePress: false },
 ];
 
 const validSelectExamples = [
@@ -84,6 +86,7 @@ const validSelectExamples = [
 	<Select key="full-width" options={options} fullWidth />,
 	<Select key="cursor" options={options} cursor="pointer" />,
 	<Select key="scroll" options={longOptions} defaultValue="aurora" maxVisibleOptions={4} />,
+	<Select key="persistent" options={options} closeOnOutsidePress={false} />,
 	<Select
 		key="slots"
 		options={options}
@@ -91,6 +94,7 @@ const validSelectExamples = [
 			root: { ZIndex: 3 },
 			trigger: { Rotation: 0 },
 			overlay: { ZIndex: 5 },
+			outsideCapture: { ZIndex: 6 },
 			list: { BackgroundTransparency: 0.04 },
 			listViewport: { ScrollBarThickness: 12 },
 			optionText: { Text: "Override" },
