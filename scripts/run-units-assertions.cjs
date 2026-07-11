@@ -31,6 +31,21 @@ class UDim2 {
 	}
 }
 
+class Vector2 {
+	constructor(x = 0, y = 0) {
+		this.X = x;
+		this.Y = y;
+	}
+
+	add(other) {
+		return new Vector2(this.X + other.X, this.Y + other.Y);
+	}
+
+	sub(other) {
+		return new Vector2(this.X - other.X, this.Y - other.Y);
+	}
+}
+
 function luaSub(value, start, finish) {
 	const size = value.length;
 	const normalizedStart = start >= 0 ? start : size + start + 1;
@@ -200,6 +215,12 @@ function loadSelectionModule() {
 	return evaluateTypeScriptModule(filePath, source);
 }
 
+function loadOutsidePressModule() {
+	const filePath = path.join(process.cwd(), "src/lib/components/_shared/outsidePress.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	return evaluateTypeScriptModule(filePath, source, { Vector2 });
+}
+
 function loadNotificationStoreModule() {
 	const filePath = path.join(process.cwd(), "src/lib/notifications/_internal/notificationStore.ts");
 	const source = fs.readFileSync(filePath, "utf8");
@@ -329,6 +350,74 @@ function assertUDim(actual, expected, label) {
 function assertUDim2(actual, expected, label) {
 	assertUDim(actual.X, expected.X, `${label} (x)`);
 	assertUDim(actual.Y, expected.Y, `${label} (y)`);
+}
+
+function runOutsidePressAssertions() {
+	const { isPointInsideOutsidePressExclusions } = loadOutsidePressModule();
+	const root = {
+		AbsolutePosition: new Vector2(100, 200),
+		AbsoluteSize: new Vector2(800, 600),
+	};
+	const anchoredRect = {
+		position: new UDim2(0.5, 10, 0.25, -5),
+		size: new UDim2(0.25, 20, 0, 120),
+		anchor: new Vector2(0.5, 0.5),
+	};
+	assertCondition(
+		isPointInsideOutsidePressExclusions(root, new Vector2(400, 285), anchoredRect),
+		"outside press includes the minimum edge",
+	);
+	assertCondition(
+		isPointInsideOutsidePressExclusions(root, new Vector2(620, 405), anchoredRect),
+		"outside press includes the maximum edge",
+	);
+	assertCondition(
+		!isPointInsideOutsidePressExclusions(root, new Vector2(399.99, 285), anchoredRect),
+		"outside press rejects a point left of the minimum edge",
+	);
+	assertCondition(
+		!isPointInsideOutsidePressExclusions(root, new Vector2(620, 405.01), anchoredRect),
+		"outside press rejects a point below the maximum edge",
+	);
+
+	const firstInstance = {
+		AbsolutePosition: new Vector2(25, 40),
+		AbsoluteSize: new Vector2(50, 70),
+	};
+	const secondInstance = {
+		AbsolutePosition: new Vector2(700, 500),
+		AbsoluteSize: new Vector2(80, 60),
+	};
+	assertCondition(
+		isPointInsideOutsidePressExclusions(root, new Vector2(25, 40), undefined, [firstInstance]),
+		"outside press includes an instance minimum edge",
+	);
+	assertCondition(
+		isPointInsideOutsidePressExclusions(root, new Vector2(75, 110), undefined, [firstInstance]),
+		"outside press includes an instance maximum edge",
+	);
+	assertCondition(
+		isPointInsideOutsidePressExclusions(root, new Vector2(500, 350), anchoredRect, [firstInstance, secondInstance]),
+		"outside press recognizes the configured rectangle among multiple exclusions",
+	);
+	assertCondition(
+		isPointInsideOutsidePressExclusions(root, new Vector2(50, 75), anchoredRect, [firstInstance, secondInstance]),
+		"outside press recognizes the first excluded instance",
+	);
+	assertCondition(
+		isPointInsideOutsidePressExclusions(root, new Vector2(780, 560), anchoredRect, [firstInstance, secondInstance]),
+		"outside press recognizes the second excluded instance edge",
+	);
+	assertCondition(
+		!isPointInsideOutsidePressExclusions(root, new Vector2(200, 250), anchoredRect, [firstInstance, secondInstance]),
+		"outside press rejects a point outside every exclusion",
+	);
+	assertCondition(
+		!isPointInsideOutsidePressExclusions(root, new Vector2(500, 350)),
+		"outside press handles an empty exclusion set",
+	);
+
+	console.log("outside press: PASS");
 }
 
 function expectThrows(callback, messagePart, label) {
@@ -981,6 +1070,7 @@ function run() {
 	assertCondition(selectionGroup.SelectionBehaviorRight === "Stop", "selection preserves native group behavior");
 
 	console.log("selection: PASS");
+	runOutsidePressAssertions();
 
 	runNotificationStoreAssertions();
 	runNotificationsApiAssertions();

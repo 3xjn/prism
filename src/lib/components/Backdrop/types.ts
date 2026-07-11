@@ -2,16 +2,12 @@ import type React from "@rbxts/react";
 
 import type { ConcreteColorValue } from "@prism/theme";
 
+import type { OutsidePressExcludeRect } from "../_shared/outsidePress";
 import type { RawSlotProps } from "../_shared/slotProps";
 import type { SharedCursorValue } from "../_shared/useResolvedStyleProps";
 
 export type BackdropColorValue = ConcreteColorValue;
-
-export interface BackdropExcludeRect {
-	readonly position: UDim2;
-	readonly size: UDim2;
-	readonly anchor?: Vector2;
-}
+export type BackdropExcludeRect = OutsidePressExcludeRect;
 
 export interface BackdropSlots {
 	readonly root: TextButton;

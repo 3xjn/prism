@@ -56,6 +56,10 @@ const [query, setQuery] = React.useState("");
 <Input value={query} onChange={setQuery} placeholder="Search" variant="outline" fullWidth />
 ```
 
+## Overlay behavior
+
+`Popover` and `Menu` dismiss on a mouse or touch press outside their panel by default; set `closeOnOutsidePress={false}` when the surrounding surface should remain interactive without closing them. Their invisible input catcher is separate from `Backdrop`, which remains the visual dimming surface used by components such as `Modal`.
+
 ## Tokens and units
 
 Intent props take strings (`color="success"`); concrete color props take `theme.*` refs or raw `Color3` values. Dotted strings like `"text.secondary"` are not accepted.

@@ -171,11 +171,13 @@ Recurring mechanics live in `components/_shared` and new components must use the
 - `frameSize.ts` derives `Size`/`AutomaticSize` and minimum-height constraints from resolved style props
 - `useResolvedStyleProps` resolves shared style props and is the sole gateway to token resolution failures
 - `elevation.tsx` renders drop shadows from `theme.shadows` tokens (`sm` for cards, `md` for dropdown/popover panels, `lg` for modals); when no explicit size is passed it measures its parent's `AbsoluteSize` instead of scale-sizing, because scale-sized shadow children can lock an `AutomaticSize` parent into an inflated layout fixed point
-- `foundationDecorators`, `layering`/`TriggerOverlayLayer`, `usePresence`, `useRootCursor`, `textFont`, and `visual` cover decorators, overlay portals, presence transitions, cursor claims, fonts, and color mixing
+- `foundationDecorators`, `layering`/`TriggerOverlayLayer`, `OutsidePressLayer`, `usePresence`, `useRootCursor`, `textFont`, and `visual` cover decorators, overlay portals, interaction-only outside dismissal, presence transitions, cursor claims, fonts, and color mixing
 
 Components whose semantics genuinely differ (for example per-item hover maps keyed by value in `Tabs` and `SegmentedControl`, or conditional `onChange` firing) may keep local logic, but the divergence should be deliberate, not copy-paste drift.
 
 ### Host requirements
+
+Trigger overlays keep positioning, input capture, and visuals as separate adapters. `TriggerOverlayLayer` owns portal-relative placement; `OutsidePressLayer` is a transparent, non-selectable mouse/touch catcher used by Popover and therefore Menu; `Backdrop` owns visible dimming and remains the right primitive for Modal. This separation is intentionally concrete rather than a mode-driven overlay runtime.
 
 Prism's overlay stacking (`incrementZIndex` ladders in Select, Popover, Menu, Modal, Tooltip) assumes the hosting `ScreenGui` uses `ZIndexBehavior.Sibling`. Under `Global` behavior, inner content whose `ZIndex` is not explicitly laddered can render beneath ancestor surfaces (a `ScreenGui` created via `Instance.new` defaults to `Global` — set it to `Sibling`).
 

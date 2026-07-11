@@ -7,9 +7,9 @@ import {
 	renderStrokeDecorator,
 } from "../_shared/foundationDecorators";
 import { renderElevationShadow } from "../_shared/elevation";
-import { Backdrop } from "../Backdrop";
 import { incrementZIndex } from "../_shared/overlayLayerPolicy";
 import type { GuiZIndex } from "../_shared/overlayLayerPolicy";
+import { OutsidePressLayer } from "../_shared/OutsidePressLayer";
 import { resolveTextFontFace } from "../_shared/textFont";
 
 import type { PopoverSizeStyles, PopoverVisualStyles } from "./styles";
@@ -61,17 +61,13 @@ export function PopoverOverlayPanel({
 
 	return (
 		<>
-			{shouldRenderOutsideCapture ? (
-				<Backdrop
-					visible
-					opacity={0}
-					active
-					zIndex={resolvedOutsideCaptureZIndex}
-					excludeInstance={panelInstance}
-					onPress={onOutsidePress}
-					slotProps={{ root: outsideCaptureSlotProps }}
-				/>
-			) : undefined}
+			<OutsidePressLayer
+				active={shouldRenderOutsideCapture}
+				excludeInstances={panelInstance !== undefined ? [panelInstance] : undefined}
+				zIndex={resolvedOutsideCaptureZIndex}
+				onOutsidePress={onOutsidePress}
+				slotProps={outsideCaptureSlotProps}
+			/>
 			<textbutton
 				AutoButtonColor={false}
 				Active={panelSlotProps?.Active ?? true}

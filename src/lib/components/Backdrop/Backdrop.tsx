@@ -3,6 +3,7 @@ import React from "@rbxts/react";
 import { useTheme } from "@prism/theme";
 
 import { isPressInput } from "../_shared/interaction";
+import { isPointInsideOutsidePressExclusions } from "../_shared/outsidePress";
 import { resolveColorSafe } from "../_shared/useResolvedStyleProps";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
@@ -30,33 +31,6 @@ function resolveBackdropTransparency(opacity: number | undefined): number {
 	return 1 - math.clamp(opacity ?? 0.28, 0, 1);
 }
 
-function resolveUDim2Rect(root: TextButton, rect: BackdropExcludeRect): { readonly min: Vector2; readonly max: Vector2 } {
-	const rootSize = root.AbsoluteSize;
-	const absoluteSize = new Vector2(
-		rootSize.X * rect.size.X.Scale + rect.size.X.Offset,
-		rootSize.Y * rect.size.Y.Scale + rect.size.Y.Offset,
-	);
-	const absolutePosition = new Vector2(
-		rootSize.X * rect.position.X.Scale + rect.position.X.Offset,
-		rootSize.Y * rect.position.Y.Scale + rect.position.Y.Offset,
-	);
-	const anchor = rect.anchor ?? new Vector2(0, 0);
-	const min = root.AbsolutePosition.add(absolutePosition).sub(new Vector2(absoluteSize.X * anchor.X, absoluteSize.Y * anchor.Y));
-
-	return {
-		min,
-		max: min.add(absoluteSize),
-	};
-}
-
-function resolveInstanceRect(instance: GuiObject): { readonly min: Vector2; readonly max: Vector2 } {
-	const min = instance.AbsolutePosition;
-	return {
-		min,
-		max: min.add(instance.AbsoluteSize),
-	};
-}
-
 function findInputObject(args: readonly unknown[]): InputObject | undefined {
 	for (const value of args) {
 		if (typeIs(value, "Instance") && value.IsA("InputObject")) {
@@ -77,10 +51,6 @@ function findTextButton(args: readonly unknown[]): TextButton | undefined {
 	return undefined;
 }
 
-function isInsideRect(point: Vector2, rect: { readonly min: Vector2; readonly max: Vector2 }): boolean {
-	return point.X >= rect.min.X && point.X <= rect.max.X && point.Y >= rect.min.Y && point.Y <= rect.max.Y;
-}
-
 function shouldIgnoreBackdropPoint(
 	root: TextButton,
 	input: InputObject,
@@ -92,11 +62,8 @@ function shouldIgnoreBackdropPoint(
 	}
 
 	const point = new Vector2(input.Position.X, input.Position.Y);
-	if (excludeInstance !== undefined && isInsideRect(point, resolveInstanceRect(excludeInstance))) {
-		return true;
-	}
-
-	return excludeRect !== undefined && isInsideRect(point, resolveUDim2Rect(root, excludeRect));
+	const excludeInstances = excludeInstance === undefined ? undefined : [excludeInstance];
+	return isPointInsideOutsidePressExclusions(root, point, excludeRect, excludeInstances);
 }
 
 function shouldIgnoreBackdropPress(
