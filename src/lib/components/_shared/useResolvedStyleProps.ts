@@ -1,6 +1,7 @@
 import { resolveColor, resolveSize, useTheme } from "@prism/theme";
 import type { ConcreteColorValue, Theme, ThemeSize } from "@prism/theme";
-import { isDevMode, toUDim, toUDim2 } from "@prism/utils";
+import { componentDiagnostics } from "@prism/utils/diagnostics";
+import { toUDim, toUDim2 } from "@prism/utils";
 import type { SizeValue, SizeValue2D } from "@prism/utils";
 
 export { mergeSharedStyleProps } from "./mergeSharedStyleProps";
@@ -86,22 +87,17 @@ function isThemeSize(value: unknown): value is ThemeSize {
 	}
 }
 
-function reportResolutionFailure(message: string): void {
-	if (isDevMode()) {
-		error(message);
-		return;
-	}
-
-	warn(message);
-}
-
 function formatFailure(componentName: string, message: string): string {
 	return `[prism/${componentName}] ${message}`;
 }
 
-/** Report an invalid prop value through the shared dev/prod failure policy: throw in dev mode, warn in production. */
+function reportResolutionFailure(componentName: string, code: string, message: string): void {
+	componentDiagnostics.violation(code, () => formatFailure(componentName, message));
+}
+
+/** Report an invalid prop value through Prism's shared diagnostics policy. */
 export function reportComponentFailure(componentName: string, message: string): void {
-	reportResolutionFailure(formatFailure(componentName, message));
+	reportResolutionFailure(componentName, "invalid-prop", message);
 }
 
 export function resolveColorSafe(
@@ -121,7 +117,7 @@ export function resolveColorSafe(
 	}
 
 	const message = typeIs(result, "string") ? result : `Failed to resolve color: ${tostring(result)}`;
-	reportResolutionFailure(formatFailure(componentName, message));
+	reportResolutionFailure(componentName, "invalid-color", message);
 	return fallback;
 }
 
@@ -139,7 +135,7 @@ export function resolveThemeSizeSafe(
 	}
 
 	const message = typeIs(result, "string") ? result : `Failed to resolve ${scale}: ${tostring(result)}`;
-	reportResolutionFailure(formatFailure(componentName, message));
+	reportResolutionFailure(componentName, "invalid-theme-size", message);
 	return fallback;
 }
 
@@ -151,7 +147,7 @@ export function resolveUDimSafe(componentName: string, value: SizeValue, label: 
 	}
 
 	const message = typeIs(result, "string") ? result : `Failed to resolve ${label}: ${tostring(result)}`;
-	reportResolutionFailure(formatFailure(componentName, message));
+	reportResolutionFailure(componentName, "invalid-size", message);
 	return fallback ?? new UDim(0, 0);
 }
 
@@ -167,7 +163,7 @@ function resolveUDim2Safe(componentName: string, value: SizeValue2D | undefined,
 	}
 
 	const message = typeIs(result, "string") ? result : `Failed to resolve ${label}: ${tostring(result)}`;
-	reportResolutionFailure(formatFailure(componentName, message));
+	reportResolutionFailure(componentName, "invalid-size-2d", message);
 	return UDim2.fromOffset(0, 0);
 }
 
@@ -196,10 +192,9 @@ function resolveConstraintAxis(componentName: string, value: SizeValue | undefin
 
 	if (resolved.Scale !== 0) {
 		reportResolutionFailure(
-			formatFailure(
-				componentName,
-				`${label} does not support scale-based values. Use sizeConstraint with raw Vector2 values instead.`,
-			),
+			componentName,
+			"unsupported-constraint-scale",
+			`${label} does not support scale-based values. Use sizeConstraint with raw Vector2 values instead.`,
 		);
 		return undefined;
 	}

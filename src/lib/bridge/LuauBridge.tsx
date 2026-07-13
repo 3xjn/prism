@@ -27,7 +27,7 @@ import { Text } from "../components/Text";
 import { Tooltip } from "../components/Tooltip";
 import { ThemeProvider, theme as themeRefs } from "@prism/theme";
 import type { ConcreteColorValue, SemanticIntent, ThemeSize, Variant } from "@prism/theme";
-import { isDevMode } from "@prism/utils";
+import { bridgeDiagnostics } from "@prism/utils/diagnostics";
 import type { SizeValue, SizeValue2D } from "@prism/utils";
 import type { SharedCursorValue } from "../components/_shared/useResolvedStyleProps";
 import type { SegmentedControlOption } from "../components/SegmentedControl";
@@ -538,9 +538,7 @@ function readDraggableItems(props: LuauProps): readonly BridgeDraggableItem[] {
 }
 
 function warnUnknownComponent(component: string): void {
-	if (isDevMode()) {
-		warn(`[prism/bridge] Unknown component '${component}'. Rendering an empty fragment.`);
-	}
+	bridgeDiagnostics.violation("unknown-component", () => `[prism/bridge] Unknown component '${component}'. Rendering an empty fragment.`);
 }
 
 function renderChildren(children: PrismLuauNode | readonly PrismLuauNode[] | undefined): React.ReactNode {
