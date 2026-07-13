@@ -137,6 +137,41 @@ function loadUnitsModule() {
 	return module.exports;
 }
 
+function loadDiagnosticsModule(isStudio) {
+	const filePath = path.join(process.cwd(), "src/lib/utils/diagnostics.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	const compiled = ts.transpileModule(source, {
+		compilerOptions: {
+			module: ts.ModuleKind.CommonJS,
+			target: ts.ScriptTarget.ES2019,
+		},
+		fileName: filePath,
+	}).outputText;
+
+	const module = { exports: {} };
+	const warnings = [];
+	const context = vm.createContext({
+		module,
+		exports: module.exports,
+		game: {
+			GetService(name) {
+				if (name !== "RunService") {
+					throw new Error(`Unexpected service: ${name}`);
+				}
+
+				return { IsStudio: () => isStudio };
+			},
+		},
+		warn: (message) => warnings.push(message),
+		error: (message) => {
+			throw new Error(message);
+		},
+	});
+
+	vm.runInContext(compiled, context, { filename: filePath });
+	return { exports: module.exports, warnings };
+}
+
 function loadProgressRangeModule() {
 	const filePath = path.join(process.cwd(), "src/lib/components/Progress/Progress.tsx");
 	const source = fs.readFileSync(filePath, "utf8");
@@ -267,6 +302,36 @@ function run() {
 	expectThrows(() => toUDim2("10px"), "Invalid SizeValue2D", "toUDim2 rejects unsupported strings");
 
 	console.log("units: PASS");
+
+	const studioDiagnostics = loadDiagnosticsModule(true);
+	expectThrows(
+		() => studioDiagnostics.exports.componentDiagnostics.violation("invalid-token", () => "Studio violation"),
+		"Studio violation",
+		"Studio diagnostics throw violations",
+	);
+	assertCondition(studioDiagnostics.warnings.length === 0, "Studio diagnostics do not warn when throwing");
+	expectThrows(
+		() => studioDiagnostics.exports.bridgeDiagnostics.violation("unknown-component", () => "Studio bridge violation"),
+		"Studio bridge violation",
+		"Studio bridge diagnostics throw violations",
+	);
+
+	const productionDiagnostics = loadDiagnosticsModule(false);
+	let productionMessageEvaluated = false;
+	productionDiagnostics.exports.componentDiagnostics.violation("invalid-token", () => {
+		productionMessageEvaluated = true;
+		return "Production violation";
+	});
+	assertCondition(!productionMessageEvaluated, "Production diagnostics skip lazy messages");
+	let productionBridgeMessageEvaluated = false;
+	productionDiagnostics.exports.bridgeDiagnostics.violation("unknown-component", () => {
+		productionBridgeMessageEvaluated = true;
+		return "Production bridge violation";
+	});
+	assertCondition(!productionBridgeMessageEvaluated, "Production bridge diagnostics skip lazy messages");
+	assertCondition(productionDiagnostics.warnings.length === 0, "Production diagnostics stay silent");
+
+	console.log("diagnostics: PASS");
 
 	const extremeProgressRange = resolveProgressRange(Number.MAX_VALUE, Number.MAX_VALUE);
 	const extremeProgressValue = resolveProgressValue(Number.MAX_VALUE, extremeProgressRange);
