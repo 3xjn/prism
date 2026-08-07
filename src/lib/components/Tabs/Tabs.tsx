@@ -233,6 +233,7 @@ function TabsTabView({
 				Active={false}
 				Selectable={false}
 				ZIndex={resolvedTabZIndex}
+				{...slotProps?.tabIndicator}
 			/>
 			{renderPaddingDecorator({
 				enabled: true,
@@ -254,10 +255,18 @@ function TabsTabView({
 				),
 				slotProps: slotProps?.tabPadding,
 			})}
+			{tab.icon !== undefined && (
+				<imagelabel key="icon" BackgroundTransparency={1} BorderSizePixel={0}
+					AnchorPoint={new Vector2(0, 0.5)} Position={new UDim2(0, 0, 0.5, 0)}
+					Size={UDim2.fromOffset(math.max(12, sizeStyles.fontSize), math.max(12, sizeStyles.fontSize))}
+					Image={tab.icon} ImageColor3={animatedTabStyles.textColor} ImageTransparency={animatedTabStyles.textTransparency}
+					ScaleType={Enum.ScaleType.Fit} ZIndex={resolvedTabTextZIndex} {...slotProps?.tabIcon} />
+			)}
 			<textlabel
 				BackgroundTransparency={1}
 				BorderSizePixel={0}
-				Size={UDim2.fromScale(1, 1)}
+				Position={tab.icon !== undefined ? new UDim2(0, sizeStyles.fontSize + 5, 0, 0) : UDim2.fromScale(0, 0)}
+				Size={tab.icon !== undefined ? new UDim2(1, -(sizeStyles.fontSize + 5), 1, 0) : UDim2.fromScale(1, 1)}
 				AutomaticSize={fullWidth ? Enum.AutomaticSize.None : Enum.AutomaticSize.X}
 				Text={tabTextSlotProps?.Text ?? tab.label}
 				TextColor3={tabTextSlotProps?.TextColor3 ?? animatedTabStyles.textColor}
