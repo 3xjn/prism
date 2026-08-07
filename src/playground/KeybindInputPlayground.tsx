@@ -1,6 +1,7 @@
 import React from "@rbxts/react";
 
 import { KeybindInput } from "@prism";
+import type { KeybindValue } from "@prism";
 import { ThemeProvider } from "@prism/theme";
 import type { ThemeOverride } from "@prism/theme";
 
@@ -12,7 +13,7 @@ type MockupDevice = "keyboard" | "mouse" | "gamepad";
 
 interface MockupKeybindTile {
 	readonly device: MockupDevice;
-	readonly value: Enum.KeyCode;
+	readonly value: KeybindValue;
 	readonly label?: string;
 	readonly listening?: boolean;
 }
@@ -74,7 +75,7 @@ const MOCKUP_ROWS: readonly (readonly MockupKeybindTile[])[] = [
 	],
 	[
 		{ device: "keyboard", value: Enum.KeyCode.LeftShift, label: "⇧ Shift" },
-		{ device: "mouse", value: Enum.KeyCode.Unknown, label: "Mouse4" },
+		{ device: "mouse", value: Enum.UserInputType.MouseButton2 },
 		{ device: "gamepad", value: Enum.KeyCode.ButtonR1 },
 	],
 	[
@@ -84,7 +85,7 @@ const MOCKUP_ROWS: readonly (readonly MockupKeybindTile[])[] = [
 	],
 	[
 		{ device: "keyboard", value: Enum.KeyCode.E },
-		{ device: "mouse", value: Enum.KeyCode.Unknown, label: "Mouse1" },
+		{ device: "mouse", value: Enum.UserInputType.MouseButton1 },
 		{ device: "gamepad", value: Enum.KeyCode.ButtonX },
 	],
 	[
@@ -95,10 +96,10 @@ const MOCKUP_ROWS: readonly (readonly MockupKeybindTile[])[] = [
 ];
 
 function resolveCaptureDevice(device: MockupDevice): KeybindInputProps["captureDevice"] {
-	return device === "gamepad" ? "gamepad" : "keyboard";
+	return device;
 }
 
-function resolveLabelSlot(tile: MockupKeybindTile, value: Enum.KeyCode): KeybindInputLabelSlotProps | undefined {
+function resolveLabelSlot(tile: MockupKeybindTile, value: KeybindValue): KeybindInputLabelSlotProps | undefined {
 	if (tile.label === undefined) {
 		return undefined;
 	}
@@ -113,7 +114,7 @@ function resolveLabelSlot(tile: MockupKeybindTile, value: Enum.KeyCode): Keybind
 	};
 }
 
-function resolveSlotProps(tile: MockupKeybindTile, value: Enum.KeyCode): KeybindInputSlotProps | undefined {
+function resolveSlotProps(tile: MockupKeybindTile, value: KeybindValue): KeybindInputSlotProps | undefined {
 	const label = resolveLabelSlot(tile, value);
 
 	if (tile.listening) {

@@ -14,7 +14,9 @@ export type KeybindInputSize = ThemeSize;
 
 export type KeybindInputColor = SemanticIntent;
 
-export type KeybindCaptureDevice = "keyboard" | "gamepad" | "both";
+export type KeybindValue = Enum.KeyCode | Enum.UserInputType;
+
+export type KeybindCaptureDevice = "keyboard" | "mouse" | "gamepad" | "both";
 
 export type KeybindDisplayDevice = "keyboard" | "mouse" | "gamepad";
 
@@ -69,16 +71,16 @@ export interface KeybindInputStyleProps extends Omit<SharedStyleProps, "bg" | "b
 }
 
 export interface KeybindInputProps extends KeybindInputStyleProps {
-	readonly value?: Enum.KeyCode;
-	readonly defaultValue?: Enum.KeyCode;
-	readonly onChange?: (value: Enum.KeyCode) => void;
+	readonly value?: KeybindValue;
+	readonly defaultValue?: KeybindValue;
+	readonly onChange?: (value: KeybindValue) => void;
 	readonly captureDevice?: KeybindCaptureDevice;
 	readonly cancelKeyCodes?: readonly Enum.KeyCode[];
-	readonly allowedKeyCodes?: readonly Enum.KeyCode[];
-	readonly blockedKeyCodes?: readonly Enum.KeyCode[];
+	readonly allowedKeyCodes?: readonly KeybindValue[];
+	readonly blockedKeyCodes?: readonly KeybindValue[];
 	readonly onCaptureStart?: () => void;
 	readonly onCaptureCancel?: () => void;
-	readonly onCaptureEnd?: (value: Enum.KeyCode) => void;
+	readonly onCaptureEnd?: (value: KeybindValue) => void;
 	readonly onCapturingChange?: (capturing: boolean) => void;
 	readonly Event?: React.InstanceProps<TextButton>["Event"];
 	readonly Change?: React.InstanceProps<TextButton>["Change"];

@@ -7,10 +7,21 @@ import type {
 	KeybindInputStyleOverride,
 	KeybindInputStyleOverrideContext,
 	KeybindInputVisualStyles,
+	KeybindValue,
 } from "./types";
 
 const keybindRef = React.createRef<TextButton>();
 type ExportedKeybindInputProps = React.ComponentProps<typeof KeybindInput>;
+
+function discriminateKeybindValue(value: KeybindValue): string {
+	if (value.IsA("KeyCode")) {
+		const keyCode: Enum.KeyCode = value;
+		return keyCode.Name;
+	}
+
+	const userInputType: Enum.UserInputType = value;
+	return userInputType.Name;
+}
 
 const keybindInputStyleOverride: KeybindInputStyleOverride = (_visualStyles, ctx) => {
 	if (ctx.state === "capturing") {
@@ -32,12 +43,13 @@ const validKeybindInputProps: KeybindInputProps[] = [
 	{},
 	{ value: Enum.KeyCode.E, onChange: () => undefined },
 	{ defaultValue: Enum.KeyCode.ButtonA, captureDevice: "gamepad" },
+	{ defaultValue: Enum.UserInputType.MouseButton1, captureDevice: "mouse" },
 	{ value: Enum.KeyCode.Unknown, placeholder: "Unbound", clearable: false },
 	{ defaultValue: Enum.KeyCode.ButtonB, captureDevice: "gamepad", cancelKeyCodes: [Enum.KeyCode.ButtonSelect] },
 	{ disabled: true, readOnly: true, fullWidth: true },
 	{ variant: "light", color: "success", size: "lg" },
 	{ displayDevice: "mouse", slotProps: { label: { Text: "Mouse4" } } },
-	{ allowedKeyCodes: [Enum.KeyCode.E, Enum.KeyCode.F], blockedKeyCodes: [Enum.KeyCode.Escape] },
+	{ allowedKeyCodes: [Enum.KeyCode.E, Enum.UserInputType.MouseButton1], blockedKeyCodes: [Enum.KeyCode.Escape] },
 	{
 		onCaptureStart: () => undefined,
 		onCaptureCancel: () => undefined,
@@ -61,6 +73,7 @@ const validExportedKeybindInputProps: ExportedKeybindInputProps[] = [
 	{},
 	{ value: Enum.KeyCode.Space, onChange: () => undefined },
 	{ defaultValue: Enum.KeyCode.ButtonR1, captureDevice: "both" },
+	{ value: Enum.UserInputType.MouseButton2, captureDevice: "mouse" },
 ];
 
 const validKeybindInputExamples = [
@@ -68,6 +81,7 @@ const validKeybindInputExamples = [
 	<KeybindInput key="value" value={Enum.KeyCode.Q} onChange={() => undefined} />,
 	<KeybindInput key="clear" defaultValue={Enum.KeyCode.LeftShift} clearable />,
 	<KeybindInput key="gamepad" captureDevice="gamepad" defaultValue={Enum.KeyCode.ButtonA} />,
+	<KeybindInput key="mouse" captureDevice="mouse" defaultValue={Enum.UserInputType.MouseButton3} />,
 	<KeybindInput
 		key="slots"
 		slotProps={{ triggerPadding: { PaddingLeft: new UDim(0, 14) }, hint: { Text: "Custom hint" } }}
@@ -79,7 +93,9 @@ const acceptsKeybindInputChildren: React.ReactNode = validKeybindInputExamples;
 const acceptsKeybindInputProps: KeybindInputProps[] = validKeybindInputProps;
 const acceptsExportedKeybindInputProps: ExportedKeybindInputProps[] = validExportedKeybindInputProps;
 
-type InvalidCaptureDeviceAllowed = "mouse" extends NonNullable<KeybindInputProps["captureDevice"]> ? true : false;
+type MouseCaptureDeviceAllowed = AssertTrue<IsAssignable<"mouse", NonNullable<KeybindInputProps["captureDevice"]>>>;
+type KeyCodeValueAllowed = AssertTrue<IsAssignable<Enum.KeyCode, KeybindValue>>;
+type MouseButtonValueAllowed = AssertTrue<IsAssignable<Enum.UserInputType.MouseButton1, KeybindValue>>;
 type InvalidValueAllowed = string extends NonNullable<KeybindInputProps["value"]> ? true : false;
 type KeybindValueOptional = undefined extends KeybindInputProps["value"] ? true : false;
 type KeybindInputStyleOverrideAssignableToProp = AssertTrue<
@@ -113,7 +129,9 @@ type KeybindInputVisualStylesHasNoGap = AssertFalse<IsAssignable<"gap", keyof Ke
 type KeybindInputVisualStylesHasNoLayout = AssertFalse<IsAssignable<"layout", keyof KeybindInputVisualStyles>>;
 type KeybindInputVisualStylesHasNoSlotProps = AssertFalse<IsAssignable<"slotProps", keyof KeybindInputVisualStyles>>;
 
-const invalidCaptureDevice: InvalidCaptureDeviceAllowed = false;
+const mouseCaptureDeviceAllowed: MouseCaptureDeviceAllowed = true;
+const keyCodeValueAllowed: KeyCodeValueAllowed = true;
+const mouseButtonValueAllowed: MouseButtonValueAllowed = true;
 const invalidValue: InvalidValueAllowed = false;
 const keybindValueOptional: KeybindValueOptional = true;
 const keybindInputStyleOverrideAssignableToProp: KeybindInputStyleOverrideAssignableToProp = true;
@@ -137,7 +155,10 @@ export {
 	acceptsExportedKeybindInputProps,
 	acceptsKeybindInputChildren,
 	acceptsKeybindInputProps,
-	invalidCaptureDevice,
+	discriminateKeybindValue,
+	keyCodeValueAllowed,
+	mouseButtonValueAllowed,
+	mouseCaptureDeviceAllowed,
 	invalidValue,
 	keybindInputStyleOverride,
 	keybindInputStyleOverrideAssignableToExportedProp,
