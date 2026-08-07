@@ -11,6 +11,7 @@ import type { TabsListVisualStyles, TabsPanelVisualStyles, TabsTabState, TabsTab
 export interface TabsTab {
 	readonly value: string;
 	readonly label: string;
+	readonly icon?: string;
 	readonly panel?: React.ReactNode;
 	readonly disabled?: boolean;
 }
@@ -36,7 +37,9 @@ export interface TabsSlots {
 	readonly tab: TextButton;
 	readonly tabCorner: UICorner;
 	readonly tabStroke: UIStroke;
+	readonly tabIndicator: Frame;
 	readonly tabPadding: UIPadding;
+	readonly tabIcon: ImageLabel;
 	readonly tabText: TextLabel;
 	readonly panel: Frame;
 	readonly panelCorner: UICorner;
