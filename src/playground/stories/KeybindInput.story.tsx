@@ -3,9 +3,9 @@ import ReactRoblox from "@rbxts/react-roblox";
 import { Boolean, CreateReactStory, EnumList } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
 import { Box, KeybindInput, Stack, Text } from "@prism";
-import type { KeybindCaptureDevice, KeybindInputColor, KeybindInputSize } from "@prism";
+import type { KeybindCaptureDevice, KeybindInputColor, KeybindInputSize, KeybindValue } from "@prism";
 import type { Variant } from "@prism/theme";
-import { useTheme , theme as themeRefs } from "@prism/theme";
+import { useTheme, theme as themeRefs } from "@prism/theme";
 
 import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
 
@@ -24,7 +24,7 @@ const controls = {
 		"primary",
 	),
 	size: EnumList({ xs: "xs", sm: "sm", md: "md", lg: "lg", xl: "xl" }, "md"),
-	captureDevice: EnumList({ both: "both", keyboard: "keyboard", gamepad: "gamepad" }, "both"),
+	captureDevice: EnumList({ both: "both", keyboard: "keyboard", mouse: "mouse", gamepad: "gamepad" }, "both"),
 	disabled: Boolean(false),
 	readOnly: Boolean(false),
 	clearable: Boolean(true),
@@ -33,7 +33,7 @@ const controls = {
 
 type KeybindInputStoryControls = InferControls<typeof controls>;
 
-function formatKeyCode(value: Enum.KeyCode): string {
+function formatKeybind(value: KeybindValue): string {
 	return value === Enum.KeyCode.Unknown ? "Unbound" : value.Name;
 }
 
@@ -43,8 +43,8 @@ function KeybindInputStoryCanvas({
 	readonly controls: KeybindInputStoryControls;
 }): React.ReactElement {
 	const theme = useTheme();
-	const [interactKey, setInteractKey] = React.useState<Enum.KeyCode>(Enum.KeyCode.E);
-	const [ultimateKey, setUltimateKey] = React.useState<Enum.KeyCode>(Enum.KeyCode.ButtonR1);
+	const [interactKey, setInteractKey] = React.useState<KeybindValue>(Enum.KeyCode.E);
+	const [ultimateKey, setUltimateKey] = React.useState<KeybindValue>(Enum.KeyCode.ButtonR1);
 	const [capturing, setCapturing] = React.useState(false);
 	const resolvedVariant = currentControls.variant as Variant;
 	const resolvedColor = currentControls.color as KeybindInputColor;
@@ -57,7 +57,7 @@ function KeybindInputStoryCanvas({
 				<Stack width="100%" gap="md">
 					<Text text="KeybindInput" size="lg" weight={700} color={themeRefs.text.primary} />
 					<Text
-						text="Click a control to capture a keyboard or gamepad key. Click it again to keep the current bind; Escape/ButtonSelect cancels capture; Backspace/Delete clears when clearable."
+						text="Click a control to capture a keyboard key, mouse button, or gamepad key. Click it again to keep the current bind; Escape/ButtonSelect cancels capture; Backspace/Delete clears when clearable."
 						color={themeRefs.text.secondary}
 						wrap
 						width="100%"
@@ -96,7 +96,7 @@ function KeybindInputStoryCanvas({
 								/>
 							</Stack>
 							<Text
-								text={`Interact: ${formatKeyCode(interactKey)} | Ultimate: ${formatKeyCode(ultimateKey)} | Capturing: ${capturing ? "yes" : "no"}`}
+								text={`Interact: ${formatKeybind(interactKey)} | Ultimate: ${formatKeybind(ultimateKey)} | Capturing: ${capturing ? "yes" : "no"}`}
 								size="sm"
 								color={themeRefs.text.secondary}
 								wrap
@@ -114,7 +114,7 @@ const story = CreateReactStory(
 	{
 		name: "KeybindInput",
 		summary:
-			"Game keybind capture control for keyboard and gamepad mappings, with clear/cancel behavior, semantic variants, and typed slot escapes.",
+			"Game keybind capture control for keyboard, mouse, and gamepad mappings, with clear/cancel behavior, semantic variants, and typed slot escapes.",
 		react: React,
 		reactRoblox: ReactRoblox,
 		controls,

@@ -11,4 +11,5 @@ export type {
 	KeybindInputStyleOverrideContext,
 	KeybindInputStyleProps,
 	KeybindInputVisualStyles,
+	KeybindValue,
 } from "./types";

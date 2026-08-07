@@ -33,12 +33,23 @@ import {
 	type KeybindInputSizeStyles,
 	type KeybindInputVisualStyles,
 } from "./styles";
-import type { KeybindCaptureDevice, KeybindDisplayDevice, KeybindInputProps, KeybindInputSlotProps } from "./types";
+import type {
+	KeybindCaptureDevice,
+	KeybindDisplayDevice,
+	KeybindInputProps,
+	KeybindInputSlotProps,
+	KeybindValue,
+} from "./types";
 
 const UserInputService = game.GetService("UserInputService");
 const GAMEPAD_KEYCODE_MIN = Enum.KeyCode.ButtonX.Value;
 const GAMEPAD_KEYCODE_MAX = Enum.KeyCode.Thumbstick2Right.Value;
 const DEFAULT_CANCEL_KEY_CODES = [Enum.KeyCode.Escape, Enum.KeyCode.ButtonSelect] as const;
+const MOUSE_BUTTON_LABELS = new Map<Enum.UserInputType, string>([
+	[Enum.UserInputType.MouseButton1, "Mouse 1"],
+	[Enum.UserInputType.MouseButton2, "Mouse 2"],
+	[Enum.UserInputType.MouseButton3, "Mouse 3"],
+]);
 const SPECIAL_KEY_LABELS = new Map<Enum.KeyCode, string>([
 	[Enum.KeyCode.LeftShift, "Left Shift"],
 	[Enum.KeyCode.RightShift, "Right Shift"],
@@ -143,7 +154,7 @@ type TextLabelFontFace = React.InstanceProps<TextLabel>["FontFace"];
 interface KeybindTileContentState {
 	readonly displayText: string;
 	readonly hintText: string;
-	readonly value: Enum.KeyCode;
+	readonly value: KeybindValue;
 	readonly captureDevice: KeybindCaptureDevice;
 	readonly displayDevice: KeybindDisplayDevice | undefined;
 	readonly capturing: boolean;
@@ -211,8 +222,20 @@ interface GamepadBadgeRenderState {
 	readonly zIndex: React.InstanceProps<Frame>["ZIndex"] | undefined;
 }
 
+function isKeyCode(value: KeybindValue): value is Enum.KeyCode {
+	return value.IsA("KeyCode");
+}
+
 function isGamepadKeyCode(keyCode: Enum.KeyCode): boolean {
 	return keyCode.Value >= GAMEPAD_KEYCODE_MIN && keyCode.Value <= GAMEPAD_KEYCODE_MAX;
+}
+
+function isMouseButtonInputType(inputType: Enum.UserInputType): boolean {
+	return (
+		inputType === Enum.UserInputType.MouseButton1 ||
+		inputType === Enum.UserInputType.MouseButton2 ||
+		inputType === Enum.UserInputType.MouseButton3
+	);
 }
 
 function isGamepadInput(input: InputObject): boolean {
@@ -233,20 +256,52 @@ function isDeviceAllowed(input: InputObject, captureDevice: KeybindCaptureDevice
 		return input.UserInputType === Enum.UserInputType.Keyboard;
 	}
 
+	if (captureDevice === "mouse") {
+		return isMouseButtonInputType(input.UserInputType);
+	}
+
 	if (captureDevice === "gamepad") {
 		return isGamepadInput(input);
 	}
 
-	return input.UserInputType === Enum.UserInputType.Keyboard || isGamepadInput(input);
+	return (
+		input.UserInputType === Enum.UserInputType.Keyboard ||
+		isMouseButtonInputType(input.UserInputType) ||
+		isGamepadInput(input)
+	);
 }
 
-function containsKeyCode(values: readonly Enum.KeyCode[] | undefined, keyCode: Enum.KeyCode): boolean {
+function resolveInputValue(input: InputObject): KeybindValue | undefined {
+	if (isMouseButtonInputType(input.UserInputType)) {
+		return input.UserInputType;
+	}
+
+	return input.KeyCode === Enum.KeyCode.Unknown ? undefined : input.KeyCode;
+}
+
+function isInputWithinGuiObject(input: InputObject, guiObject: GuiObject | undefined): boolean {
+	if (guiObject === undefined) {
+		return false;
+	}
+
+	const position = input.Position;
+	const absolutePosition = guiObject.AbsolutePosition;
+	const absoluteSize = guiObject.AbsoluteSize;
+	return (
+		position.X >= absolutePosition.X &&
+		position.X <= absolutePosition.X + absoluteSize.X &&
+		position.Y >= absolutePosition.Y &&
+		position.Y <= absolutePosition.Y + absoluteSize.Y
+	);
+}
+
+function containsValue(values: readonly KeybindValue[] | undefined, binding: KeybindValue): boolean {
 	if (values === undefined) {
 		return false;
 	}
 
 	for (const value of values) {
-		if (value === keyCode) {
+		if (value === binding) {
 			return true;
 		}
 	}
@@ -254,40 +309,48 @@ function containsKeyCode(values: readonly Enum.KeyCode[] | undefined, keyCode: E
 	return false;
 }
 
-function isAllowedKeyCode(
-	keyCode: Enum.KeyCode,
-	allowed: readonly Enum.KeyCode[] | undefined,
-	blocked: readonly Enum.KeyCode[] | undefined,
-): boolean {
-	if (keyCode === Enum.KeyCode.Unknown) {
-		return false;
-	}
-
-	if (containsKeyCode(blocked, keyCode)) {
-		return false;
-	}
-
-	return allowed === undefined || containsKeyCode(allowed, keyCode);
+function containsKeyCode(values: readonly Enum.KeyCode[] | undefined, keyCode: Enum.KeyCode): boolean {
+	return containsValue(values, keyCode);
 }
 
-function resolveKeyCodeLabel(keyCode: Enum.KeyCode): string {
-	if (keyCode === Enum.KeyCode.Unknown) {
+function isAllowedValue(
+	binding: KeybindValue,
+	allowed: readonly KeybindValue[] | undefined,
+	blocked: readonly KeybindValue[] | undefined,
+): boolean {
+	if (isKeyCode(binding) && binding === Enum.KeyCode.Unknown) {
+		return false;
+	}
+
+	if (containsValue(blocked, binding)) {
+		return false;
+	}
+
+	return allowed === undefined || containsValue(allowed, binding);
+}
+
+function resolveKeybindLabel(binding: KeybindValue): string {
+	if (!isKeyCode(binding)) {
+		return MOUSE_BUTTON_LABELS.get(binding) ?? binding.Name;
+	}
+
+	if (binding === Enum.KeyCode.Unknown) {
 		return "";
 	}
 
-	const specialLabel = SPECIAL_KEY_LABELS.get(keyCode);
+	const specialLabel = SPECIAL_KEY_LABELS.get(binding);
 	if (specialLabel !== undefined) {
 		return specialLabel;
 	}
 
-	if (!isGamepadKeyCode(keyCode)) {
-		const layoutLabel = UserInputService.GetStringForKeyCode(keyCode);
+	if (!isGamepadKeyCode(binding)) {
+		const layoutLabel = UserInputService.GetStringForKeyCode(binding);
 		if (layoutLabel !== "") {
 			return layoutLabel;
 		}
 	}
 
-	return GAMEPAD_KEY_LABELS.get(keyCode) ?? keyCode.Name;
+	return GAMEPAD_KEY_LABELS.get(binding) ?? binding.Name;
 }
 
 function resolveKeybindInteractionState(
@@ -387,16 +450,24 @@ function shouldPreferNativeGamepadGlyph(platformName: string): boolean {
 function resolveDeviceIconName(
 	captureDevice: KeybindCaptureDevice,
 	displayDevice: KeybindDisplayDevice | undefined,
-	value: Enum.KeyCode,
+	value: KeybindValue,
 	capturing: boolean,
 ): IconName {
 	if (displayDevice !== undefined) {
 		return DISPLAY_DEVICE_ICON_NAMES[displayDevice];
 	}
 
-	const shouldShowGamepadIcon = captureDevice === "gamepad" || (!capturing && isGamepadKeyCode(value));
+	if (!capturing && !isKeyCode(value)) {
+		return "mouse";
+	}
 
-	return shouldShowGamepadIcon ? "gamepad-2" : "keyboard";
+	const shouldShowGamepadIcon =
+		captureDevice === "gamepad" || (!capturing && isKeyCode(value) && isGamepadKeyCode(value));
+	if (shouldShowGamepadIcon) {
+		return "gamepad-2";
+	}
+
+	return captureDevice === "mouse" ? "mouse" : "keyboard";
 }
 
 function resolveGamepadFaceBadgeStyle(
@@ -529,26 +600,34 @@ function KeybindValueContent({
 	const resolvedLabelFontFace = resolveTextFontFace(labelSlotProps?.Font, labelSlotProps?.FontFace, theme.fontFamily);
 	const resolvedHintFont = hintSlotProps?.Font ?? theme.fontFamily;
 	const resolvedHintFontFace = resolveTextFontFace(hintSlotProps?.Font, hintSlotProps?.FontFace, theme.fontFamily);
-	const gamepadPlatformName = contentState.hasValue ? resolveGamepadPlatformName(contentState.value) : undefined;
+	const gamepadKeyCode =
+		contentState.hasValue && isKeyCode(contentState.value) && isGamepadKeyCode(contentState.value)
+			? contentState.value
+			: undefined;
+	const gamepadPlatformName = gamepadKeyCode === undefined ? undefined : resolveGamepadPlatformName(gamepadKeyCode);
 	const playStationGlyphColor =
 		gamepadPlatformName === undefined ? undefined : PLAYSTATION_FACE_BUTTON_GLYPH_COLORS.get(gamepadPlatformName);
 	const shouldUseNativeGamepadGlyph =
 		gamepadPlatformName !== undefined && shouldPreferNativeGamepadGlyph(gamepadPlatformName);
 	const preferredGamepadGlyphImage =
-		shouldUseNativeGamepadGlyph && !contentState.capturing && labelSlotProps?.Text === undefined
-			? resolveGamepadGlyphImage(contentState.value)
+		gamepadKeyCode !== undefined &&
+		shouldUseNativeGamepadGlyph &&
+		!contentState.capturing &&
+		labelSlotProps?.Text === undefined
+			? resolveGamepadGlyphImage(gamepadKeyCode)
 			: undefined;
 	const gamepadBadge =
 		preferredGamepadGlyphImage === undefined &&
+		gamepadKeyCode !== undefined &&
 		gamepadPlatformName !== undefined &&
 		!contentState.capturing &&
 		labelSlotProps?.Text === undefined
-			? resolveGamepadBadgeStyle(contentState.value, gamepadPlatformName, sizeStyles)
+			? resolveGamepadBadgeStyle(gamepadKeyCode, gamepadPlatformName, sizeStyles)
 			: undefined;
 	const gamepadGlyphImage =
 		preferredGamepadGlyphImage ??
-		(gamepadBadge === undefined && !contentState.capturing && contentState.hasValue
-			? resolveGamepadGlyphImage(contentState.value)
+		(gamepadBadge === undefined && !contentState.capturing && gamepadKeyCode !== undefined
+			? resolveGamepadGlyphImage(gamepadKeyCode)
 			: undefined);
 	const shouldRenderGamepadGlyph = gamepadGlyphImage !== undefined && labelSlotProps?.Text === undefined;
 	const gamepadGlyphSize = math.max(14, sizeStyles.gamepadGlyphSize - 4);
@@ -773,6 +852,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 	const [capturing, setCapturing] = React.useState(false);
 	const [uncontrolledValue, setUncontrolledValue] = React.useState(value ?? defaultValue);
 	const valueRef = React.useRef(value ?? defaultValue);
+	const triggerRef = React.useRef<TextButton>();
 	const capturingRef = React.useRef(false);
 	const disabledRef = React.useRef(disabled);
 	const readOnlyRef = React.useRef(readOnly);
@@ -851,7 +931,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 		onCapturingChangeRef.current?.(nextCapturing);
 	}, []);
 	const commitValue = React.useCallback(
-		(nextValue: Enum.KeyCode) => {
+		(nextValue: KeybindValue) => {
 			if (value === undefined) {
 				setUncontrolledValue(nextValue);
 			}
@@ -943,13 +1023,21 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 				return;
 			}
 
-			if (!isAllowedKeyCode(keyCode, allowedKeyCodesRef.current, blockedKeyCodesRef.current)) {
+			if (isMouseButtonInputType(input.UserInputType) && isInputWithinGuiObject(input, triggerRef.current)) {
 				return;
 			}
 
-			commitValue(keyCode);
+			const nextValue = resolveInputValue(input);
+			if (
+				nextValue === undefined ||
+				!isAllowedValue(nextValue, allowedKeyCodesRef.current, blockedKeyCodesRef.current)
+			) {
+				return;
+			}
+
+			commitValue(nextValue);
 			setCapturingState(false);
-			onCaptureEndRef.current?.(keyCode);
+			onCaptureEndRef.current?.(nextValue);
 		});
 
 		return () => {
@@ -965,8 +1053,8 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 	const keycapSlotProps = slotProps?.keycap;
 	const gamepadGlyphSlotProps = slotProps?.gamepadGlyph;
 	const currentValue = value ?? uncontrolledValue;
-	const hasValue = currentValue !== Enum.KeyCode.Unknown;
-	const displayText = capturing ? captureLabel : hasValue ? resolveKeyCodeLabel(currentValue) : placeholder;
+	const hasValue = !isKeyCode(currentValue) || currentValue !== Enum.KeyCode.Unknown;
+	const displayText = capturing ? captureLabel : hasValue ? resolveKeybindLabel(currentValue) : placeholder;
 	const hintText = "";
 	const interactionState = resolveKeybindInteractionState(disabled, readOnly, capturing, pressed, hovered);
 	const styleOverrideContext = { theme, variant, color, size, state: interactionState, hasValue };
@@ -1104,6 +1192,7 @@ const KeybindInputBase = React.forwardRef<TextButton, KeybindInputProps>((props,
 				{...triggerInstanceProps}
 				{...triggerSlotProps}
 				ref={(instance) => {
+					triggerRef.current = instance;
 					assignRef(ref, instance);
 				}}
 			>
