@@ -1,32 +1,71 @@
-# Prism
+<p align="center">
+  <img width="150" height="150" src="assets/prism-icon.png" alt="Prism logo">
+</p>
 
-A Roblox TypeScript UI kit for `rbxts-react` — typed components, theme tokens, Roblox-native sizing. Early and private (`0.0.0`, not on npm).
+<h1 align="center">Prism</h1>
 
-## Components
+<p align="center">
+  <strong>Calm, typed Roblox UI primitives — refracted through React.</strong>
+</p>
 
-| | |
-| --- | --- |
-| Layout | `Box`, `Stack`, `Divider`, `Card`, `ScrollArea` |
-| Text and media | `Text`, `Icon`, `Image`, `Avatar` |
-| Inputs and forms | `Button`, `Pressable`, `Input`, `KeybindInput`, `Checkbox`, `Switch`, `StepperInput`, `Slider` |
-| Feedback | `Progress`, `CircularProgress`, `Backdrop` |
-| Navigation | `SegmentedControl`, `Tabs`, `Menu`, `Select` |
-| Overlays | `WorldPortal`, `Popover`, `Modal`, `Tooltip` |
-| Utility | `Draggable` |
+<p align="center">
+  <a href="#-components">Components →</a>
+  ·
+  <a href="#-quick-start">Quick start →</a>
+  ·
+  <a href="#-playground">Playground →</a>
+  ·
+  <a href="DESIGN.md">Design system →</a>
+</p>
 
-Also: `@prism/theme` (ThemeProvider, tokens), `@prism/motion` (motion hooks), `@prism/utils` (unit helpers), `bridge` (`mountPrism` — Luau interop).
+<div align="center">
 
-## Setup
+![Roblox](https://img.shields.io/badge/Roblox-335f9e?style=for-the-badge&logo=roblox&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-20232a?style=for-the-badge&logo=react&logoColor=61dafb)
 
-Needs Node, Rojo, and Roblox Studio.
+</div>
 
-```bash
+**Prism** is a Roblox TypeScript UI kit for [`@rbxts/react`](https://github.com/roblox-ts/react).
+It pairs familiar, composable components with theme tokens, Roblox-native sizing, and deliberate
+escape hatches for the places where an experience needs more control.
+
+- 🧩 **Build with typed primitives** for layout, forms, navigation, feedback, and overlays
+- 🎨 **Keep UI coherent** with semantic color, spacing, radius, type, shadow, and motion tokens
+- 📐 **Size things the Roblox way** with offsets, percentages, `UDim`, and `UDim2`
+- 🔧 **Reach the underlying instances** through last-write-wins `slotProps`
+
+> [!NOTE]
+> Prism is early and private (`0.0.0`). It is not published to npm yet.
+
+## 🧩 Components
+
+| Family               | Components                                                                                     |
+| -------------------- | ---------------------------------------------------------------------------------------------- |
+| **Layout**           | `Box`, `Stack`, `Divider`, `Card`, `ScrollArea`                                                |
+| **Text and media**   | `Text`, `Icon`, `Image`, `Avatar`                                                              |
+| **Inputs and forms** | `Button`, `Pressable`, `Input`, `KeybindInput`, `Checkbox`, `Switch`, `StepperInput`, `Slider` |
+| **Feedback**         | `Progress`, `CircularProgress`, `Backdrop`                                                     |
+| **Navigation**       | `SegmentedControl`, `Tabs`, `Menu`, `Select`                                                   |
+| **Overlays**         | `WorldPortal`, `Popover`, `Modal`, `Tooltip`                                                   |
+| **Utility**          | `Draggable`                                                                                    |
+
+Prism also includes `@prism/theme` for providers and tokens, `@prism/motion` for motion hooks,
+`@prism/utils` for unit helpers, and `bridge` for Luau interop through `mountPrism`.
+
+---
+
+## 📦 Quick start
+
+Prism needs [Node.js](https://nodejs.org/), [Rojo](https://rojo.space/), and Roblox Studio.
+
+```sh
 npm install
 npm run build
 rojo serve
 ```
 
-## Usage
+Wrap your UI in `ThemeProvider`, then compose primitives:
 
 ```tsx
 import React from "@rbxts/react";
@@ -46,19 +85,13 @@ export function ServerControls() {
 }
 ```
 
-Text goes through `text` / `label` props — JSX text children aren't type-supported on `forwardRef` components in this toolchain.
+Text is passed through `text` and `label` props. JSX text children are not type-supported on
+`forwardRef` components in this toolchain.
 
-Controlled inputs are plain React state:
+## 🎨 Tokens and units
 
-```tsx
-const [query, setQuery] = React.useState("");
-
-<Input value={query} onChange={setQuery} placeholder="Search" variant="outline" fullWidth />
-```
-
-## Tokens and units
-
-Intent props take strings (`color="success"`); concrete color props take `theme.*` refs or raw `Color3` values. Dotted strings like `"text.secondary"` are not accepted.
+Intent props take semantic strings such as `color="success"`. Concrete color props take `theme.*`
+references or raw `Color3` values; dotted strings such as `"text.secondary"` are not accepted.
 
 ```tsx
 <Button color="success" variant="filled" label="Publish" />
@@ -66,7 +99,8 @@ Intent props take strings (`color="success"`); concrete color props take `theme.
 <Stack bg={Color3.fromRGB(20, 20, 20)} radius="lg" p="md" />
 ```
 
-Sizing is Roblox-native — numbers are pixel offsets, percentage strings are scale, `UDim`/`UDim2` pass through:
+Sizing stays Roblox-native: numbers are pixel offsets, percentage strings are scale, and `UDim` or
+`UDim2` values pass through unchanged.
 
 ```tsx
 <Stack width={280} />
@@ -74,11 +108,13 @@ Sizing is Roblox-native — numbers are pixel offsets, percentage strings are sc
 <Stack width={new UDim(0, 280)} />
 ```
 
-Size tokens (`"xs"` … `"xl"`) cover spacing, radius, and text size. Invalid tokens throw in dev.
+Size tokens from `"xs"` through `"xl"` cover spacing, radius, and text size. Invalid tokens throw in
+development.
 
-## Slot props
+## 🔧 Escape hatches
 
-Escape hatch for instance properties the component API doesn't cover. Applied last.
+Use `slotProps` for instance properties that the component API does not cover. They are applied
+last.
 
 ```tsx
 <Button
@@ -92,9 +128,13 @@ Escape hatch for instance properties the component API doesn't cover. Applied la
 />
 ```
 
-## Motion
+Components own their internal motion. Avoid overriding a property through `slotProps` when the same
+property is being animated.
 
-`useMotion` animates numbers, `Color3` values, and theme refs with the same tokens Prism uses internally:
+## ✨ Motion
+
+`useMotion` animates numbers, `Color3` values, and theme references with the same tokens Prism uses
+internally:
 
 ```tsx
 const animated = useMotion({
@@ -106,12 +146,20 @@ const animated = useMotion({
 });
 ```
 
-Components own their internal motion — overriding the same property via `slotProps` can fight a managed animation.
+## 🧪 Playground
 
-## Playground
+[ui-labs](https://ui-labs.luau.page/) stories live in `src/playground/stories`.
+`index.storybook.ts` configures the storybook, while `index.ts` imports each `*.story` module so
+roblox-ts emits it. Add new component examples as `*.story.tsx` files in that directory.
 
-ui-labs stories live in `src/playground/stories`. `index.storybook.ts` is the storybook config; `index.ts` imports each `*.story` module so roblox-ts emits them. Add `*.story.tsx` files there for new components.
+## 🛠️ Development
 
-## Non-goals
+```sh
+npm run typecheck
+npm run lint
+npm test
+npm run build
+```
 
-npm publishing, Wally, polymorphic `as` props, app shell patterns, timeline/keyframe animation. No license or contribution guide yet.
+Prism deliberately does not target npm publishing, Wally, polymorphic `as` props, app-shell
+patterns, or timeline/keyframe animation yet.
