@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1254 1254" role="img" aria-label="Prism icon">
+  <defs>
+    <linearGradient id="leftSpectrum" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#8d9089" stop-opacity=".18"/>
+      <stop offset=".18" stop-color="#10d5eb" stop-opacity=".82"/>
+      <stop offset=".48" stop-color="#3187dd" stop-opacity=".45"/>
+      <stop offset=".82" stop-color="#b94fd4" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#91d6cb" stop-opacity=".22"/>
+    </linearGradient>
+    <linearGradient id="rightSpectrum" x1="0.15" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#d2729f" stop-opacity=".38"/>
+      <stop offset=".29" stop-color="#12ce98" stop-opacity=".72"/>
+      <stop offset=".68" stop-color="#e6a83f" stop-opacity=".5"/>
+      <stop offset=".84" stop-color="#df527c" stop-opacity=".65"/>
+      <stop offset="1" stop-color="#708be5" stop-opacity=".4"/>
+    </linearGradient>
+    <linearGradient id="topSheen" x1="0" y1="0" x2="1" y2=".75">
+      <stop offset="0" stop-color="#b0a77e" stop-opacity=".24"/>
+      <stop offset=".5" stop-color="#808389" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#a25877" stop-opacity=".26"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="28" y="28" width="1198" height="1198" rx="190" fill="#111214"/>
+
+  <!-- restrained translucent crystal faces -->
+  <path d="M627 138 481 394 559 425Z" fill="url(#topSheen)"/>
+  <path d="M627 138 691 425 772 394Z" fill="url(#topSheen)" opacity=".9"/>
+  <path d="M481 394 559 425 559 879 481 866Z" fill="url(#leftSpectrum)" opacity=".28"/>
+  <path d="M691 425 772 394 772 866 691 879Z" fill="url(#rightSpectrum)" opacity=".3"/>
+  <path d="M481 866 559 879 627 1137Z" fill="url(#leftSpectrum)" opacity=".3"/>
+  <path d="M691 879 772 866 627 1137Z" fill="url(#rightSpectrum)" opacity=".34"/>
+
+  <!-- spectral edge accents -->
+  <path d="M481 394 486 489 559 810" fill="none" stroke="url(#leftSpectrum)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M559 838 481 866 627 1137" fill="none" stroke="url(#leftSpectrum)" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M691 810 768 493 772 394" fill="none" stroke="url(#rightSpectrum)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M691 838 772 866 627 1137" fill="none" stroke="url(#rightSpectrum)" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- pearl-gray facet framework -->
+  <g fill="none" stroke="#a5a5a2" stroke-opacity=".52" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M627 138 481 394 481 866 627 1137 772 866 772 394Z"/>
+    <path d="M627 138 559 425 559 879 627 1137"/>
+    <path d="M627 138 691 425 691 879 627 1137"/>
+    <path d="M481 394 559 425 691 425 772 394"/>
+    <path d="M481 866 559 879 691 879 772 866"/>
+  </g>
+  <g fill="none" stroke="#c4c1b7" stroke-opacity=".24" stroke-width="2">
+    <path d="M481 394 566 393"/>
+    <path d="M688 393 772 394"/>
+  </g>
+</svg>
