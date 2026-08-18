@@ -1,6 +1,6 @@
 # Prism
 
-A Roblox TypeScript UI kit for `rbxts-react` — typed components, theme tokens, Roblox-native sizing. Early and private (`0.0.0`, not on npm).
+A Roblox TypeScript UI kit for `rbxts-react` — typed components, theme tokens, and Roblox-native sizing.
 
 ## Components
 
@@ -14,7 +14,7 @@ A Roblox TypeScript UI kit for `rbxts-react` — typed components, theme tokens,
 | Overlays | `WorldPortal`, `Popover`, `Modal`, `Tooltip` |
 | Utility | `Draggable` |
 
-Also: `@prism/theme` (ThemeProvider, tokens), `@prism/motion` (motion hooks), `@prism/utils` (unit helpers), `bridge` (`mountPrism` — Luau interop).
+Also: `@rbxts/prism` exports ThemeProvider and tokens, motion hooks, unit helpers, and `mountPrism` for Luau interop.
 
 ## Setup
 
@@ -28,10 +28,13 @@ rojo serve
 
 ## Usage
 
+```bash
+npm install @rbxts/prism @rbxts/react @rbxts/react-roblox
+```
+
 ```tsx
 import React from "@rbxts/react";
-import { Button, Divider, Stack, Text } from "@prism";
-import { ThemeProvider, theme } from "@prism/theme";
+import { Button, Divider, Stack, Text, ThemeProvider, theme } from "@rbxts/prism";
 
 export function ServerControls() {
 	return (
@@ -114,4 +117,4 @@ ui-labs stories live in `src/playground/stories`. `index.storybook.ts` is the st
 
 ## Non-goals
 
-npm publishing, Wally, polymorphic `as` props, app shell patterns, timeline/keyframe animation. No license or contribution guide yet.
+Wally, polymorphic `as` props, app shell patterns, and timeline/keyframe animation.

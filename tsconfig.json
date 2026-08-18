@@ -13,6 +13,7 @@
 		"noLib": true,
 		"skipLibCheck": true,
 		"outDir": "out",
+		"declaration": true,
 		"rootDir": "src",
 		"paths": {
 			"@prism": ["lib/index"],

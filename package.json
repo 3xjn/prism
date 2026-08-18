@@ -1,10 +1,20 @@
 {
-	"name": "prism-v2",
-	"private": true,
-	"version": "0.0.0",
+	"name": "@rbxts/prism",
+	"version": "0.1.0",
+	"description": "A typed Roblox UI kit for rbxts-react.",
+	"main": "out/lib/init.luau",
+	"types": "out/lib/index.d.ts",
+	"files": [
+		"out/lib",
+		"!**/*.tsbuildinfo"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"test": "node scripts/run-units-assertions.cjs",
 		"build": "rbxtsc",
+		"prepack": "npm run lint && npm run typecheck && npm test && npm run build",
 		"fallow": "fallow --format human",
 		"fallow:json": "fallow --format json --quiet",
 		"fallow:dead-code": "fallow dead-code --format human",
@@ -15,20 +25,38 @@
 		"lint": "eslint src --ext .ts,.tsx",
 		"format": "prettier --check ."
 	},
-	"dependencies": {
+	"peerDependencies": {
 		"@rbxts/react": "17.3.7-ts.1",
-		"@rbxts/react-roblox": "17.3.7-ts.1",
-		"@rbxts/ui-labs": "2.4.2",
-		"roblox-ts": "3.0.0"
+		"@rbxts/react-roblox": "17.3.7-ts.1"
 	},
 	"devDependencies": {
 		"@rbxts/compiler-types": "3.0.0-types.0",
-		"@rbxts/types": "1.0.916",
+		"@rbxts/react": "17.3.7-ts.1",
+		"@rbxts/react-roblox": "17.3.7-ts.1",
+		"@rbxts/types": "^1.0.943",
+		"@rbxts/ui-labs": "2.4.2",
 		"@typescript-eslint/parser": "8.58.2",
 		"eslint": "8.57.1",
 		"eslint-plugin-roblox-ts": "1.4.0",
 		"fallow": "^2.98.0",
 		"prettier": "3.8.3",
 		"typescript": "5.8.3"
-	}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/3xjn/prism.git"
+	},
+	"bugs": {
+		"url": "https://github.com/3xjn/prism/issues"
+	},
+	"homepage": "https://github.com/3xjn/prism#readme",
+	"keywords": [
+		"roblox",
+		"roblox-ts",
+		"react",
+		"ui",
+		"design-system"
+	],
+	"author": "3xjn",
+	"license": "MIT"
 }
