@@ -71,7 +71,7 @@ function WindowStoryCanvas({ controls: currentControls }: { readonly controls: W
 						<Stack width="100%" gap="sm">
 							<Text text="Content slot" weight={700} color={themeRefs.text.primary} />
 							<Text
-								text="The rail is consumer-supplied. Collapse hides chrome and leaves a compact reopen control. Close is omitted unless onClose is passed."
+								text="The rail is consumer-supplied. Collapse tweens the frame into a compact reopen control. Close is omitted unless onClose is passed."
 								color={themeRefs.text.secondary}
 								wrap
 								width="100%"

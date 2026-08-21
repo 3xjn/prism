@@ -52,6 +52,16 @@ function findTextButton(root: Instance, layoutOrder: number): TextButton | undef
 	return undefined;
 }
 
+function findFirstTextButton(root: Instance): TextButton | undefined {
+	for (const descendant of root.GetDescendants()) {
+		if (descendant.IsA("TextButton")) {
+			return descendant;
+		}
+	}
+
+	return undefined;
+}
+
 afterEach(() => {
 	const currentRoot = root;
 	if (currentRoot !== undefined) {
@@ -92,5 +102,14 @@ describe("Window chrome", () => {
 		);
 
 		expect(findTextLabel(screenGui, "WindowRailMarker")).toBeDefined();
+	});
+
+	it("renders the reopen control when collapsed", () => {
+		const screenGui = mountWindow(<Window title="Tools" collapsed />);
+
+		expect(findTextLabel(screenGui, "Tools")).toBeUndefined();
+		expect(findTextButton(screenGui, 2)).toBeUndefined();
+		expect(findTextButton(screenGui, 3)).toBeUndefined();
+		expect(findFirstTextButton(screenGui)).toBeDefined();
 	});
 });

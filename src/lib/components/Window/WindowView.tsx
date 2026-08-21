@@ -32,7 +32,7 @@ export interface WindowViewProps {
 	readonly rootInstanceProps: Partial<React.InstanceProps<Frame>>;
 	readonly resolvedConstraint: SharedSizeConstraint | undefined;
 	readonly shadowZIndex: number;
-	readonly collapsed: boolean;
+	readonly showCollapseControl: boolean;
 	readonly collapseControlZIndex: GuiZIndex | undefined;
 	readonly collapseControlEvent: TextButtonEventMap | undefined;
 	readonly titleBarZIndex: GuiZIndex | undefined;
@@ -101,7 +101,7 @@ export function WindowView(props: WindowViewProps) {
 					constraint: props.resolvedConstraint,
 					slotProps: slotProps?.sizeConstraint,
 				})}
-				{props.collapsed ? (
+				{props.showCollapseControl ? (
 					<textbutton
 						AutoButtonColor={false}
 						BackgroundTransparency={1}

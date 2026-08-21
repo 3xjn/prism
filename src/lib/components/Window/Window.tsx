@@ -14,10 +14,7 @@ import {
 	shouldHandleTouchDragMoveInput,
 	type DragInputKind,
 } from "../_shared/interaction";
-import {
-	DEFAULT_SCREEN_OVERLAY_BASE_Z_INDEX,
-	incrementZIndex,
-} from "../_shared/overlayLayerPolicy";
+import { DEFAULT_SCREEN_OVERLAY_BASE_Z_INDEX, incrementZIndex } from "../_shared/overlayLayerPolicy";
 import { mergeSharedStyleProps, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useControllableState } from "../_shared/useControllableState";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
@@ -32,6 +29,7 @@ import {
 } from "./layout";
 import { resolveWindowSizeStyles } from "./styles";
 import type { WindowProps } from "./types";
+import { useWindowCollapseMotion } from "./useCollapseMotion";
 import {
 	DEFAULT_WINDOW_HEIGHT,
 	DEFAULT_WINDOW_MIN_HEIGHT,
@@ -41,6 +39,7 @@ import {
 	applyWindowResize,
 	areWindowBoundsEqual,
 	clampWindowBounds,
+	resolveCollapsedWindowBounds,
 	resolveMaximizedWindowBounds,
 	resolveUDimPixels,
 	type WindowBounds,
@@ -57,17 +56,7 @@ type WindowComponent = ((props: WindowProps) => React.ReactElement) & React.Forw
 
 const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 	const theme = useTheme();
-	const {
-		slotProps,
-		title,
-		children,
-		leading,
-		trailing,
-		rail,
-		onClose,
-		Event,
-		Change,
-	} = props;
+	const { slotProps, title, children, leading, trailing, rail, onClose, Event, Change } = props;
 	const sizeStyles = resolveWindowSizeStyles(theme);
 	const [collapsed, setCollapsed] = useControllableState({
 		controlled: props.collapsed,
@@ -90,14 +79,8 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 		},
 		props,
 	);
-	const {
-		resolvedWidth,
-		resolvedHeight,
-		resolvedSize,
-		resolvedPosition,
-		resolvedBackgroundColor,
-		resolvedConstraint,
-	} = useResolvedStyleProps("window", mergedStyleProps);
+	const { resolvedWidth, resolvedHeight, resolvedSize, resolvedPosition, resolvedBackgroundColor, resolvedConstraint } =
+		useResolvedStyleProps("window", mergedStyleProps);
 	const [overlayInstance, setOverlayInstance] = React.useState<Frame>();
 	const [windowInstance, setWindowInstance] = React.useState<Frame>();
 	const [controlsInstance, setControlsInstance] = React.useState<Frame>();
@@ -124,6 +107,7 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 	const maximizedRef = React.useRef(maximized);
 	const collapsedRef = React.useRef(collapsed);
 	const viewportRef = React.useRef(viewport);
+	const cancelCollapseTweenRef = React.useRef<() => void>(() => undefined);
 	overlayInstanceRef.current = overlayInstance;
 	boundsRef.current = bounds;
 	maximizedRef.current = maximized;
@@ -195,10 +179,17 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 						y: currentBounds.y,
 						width: collapseSize,
 						height: collapseSize,
-				  }
+					}
 				: currentBounds;
 			const moveOptions = collapsedRef.current
-				? toClampOptions(clampOptionsRef.current.viewport, collapseSize, collapseSize, collapseSize, collapseSize, clampOptionsRef.current.margin)
+				? toClampOptions(
+						clampOptionsRef.current.viewport,
+						collapseSize,
+						collapseSize,
+						collapseSize,
+						collapseSize,
+						clampOptionsRef.current.margin,
+					)
 				: clampOptionsRef.current;
 			const moved = applyWindowMove(
 				moveSource,
@@ -263,9 +254,9 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 
 	const beginDrag = React.useCallback(
 		(input: InputObject, mode: WindowDragMode) => {
-		if (!isPressInput(input) || (maximizedRef.current && mode === "resize")) {
-			return;
-		}
+			if (!isPressInput(input) || (maximizedRef.current && mode === "resize")) {
+				return;
+			}
 
 			if (maximizedRef.current && mode === "move" && !collapsedRef.current) {
 				return;
@@ -284,6 +275,7 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 
 			const localPosition = resolveLocalInputPosition(input, overlay);
 			disconnectDragTracking();
+			cancelCollapseTweenRef.current();
 			dragModeRef.current = mode;
 			inputKindRef.current = dragKind;
 			activeTouchRef.current = dragKind === "touch" ? input : undefined;
@@ -327,7 +319,7 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 							resolvedPosition,
 							props.center,
 							nextOptions,
-					  );
+						);
 
 			return current !== undefined && areWindowBoundsEqual(current, nextBounds) ? current : nextBounds;
 		});
@@ -393,25 +385,23 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 		width: DEFAULT_WINDOW_WIDTH,
 		height: DEFAULT_WINDOW_HEIGHT,
 	};
-	const collapsedBounds = clampWindowBounds(
-		{
-			x: floatingBounds.x,
-			y: floatingBounds.y,
-			width: sizeStyles.collapseControlSize,
-			height: sizeStyles.collapseControlSize,
-		},
-		toClampOptions(
-			viewport,
-			sizeStyles.collapseControlSize,
-			sizeStyles.collapseControlSize,
-			sizeStyles.collapseControlSize,
-			sizeStyles.collapseControlSize,
-			sizeStyles.viewportMargin,
-		),
+	const collapsedBounds = resolveCollapsedWindowBounds(
+		floatingBounds,
+		sizeStyles.collapseControlSize,
+		viewport,
+		sizeStyles.viewportMargin,
 	);
 	const maximizedBounds = resolveMaximizedWindowBounds(viewport);
-	const renderedBounds = collapsed ? collapsedBounds : maximized ? maximizedBounds : floatingBounds;
-	const canResize = !collapsed && !maximized;
+	const targetBounds = collapsed ? collapsedBounds : maximized ? maximizedBounds : floatingBounds;
+	const collapseMotion = useWindowCollapseMotion({
+		collapsed,
+		targetBounds,
+		duration: theme.motion.duration.normal,
+		easing: theme.motion.easing.out,
+	});
+	cancelCollapseTweenRef.current = collapseMotion.cancelTween;
+	const displayBounds = collapseMotion.displayBounds;
+	const canResize = !collapsed && !maximized && !collapseMotion.tweening;
 	const canMove = collapsed || !maximized;
 	const mouseDragCaptureActive = dragging && isMouseDragActive(inputKindRef.current) && portalTarget !== undefined;
 	const titleBarCursor = dragging && dragModeRef.current === "move" ? "grabbing" : "grab";
@@ -503,7 +493,7 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 				InputEnded: (_button, input) => {
 					handleDragEndInput(input);
 				},
-		  }
+			}
 		: undefined;
 	const chromeInputBegan = (input: InputObject) => {
 		if (isPressInput(input)) {
@@ -515,8 +505,8 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 		BackgroundTransparency: mergedStyleProps.bgTransparency ?? 0,
 		BorderSizePixel: 0,
 		ClipsDescendants: mergedStyleProps.clip ?? true,
-		Position: UDim2.fromOffset(renderedBounds.x, renderedBounds.y),
-		Size: UDim2.fromOffset(renderedBounds.width, renderedBounds.height),
+		Position: UDim2.fromOffset(displayBounds.x, displayBounds.y),
+		Size: UDim2.fromOffset(displayBounds.width, displayBounds.height),
 		Visible: bounds === undefined ? false : mergedStyleProps.visible,
 		LayoutOrder: mergedStyleProps.layoutOrder,
 		ZIndex: rootZIndex,
@@ -536,9 +526,9 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 			windowRef={windowRef}
 			controlsRef={controlsRef}
 			rootInstanceProps={rootInstanceProps}
-			resolvedConstraint={resolvedConstraint}
+			resolvedConstraint={collapsed || collapseMotion.tweening ? undefined : resolvedConstraint}
 			shadowZIndex={shadowZIndex}
-			collapsed={collapsed}
+			showCollapseControl={collapseMotion.showCollapseControl}
 			collapseControlZIndex={collapseControlZIndex}
 			collapseControlEvent={collapseControlEvent}
 			titleBarZIndex={titleBarZIndex}
