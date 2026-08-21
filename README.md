@@ -122,7 +122,7 @@ Pass `density="compact"` (or `theme={{ density: "compact" }}`) for tighter contr
 | Inputs and forms | `Button`, `Pressable`, `Input`, `KeybindInput`, `Checkbox`, `Switch`, `StepperInput`, `Slider` |
 | Feedback | `Progress`, `CircularProgress`, `Backdrop` |
 | Navigation | `SegmentedControl`, `Tabs`, `Menu`, `Select` |
-| Overlays | `WorldPortal`, `Popover`, `Modal`, `Tooltip` |
+| Overlays | `WorldPortal`, `Popover`, `Modal`, `Tooltip`, `Window` |
 | Utility | `Draggable` |
 
 `@prism/theme` is providers and tokens, `@prism/motion` is motion hooks, `@prism/utils` is unit helpers, and `mountPrism` is the Luau bridge.

@@ -99,7 +99,8 @@ Default density is unchanged. Opt into compact with `ThemeProvider` `density="co
 ### Screen Overlay
 
 - **Structure**: invisible portal anchor, full-screen overlay frame, optional backdrop, centered panel.
-- **Variants**: modal.
+- **Variants**: modal, window.
+- **Spacing**: panel padding and viewport bounds use theme spacing. Window keeps a spacing margin while floating and fills the LayerCollector flush when maximized.
 - **Spacing**: panel padding and viewport bounds use theme spacing.
 - **States**: closed, open, backdrop-dismissable, forced-open.
 - **Accessibility**: close actions remain explicit and backdrop behavior is configurable.

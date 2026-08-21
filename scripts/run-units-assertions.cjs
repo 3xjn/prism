@@ -271,6 +271,34 @@ function loadDensityModule() {
 	return module.exports;
 }
 
+function loadWindowBoundsModule() {
+	const filePath = path.join(process.cwd(), "src/lib/components/Window/utils.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	const compiled = ts.transpileModule(source, {
+		compilerOptions: {
+			module: ts.ModuleKind.CommonJS,
+			target: ts.ScriptTarget.ES2019,
+		},
+		fileName: filePath,
+	}).outputText;
+
+	const module = { exports: {} };
+	const context = vm.createContext({
+		module,
+		exports: module.exports,
+		require,
+		UDim,
+		math: {
+			clamp: mathClamp,
+			max: Math.max,
+			min: Math.min,
+		},
+	});
+
+	vm.runInContext(compiled, context, { filename: filePath });
+	return module.exports;
+}
+
 function assertCondition(condition, message) {
 	if (!condition) {
 		throw new Error(message);
@@ -433,6 +461,83 @@ function run() {
 	assertCondition(resolveDensityMarkSize(compactTheme, 18) === 16, "compact checkbox marks shrink by 2");
 
 	console.log("density: PASS");
+
+	const {
+		DEFAULT_WINDOW_HEIGHT,
+		DEFAULT_WINDOW_MIN_HEIGHT,
+		DEFAULT_WINDOW_MIN_WIDTH,
+		DEFAULT_WINDOW_WIDTH,
+		applyWindowMove,
+		applyWindowResize,
+		areWindowBoundsEqual,
+		clampWindowBounds,
+		resolveCenteredWindowPosition,
+		resolveMaximizedWindowBounds,
+		resolveUDimPixels,
+	} = loadWindowBoundsModule();
+	const windowViewport = { width: 1280, height: 720 };
+	const windowOptions = {
+		minWidth: DEFAULT_WINDOW_MIN_WIDTH,
+		minHeight: DEFAULT_WINDOW_MIN_HEIGHT,
+		viewport: windowViewport,
+		margin: 12,
+	};
+	const assertWindowBounds = (actual, expected, label) => {
+		assertCondition(
+			areWindowBoundsEqual(actual, expected),
+			`${label}: expected ${expected.x},${expected.y} ${expected.width}x${expected.height}, got ${actual.x},${actual.y} ${actual.width}x${actual.height}`,
+		);
+	};
+
+	assertCondition(DEFAULT_WINDOW_WIDTH !== 1120 && DEFAULT_WINDOW_HEIGHT !== 680, "window defaults are not Hydroxide 1120x680");
+	assertCondition(resolveUDimPixels(new UDim(0, 480), 1280) === 480, "window offset UDim resolves to pixels");
+	assertCondition(resolveUDimPixels(new UDim(0.5, 20), 800) === 420, "window scale UDim resolves against viewport");
+
+	const centeredWindow = resolveCenteredWindowPosition(480, 360, windowViewport);
+	assertCondition(centeredWindow.x === 400 && centeredWindow.y === 180, "window default size centers in the viewport");
+
+	assertWindowBounds(
+		clampWindowBounds({ x: -80, y: -40, width: 480, height: 360 }, windowOptions),
+		{ x: 12, y: 12, width: 480, height: 360 },
+		"window position clamps to the viewport margin",
+	);
+	assertWindowBounds(
+		clampWindowBounds({ x: 2000, y: 2000, width: 480, height: 360 }, windowOptions),
+		{ x: 788, y: 348, width: 480, height: 360 },
+		"window position clamps so the frame stays on-screen",
+	);
+
+	const shrunkWindow = clampWindowBounds({ x: 0, y: 0, width: 4000, height: 3000 }, windowOptions);
+	assertCondition(shrunkWindow.width === 1256 && shrunkWindow.height === 696, "window size shrinks to the padded viewport");
+	assertCondition(shrunkWindow.x === 12 && shrunkWindow.y === 12, "oversized windows sit on the margin");
+
+	const movedWindow = applyWindowMove({ x: 40, y: 40, width: 480, height: 360 }, -100, 80, windowOptions);
+	assertCondition(movedWindow.x === 12 && movedWindow.y === 80, "window moves clamp X and keep a valid Y");
+	assertCondition(movedWindow.width === 480 && movedWindow.height === 360, "window moves do not change size");
+
+	const resizedWindow = applyWindowResize({ x: 100, y: 100, width: 480, height: 360 }, 20, 20, windowOptions);
+	assertCondition(
+		resizedWindow.width === DEFAULT_WINDOW_MIN_WIDTH && resizedWindow.height === DEFAULT_WINDOW_MIN_HEIGHT,
+		"window resize respects min size",
+	);
+	assertCondition(resizedWindow.x === 100 && resizedWindow.y === 100, "window resize keeps the origin");
+
+	const limitedWindow = applyWindowResize({ x: 1000, y: 500, width: 200, height: 160 }, 800, 800, windowOptions);
+	assertCondition(limitedWindow.width === 268 && limitedWindow.height === 208, "window resize cannot leave the padded viewport");
+
+	assertWindowBounds(
+		resolveMaximizedWindowBounds(windowViewport),
+		{ x: 0, y: 0, width: 1280, height: 720 },
+		"window maximize fills the host flush",
+	);
+
+	const tinyWindow = clampWindowBounds(
+		{ x: 0, y: 0, width: 480, height: 360 },
+		{ minWidth: 400, minHeight: 280, viewport: { width: 200, height: 150 }, margin: 8 },
+	);
+	assertCondition(tinyWindow.width === 184 && tinyWindow.height === 134, "window min size yields to a smaller viewport");
+
+	console.log("window: PASS");
 }
 
 run();
