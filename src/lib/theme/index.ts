@@ -2,6 +2,14 @@ export { DEFAULT_THEME, DEFAULT_DARK_THEME } from "./defaults";
 export { theme } from "./refs";
 export { ThemeProvider, useTheme } from "./ThemeProvider";
 export { resolveColor, resolveSize } from "./resolveToken";
+export {
+	DEFAULT_DENSITY,
+	isCompactDensity,
+	resolveDensityControlSize,
+	resolveDensityGap,
+	resolveDensityMarkSize,
+	resolveThemeSpacing,
+} from "./density";
 export type {
 	ActionColorRole,
 	ActionColorToken,
@@ -42,6 +50,7 @@ export type {
 	SemanticIntentColors,
 	SemanticIntentRole,
 	Theme,
+	ThemeDensity,
 	ThemeMotion,
 	ThemeMotionDurations,
 	ThemeMotionEasing,

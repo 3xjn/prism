@@ -1,4 +1,5 @@
 import type { SemanticIntent, Theme, ThemeSize, Variant } from "@prism/theme";
+import { resolveDensityControlSize, resolveThemeSpacing } from "@prism/theme";
 
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 import { mixColor } from "../_shared/visual";
@@ -62,64 +63,64 @@ export function resolveKeybindInputSizeStyles(theme: Theme, size: KeybindInputSi
 			return {
 				paddingX: "sm",
 				paddingY: "xs",
-				gap: theme.spacing.xs,
+				gap: resolveThemeSpacing(theme, "xs"),
 				deviceFrameSize: 22,
 				deviceIconSize: 14,
 				gamepadGlyphSize: 18,
-				keycapPaddingX: theme.spacing.xs,
+				keycapPaddingX: resolveThemeSpacing(theme, "xs"),
 				fontSize: theme.fontSizes.xs,
 				hintFontSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.xs,
 				radius: resolveKeybindInputRadius(theme, size),
-				minHeight: 36,
+				minHeight: resolveDensityControlSize(theme, 36),
 				defaultWidth: 128,
 			};
 		case "sm":
 			return {
 				paddingX: "md",
 				paddingY: "xs",
-				gap: theme.spacing.xs,
+				gap: resolveThemeSpacing(theme, "xs"),
 				deviceFrameSize: 24,
 				deviceIconSize: 16,
 				gamepadGlyphSize: 20,
-				keycapPaddingX: theme.spacing.sm,
+				keycapPaddingX: resolveThemeSpacing(theme, "sm"),
 				fontSize: theme.fontSizes.sm,
 				hintFontSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.sm,
 				radius: resolveKeybindInputRadius(theme, size),
-				minHeight: 44,
+				minHeight: resolveDensityControlSize(theme, 44),
 				defaultWidth: 150,
 			};
 		case "lg":
 			return {
 				paddingX: "lg",
 				paddingY: "sm",
-				gap: theme.spacing.sm,
+				gap: resolveThemeSpacing(theme, "sm"),
 				deviceFrameSize: 28,
 				deviceIconSize: 23,
 				gamepadGlyphSize: 27,
-				keycapPaddingX: theme.spacing.md,
+				keycapPaddingX: resolveThemeSpacing(theme, "md"),
 				fontSize: theme.fontSizes.lg,
 				hintFontSize: theme.fontSizes.sm,
 				lineHeight: theme.lineHeights.lg,
 				radius: resolveKeybindInputRadius(theme, size),
-				minHeight: 56,
+				minHeight: resolveDensityControlSize(theme, 56),
 				defaultWidth: 182,
 			};
 		case "xl":
 			return {
 				paddingX: "xl",
 				paddingY: "md",
-				gap: theme.spacing.sm,
+				gap: resolveThemeSpacing(theme, "sm"),
 				deviceFrameSize: 30,
 				deviceIconSize: 24,
 				gamepadGlyphSize: 30,
-				keycapPaddingX: theme.spacing.md,
+				keycapPaddingX: resolveThemeSpacing(theme, "md"),
 				fontSize: theme.fontSizes.xl,
 				hintFontSize: theme.fontSizes.sm,
 				lineHeight: theme.lineHeights.xl,
 				radius: resolveKeybindInputRadius(theme, size),
-				minHeight: 64,
+				minHeight: resolveDensityControlSize(theme, 64),
 				defaultWidth: 208,
 			};
 		case "md":
@@ -127,16 +128,16 @@ export function resolveKeybindInputSizeStyles(theme: Theme, size: KeybindInputSi
 			return {
 				paddingX: "md",
 				paddingY: "sm",
-				gap: theme.spacing.sm,
+				gap: resolveThemeSpacing(theme, "sm"),
 				deviceFrameSize: 26,
 				deviceIconSize: 19,
 				gamepadGlyphSize: 23,
-				keycapPaddingX: theme.spacing.sm,
+				keycapPaddingX: resolveThemeSpacing(theme, "sm"),
 				fontSize: theme.fontSizes.md,
 				hintFontSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.md,
 				radius: resolveKeybindInputRadius(theme, size),
-				minHeight: 50,
+				minHeight: resolveDensityControlSize(theme, 50),
 				defaultWidth: 168,
 			};
 	}
@@ -306,17 +307,17 @@ export function resolveKeybindInputMotionTransition(state: KeybindInputInteracti
 	}
 
 	return {
-		backgroundColor: { duration: state === "pressed" ? 0.06 : 0.12, easing: "standard" },
-		strokeColor: { duration: 0.12, easing: "standard" },
-		strokeTransparency: { duration: 0.12, easing: "standard" },
-		strokeThickness: { duration: 0.12, easing: "out" },
-		labelColor: { duration: 0.12, easing: "standard" },
-		hintColor: { duration: 0.12, easing: "standard" },
-		deviceBackgroundColor: { duration: 0.12, easing: "standard" },
-		deviceIconColor: { duration: 0.12, easing: "standard" },
-		keycapBackgroundColor: { duration: state === "pressed" ? 0.06 : 0.12, easing: "standard" },
-		keycapStrokeColor: { duration: 0.12, easing: "standard" },
-		keycapStrokeTransparency: { duration: 0.12, easing: "standard" },
-		keycapStrokeThickness: { duration: 0.12, easing: "out" },
+		backgroundColor: { duration: "fast", easing: "standard" },
+		strokeColor: { duration: "fast", easing: "standard" },
+		strokeTransparency: { duration: "fast", easing: "standard" },
+		strokeThickness: { duration: "fast", easing: "out" },
+		labelColor: { duration: "fast", easing: "standard" },
+		hintColor: { duration: "fast", easing: "standard" },
+		deviceBackgroundColor: { duration: "fast", easing: "standard" },
+		deviceIconColor: { duration: "fast", easing: "standard" },
+		keycapBackgroundColor: { duration: "fast", easing: "standard" },
+		keycapStrokeColor: { duration: "fast", easing: "standard" },
+		keycapStrokeTransparency: { duration: "fast", easing: "standard" },
+		keycapStrokeThickness: { duration: "fast", easing: "out" },
 	} as const;
 }

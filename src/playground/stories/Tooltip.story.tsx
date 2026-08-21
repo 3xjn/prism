@@ -4,7 +4,7 @@ import { Box, Icon, Stack, Text, Tooltip } from "@prism";
 import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const ITEM_PANEL = Color3.fromRGB(6, 19, 27);
 const ITEM_PANEL_DEEP = Color3.fromRGB(3, 11, 17);
@@ -25,6 +25,7 @@ const ITEM_PANEL_GRADIENT = new ColorSequence([
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	content: String("Limited to 1 Stormglass item."),
 	disabled: Boolean(false),
 };
@@ -180,7 +181,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<TooltipStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

@@ -1,2 +1,2 @@
 export { StoryCanvas } from "./StoryCanvas";
-export { StoryThemeProvider, storyThemeControl } from "./StoryTheme";
+export { StoryThemeProvider, storyDensityControl, storyThemeControl } from "./StoryTheme";

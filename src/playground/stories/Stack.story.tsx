@@ -6,10 +6,11 @@ import { useTheme , theme as themeRefs } from "@prism/theme";
 import type { ThemeSize } from "@prism/theme";
 import { CreateReactStory, Datatype, EnumList, Slider } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	gap: EnumList(
 		{
 			none: "none",
@@ -161,7 +162,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<StackStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

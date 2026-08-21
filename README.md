@@ -38,6 +38,8 @@ export function ServerControls() {
 }
 ```
 
+Pass `density="compact"` (or `theme={{ density: "compact" }}`) for tighter control heights and padding. Light and dark themes both honor it; default density stays as it is today.
+
 ## Components
 
 | Family | Components |

@@ -6,10 +6,11 @@ import { useTheme } from "@prism/theme";
 import type { ThemeSize } from "@prism/theme";
 import { Boolean, CreateReactStory, Datatype, EnumList, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	text: String("Prism Text turns theme tokens into Roblox typography without depending on rich-text internals."),
 	size: EnumList(
 		{
@@ -118,7 +119,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<TextStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

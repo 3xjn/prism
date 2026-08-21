@@ -7,10 +7,11 @@ import type { KeybindCaptureDevice, KeybindInputColor, KeybindInputSize } from "
 import type { Variant } from "@prism/theme";
 import { useTheme , theme as themeRefs } from "@prism/theme";
 
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	variant: EnumList({ outline: "outline", subtle: "subtle", light: "light", filled: "filled" }, "outline"),
 	color: EnumList(
 		{
@@ -121,7 +122,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<KeybindInputStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

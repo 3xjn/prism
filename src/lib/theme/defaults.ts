@@ -1,3 +1,4 @@
+import { DEFAULT_DENSITY } from "./density";
 import type {
 	ActionColors,
 	BackgroundColors,
@@ -226,6 +227,7 @@ export const DEFAULT_THEME: Theme = table.freeze({
 		border: createBorderColors(PALETTE.gray["2"], PALETTE.gray["4"], PALETTE.gray["6"]),
 		action: createActionColors(PALETTE.gray["2"], PALETTE.gray["3"], PALETTE.gray["5"], PALETTE.gray["2"]),
 	}),
+	density: DEFAULT_DENSITY,
 	spacing: createThemeScale(4, 8, 12, 16, 24),
 	radius: createThemeScale(2, 4, 8, 16, 24),
 	fontSizes: createThemeScale(12, 14, 16, 18, 24),
@@ -300,6 +302,7 @@ export const DEFAULT_DARK_THEME: Theme = table.freeze({
 			Color3.fromRGB(33, 40, 48),
 		),
 	}),
+	density: DEFAULT_DENSITY,
 	spacing: createThemeScale(4, 8, 12, 16, 24),
 	radius: createThemeScale(2, 4, 8, 16, 24),
 	fontSizes: createThemeScale(12, 14, 16, 18, 24),

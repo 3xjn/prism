@@ -6,10 +6,11 @@ import type { Variant } from "@prism/theme";
 import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	value: String(""),
 	placeholder: String("Search commands, settings, or players"),
 	maxLength: Number(24, 0, 64, 1),
@@ -120,7 +121,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<InputStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

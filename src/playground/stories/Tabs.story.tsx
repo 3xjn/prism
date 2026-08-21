@@ -6,10 +6,11 @@ import type { InferControls } from "@rbxts/ui-labs";
 import { Box, Stack, Tabs, Text } from "@prism";
 import type { TabsColor, TabsSize, TabsTab, TabsVariant } from "@prism";
 
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	variant: EnumList({ line: "line", contained: "contained" }, "line"),
 	color: EnumList(
 		{
@@ -149,7 +150,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<TabsStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

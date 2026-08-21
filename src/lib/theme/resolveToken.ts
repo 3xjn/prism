@@ -10,6 +10,7 @@ import type {
 	TextColorRole,
 	Theme,
 } from "./types";
+import { resolveThemeSpacing } from "./density";
 
 function isColorName(value: string): value is ColorName {
 	switch (value) {
@@ -223,7 +224,7 @@ export function resolveSize(
 ): number {
 	switch (scale) {
 		case "spacing":
-			return theme.spacing[key];
+			return resolveThemeSpacing(theme, key);
 		case "radius":
 			return theme.radius[key];
 		case "fontSizes":

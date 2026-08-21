@@ -1,7 +1,7 @@
 import React from "@rbxts/react";
 
 import { useMotion } from "@prism/motion";
-import { useTheme } from "@prism/theme";
+import { resolveDensityControlSize, useTheme } from "@prism/theme";
 import type { Theme, ThemeSize } from "@prism/theme";
 
 import {
@@ -64,7 +64,7 @@ function resolveInputSizeStyles(theme: Theme, size: InputSize): InputSizeStyles 
 				fontSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.xs,
 				radius: resolveInputRadius(theme, size),
-				minHeight: theme.spacing.xl + theme.spacing.xs,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.xs),
 				defaultWidth: theme.spacing.xl * 7,
 			};
 		case "sm":
@@ -74,7 +74,7 @@ function resolveInputSizeStyles(theme: Theme, size: InputSize): InputSizeStyles 
 				fontSize: theme.fontSizes.sm,
 				lineHeight: theme.lineHeights.sm,
 				radius: resolveInputRadius(theme, size),
-				minHeight: theme.spacing.xl + theme.spacing.sm,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.sm),
 				defaultWidth: theme.spacing.xl * 8,
 			};
 		case "lg":
@@ -84,7 +84,7 @@ function resolveInputSizeStyles(theme: Theme, size: InputSize): InputSizeStyles 
 				fontSize: theme.fontSizes.lg,
 				lineHeight: theme.lineHeights.lg,
 				radius: resolveInputRadius(theme, size),
-				minHeight: theme.spacing.xl + theme.spacing.lg,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.lg),
 				defaultWidth: theme.spacing.xl * 11,
 			};
 		case "xl":
@@ -94,7 +94,7 @@ function resolveInputSizeStyles(theme: Theme, size: InputSize): InputSizeStyles 
 				fontSize: theme.fontSizes.xl,
 				lineHeight: theme.lineHeights.xl,
 				radius: resolveInputRadius(theme, size),
-				minHeight: theme.spacing.xl * 2,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl * 2),
 				defaultWidth: theme.spacing.xl * 13,
 			};
 		case "md":
@@ -105,7 +105,7 @@ function resolveInputSizeStyles(theme: Theme, size: InputSize): InputSizeStyles 
 				fontSize: theme.fontSizes.md,
 				lineHeight: theme.lineHeights.md,
 				radius: resolveInputRadius(theme, size),
-				minHeight: theme.spacing.xl + theme.spacing.md,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.md),
 				defaultWidth: theme.spacing.xl * 10,
 			};
 	}

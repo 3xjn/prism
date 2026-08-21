@@ -1,4 +1,5 @@
 import type { Theme, ThemeSize } from "@prism/theme";
+import { resolveDensityControlSize, resolveDensityGap } from "@prism/theme";
 
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 import { mixColor } from "../_shared/visual";
@@ -77,14 +78,14 @@ export function resolveTabsSizeStyles(theme: Theme, size: TabsSize): TabsSizeSty
 	switch (size) {
 		case "xs":
 			return {
-				tabGap: 4,
+				tabGap: resolveDensityGap(theme, 4),
 				tabPaddingX: "sm",
 				tabPaddingY: "xs",
 				panelPaddingX: "sm",
 				panelPaddingY: "sm",
 				fontSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.xs,
-				listHeight: 30,
+				listHeight: resolveDensityControlSize(theme, 30),
 				panelMinHeight: 76,
 				defaultWidth: 320,
 				tabRadius: resolveTabsTabRadius(theme, size),
@@ -92,14 +93,14 @@ export function resolveTabsSizeStyles(theme: Theme, size: TabsSize): TabsSizeSty
 			};
 		case "sm":
 			return {
-				tabGap: 5,
+				tabGap: resolveDensityGap(theme, 5),
 				tabPaddingX: "md",
 				tabPaddingY: "xs",
 				panelPaddingX: "md",
 				panelPaddingY: "sm",
 				fontSize: theme.fontSizes.sm,
 				lineHeight: theme.lineHeights.sm,
-				listHeight: 34,
+				listHeight: resolveDensityControlSize(theme, 34),
 				panelMinHeight: 86,
 				defaultWidth: 380,
 				tabRadius: resolveTabsTabRadius(theme, size),
@@ -107,14 +108,14 @@ export function resolveTabsSizeStyles(theme: Theme, size: TabsSize): TabsSizeSty
 			};
 		case "lg":
 			return {
-				tabGap: 8,
+				tabGap: resolveDensityGap(theme, 8),
 				tabPaddingX: "lg",
 				tabPaddingY: "sm",
 				panelPaddingX: "lg",
 				panelPaddingY: "md",
 				fontSize: theme.fontSizes.lg,
 				lineHeight: theme.lineHeights.lg,
-				listHeight: 46,
+				listHeight: resolveDensityControlSize(theme, 46),
 				panelMinHeight: 120,
 				defaultWidth: 520,
 				tabRadius: resolveTabsTabRadius(theme, size),
@@ -122,14 +123,14 @@ export function resolveTabsSizeStyles(theme: Theme, size: TabsSize): TabsSizeSty
 			};
 		case "xl":
 			return {
-				tabGap: 9,
+				tabGap: resolveDensityGap(theme, 9),
 				tabPaddingX: "xl",
 				tabPaddingY: "md",
 				panelPaddingX: "xl",
 				panelPaddingY: "lg",
 				fontSize: theme.fontSizes.xl,
 				lineHeight: theme.lineHeights.xl,
-				listHeight: 54,
+				listHeight: resolveDensityControlSize(theme, 54),
 				panelMinHeight: 140,
 				defaultWidth: 600,
 				tabRadius: resolveTabsTabRadius(theme, size),
@@ -138,14 +139,14 @@ export function resolveTabsSizeStyles(theme: Theme, size: TabsSize): TabsSizeSty
 		case "md":
 		default:
 			return {
-				tabGap: 6,
+				tabGap: resolveDensityGap(theme, 6),
 				tabPaddingX: "md",
 				tabPaddingY: "sm",
 				panelPaddingX: "md",
 				panelPaddingY: "md",
 				fontSize: theme.fontSizes.md,
 				lineHeight: theme.lineHeights.md,
-				listHeight: 40,
+				listHeight: resolveDensityControlSize(theme, 40),
 				panelMinHeight: 104,
 				defaultWidth: 460,
 				tabRadius: resolveTabsTabRadius(theme, size),
@@ -255,25 +256,25 @@ export function resolveTabsPanelVisualStyles(
 export function resolveTabsTabMotionTransition(state: TabsTabState) {
 	if (state === "pressed") {
 		return {
-			backgroundColor: { duration: 0.06, easing: "standard" },
-			backgroundTransparency: { duration: 0.06, easing: "standard" },
-			strokeColor: { duration: 0.06, easing: "standard" },
-			strokeTransparency: { duration: 0.06, easing: "standard" },
-			textColor: { duration: 0.06, easing: "standard" },
-			textTransparency: { duration: 0.06, easing: "standard" },
-			indicatorColor: { duration: 0.06, easing: "standard" },
-			indicatorTransparency: { duration: 0.06, easing: "standard" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			backgroundTransparency: { duration: "fast", easing: "standard" },
+			strokeColor: { duration: "fast", easing: "standard" },
+			strokeTransparency: { duration: "fast", easing: "standard" },
+			textColor: { duration: "fast", easing: "standard" },
+			textTransparency: { duration: "fast", easing: "standard" },
+			indicatorColor: { duration: "fast", easing: "standard" },
+			indicatorTransparency: { duration: "fast", easing: "standard" },
 		} as const;
 	}
 
 	return {
-		backgroundColor: { duration: 0.14, easing: "standard" },
-		backgroundTransparency: { duration: 0.14, easing: "standard" },
-		strokeColor: { duration: 0.14, easing: "standard" },
-		strokeTransparency: { duration: 0.14, easing: "standard" },
-		textColor: { duration: 0.12, easing: "standard" },
-		textTransparency: { duration: 0.12, easing: "standard" },
-		indicatorColor: { duration: 0.12, easing: "standard" },
-		indicatorTransparency: { duration: 0.12, easing: "standard" },
+		backgroundColor: { duration: "normal", easing: "standard" },
+		backgroundTransparency: { duration: "normal", easing: "standard" },
+		strokeColor: { duration: "normal", easing: "standard" },
+		strokeTransparency: { duration: "normal", easing: "standard" },
+		textColor: { duration: "fast", easing: "standard" },
+		textTransparency: { duration: "fast", easing: "standard" },
+		indicatorColor: { duration: "fast", easing: "standard" },
+		indicatorTransparency: { duration: "fast", easing: "standard" },
 	} as const;
 }

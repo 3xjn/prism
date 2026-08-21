@@ -1,4 +1,5 @@
 import type { Theme, ThemeSize, Variant } from "@prism/theme";
+import { resolveDensityControlSize, resolveDensityGap } from "@prism/theme";
 
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 import { mixColor } from "../_shared/visual";
@@ -75,67 +76,67 @@ export function resolveSegmentedControlSizeStyles(theme: Theme, size: SegmentedC
 		case "xs":
 			return {
 				padding: "xs",
-				gap: 2,
+				gap: resolveDensityGap(theme, 2),
 				segmentPaddingX: "sm",
 				segmentPaddingY: "xs",
 				fontSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.xs,
 				radius: resolveControlRadius(theme, size),
 				segmentRadius: resolveSegmentRadius(theme, size),
-				minHeight: 28,
+				minHeight: resolveDensityControlSize(theme, 28),
 				defaultWidth: 220,
 			};
 		case "sm":
 			return {
 				padding: "xs",
-				gap: 3,
+				gap: resolveDensityGap(theme, 3),
 				segmentPaddingX: "md",
 				segmentPaddingY: "xs",
 				fontSize: theme.fontSizes.sm,
 				lineHeight: theme.lineHeights.sm,
 				radius: resolveControlRadius(theme, size),
 				segmentRadius: resolveSegmentRadius(theme, size),
-				minHeight: 32,
+				minHeight: resolveDensityControlSize(theme, 32),
 				defaultWidth: 260,
 			};
 		case "lg":
 			return {
 				padding: "sm",
-				gap: 4,
+				gap: resolveDensityGap(theme, 4),
 				segmentPaddingX: "lg",
 				segmentPaddingY: "sm",
 				fontSize: theme.fontSizes.lg,
 				lineHeight: theme.lineHeights.lg,
 				radius: resolveControlRadius(theme, size),
 				segmentRadius: resolveSegmentRadius(theme, size),
-				minHeight: 44,
+				minHeight: resolveDensityControlSize(theme, 44),
 				defaultWidth: 360,
 			};
 		case "xl":
 			return {
 				padding: "sm",
-				gap: 5,
+				gap: resolveDensityGap(theme, 5),
 				segmentPaddingX: "xl",
 				segmentPaddingY: "md",
 				fontSize: theme.fontSizes.xl,
 				lineHeight: theme.lineHeights.xl,
 				radius: resolveControlRadius(theme, size),
 				segmentRadius: resolveSegmentRadius(theme, size),
-				minHeight: 52,
+				minHeight: resolveDensityControlSize(theme, 52),
 				defaultWidth: 420,
 			};
 		case "md":
 		default:
 			return {
 				padding: "xs",
-				gap: 3,
+				gap: resolveDensityGap(theme, 3),
 				segmentPaddingX: "md",
 				segmentPaddingY: "sm",
 				fontSize: theme.fontSizes.md,
 				lineHeight: theme.lineHeights.md,
 				radius: resolveControlRadius(theme, size),
 				segmentRadius: resolveSegmentRadius(theme, size),
-				minHeight: 38,
+				minHeight: resolveDensityControlSize(theme, 38),
 				defaultWidth: 320,
 			};
 	}
@@ -257,11 +258,11 @@ export function resolveSegmentedControlIndicatorVisualStyles(
 
 export function resolveSegmentedControlIndicatorMotionTransition() {
 	return {
-		selectedIndex: { duration: 0.18, easing: "out" },
-		backgroundColor: { duration: 0.12, easing: "standard" },
-		backgroundTransparency: { duration: 0.12, easing: "standard" },
-		strokeColor: { duration: 0.12, easing: "standard" },
-		strokeTransparency: { duration: 0.12, easing: "standard" },
+		selectedIndex: { duration: "normal", easing: "out" },
+		backgroundColor: { duration: "fast", easing: "standard" },
+		backgroundTransparency: { duration: "fast", easing: "standard" },
+		strokeColor: { duration: "fast", easing: "standard" },
+		strokeTransparency: { duration: "fast", easing: "standard" },
 	} as const;
 }
 
@@ -279,21 +280,21 @@ export function resolveSegmentedControlSegmentMotionTransition(state: SegmentedC
 
 	if (state === "pressed") {
 		return {
-			backgroundColor: { duration: 0.06, easing: "standard" },
-			backgroundTransparency: { duration: 0.06, easing: "standard" },
-			strokeColor: { duration: 0.06, easing: "standard" },
-			strokeTransparency: { duration: 0.06, easing: "standard" },
-			textColor: { duration: 0.06, easing: "standard" },
-			textTransparency: { duration: 0.06, easing: "standard" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			backgroundTransparency: { duration: "fast", easing: "standard" },
+			strokeColor: { duration: "fast", easing: "standard" },
+			strokeTransparency: { duration: "fast", easing: "standard" },
+			textColor: { duration: "fast", easing: "standard" },
+			textTransparency: { duration: "fast", easing: "standard" },
 		} as const;
 	}
 
 	return {
-		backgroundColor: { duration: state === "selected" ? 0.16 : 0.12, easing: "standard" },
-		backgroundTransparency: { duration: state === "selected" ? 0.16 : 0.12, easing: "standard" },
-		strokeColor: { duration: state === "selected" ? 0.16 : 0.12, easing: "standard" },
-		strokeTransparency: { duration: state === "selected" ? 0.16 : 0.12, easing: "standard" },
-		textColor: { duration: 0.12, easing: "standard" },
-		textTransparency: { duration: 0.12, easing: "standard" },
+		backgroundColor: { duration: state === "selected" ? "normal" : "fast", easing: "standard" },
+		backgroundTransparency: { duration: state === "selected" ? "normal" : "fast", easing: "standard" },
+		strokeColor: { duration: state === "selected" ? "normal" : "fast", easing: "standard" },
+		strokeTransparency: { duration: state === "selected" ? "normal" : "fast", easing: "standard" },
+		textColor: { duration: "fast", easing: "standard" },
+		textTransparency: { duration: "fast", easing: "standard" },
 	} as const;
 }

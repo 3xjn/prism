@@ -81,6 +81,10 @@ All spacing derives from a base of 4 Roblox offset units.
 - Prefer theme spacing tokens for repeated spacing.
 - Fixed offsets are acceptable for geometry-specific assets such as tooltip tails when documented by the owning component.
 
+### Density
+
+Default density is unchanged. Opt into compact with `ThemeProvider` `density="compact"` (or `theme.density`). Compact remaps spacing at resolve time (`xs` stays 4 so type stays readable) and tightens control min-heights so md interactive controls land around 32px. Font sizes do not shrink.
+
 ## 5. Components
 
 ### Trigger-Anchored Overlay
@@ -90,7 +94,7 @@ All spacing derives from a base of 4 Roblox offset units.
 - **Spacing**: trigger gap uses component `gap` prop with theme fallback.
 - **States**: closed, open, disabled, hover-open, click-open, forced-open.
 - **Accessibility**: Roblox input handling remains component-specific; invisible capture layers must not steal interaction unless the overlay is open.
-- **Motion**: no default animation yet; future motion must use theme motion tokens.
+- **Motion**: item and trigger motion uses theme duration tokens. Overlay mount/unmount is still instant.
 
 ### Screen Overlay
 
@@ -99,7 +103,7 @@ All spacing derives from a base of 4 Roblox offset units.
 - **Spacing**: panel padding and viewport bounds use theme spacing.
 - **States**: closed, open, backdrop-dismissable, forced-open.
 - **Accessibility**: close actions remain explicit and backdrop behavior is configurable.
-- **Motion**: no default animation yet; future motion must use theme motion tokens.
+- **Motion**: overlay presence uses `motion.duration.normal` to open and `motion.duration.fast` to close.
 
 ## 6. Motion & Interaction
 
@@ -115,6 +119,7 @@ All spacing derives from a base of 4 Roblox offset units.
 ### Rules
 
 - Prefer transform/transparency-style effects over layout mutation when adding animation.
+- Component hover/press/open/close durations use `motion.duration` tokens (`instant`, `fast`, `normal`, `slow`), not raw seconds.
 - Every interactive overlay must define how it opens, closes, and handles disabled state.
 
 ## 7. Depth & Surface

@@ -165,32 +165,32 @@ export function resolveInputMotionTransition(state: InputInteractionState) {
 
 	if (state === "focused") {
 		return {
-			backgroundColor: { duration: 0.12, easing: "standard" },
-			strokeColor: { duration: 0.12, easing: "standard" },
-			strokeTransparency: { duration: 0.12, easing: "standard" },
-			strokeThickness: { duration: 0.12, easing: "out" },
-			textColor: { duration: 0.12, easing: "standard" },
-			placeholderColor: { duration: 0.12, easing: "standard" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			strokeColor: { duration: "fast", easing: "standard" },
+			strokeTransparency: { duration: "fast", easing: "standard" },
+			strokeThickness: { duration: "fast", easing: "out" },
+			textColor: { duration: "fast", easing: "standard" },
+			placeholderColor: { duration: "fast", easing: "standard" },
 		} as const;
 	}
 
 	if (state === "hovered") {
 		return {
-			backgroundColor: { duration: 0.14, easing: "standard" },
-			strokeColor: { duration: 0.14, easing: "standard" },
-			strokeTransparency: { duration: 0.14, easing: "standard" },
-			strokeThickness: { duration: 0.14, easing: "standard" },
-			textColor: { duration: 0.14, easing: "standard" },
-			placeholderColor: { duration: 0.14, easing: "standard" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			strokeColor: { duration: "fast", easing: "standard" },
+			strokeTransparency: { duration: "fast", easing: "standard" },
+			strokeThickness: { duration: "fast", easing: "standard" },
+			textColor: { duration: "fast", easing: "standard" },
+			placeholderColor: { duration: "fast", easing: "standard" },
 		} as const;
 	}
 
 	return {
-		backgroundColor: { duration: 0.16, easing: "standard" },
-		strokeColor: { duration: 0.16, easing: "standard" },
-		strokeTransparency: { duration: 0.16, easing: "standard" },
-		strokeThickness: { duration: 0.16, easing: "standard" },
-		textColor: { duration: 0.16, easing: "standard" },
-		placeholderColor: { duration: 0.16, easing: "standard" },
+		backgroundColor: { duration: "normal", easing: "standard" },
+		strokeColor: { duration: "normal", easing: "standard" },
+		strokeTransparency: { duration: "normal", easing: "standard" },
+		strokeThickness: { duration: "normal", easing: "standard" },
+		textColor: { duration: "normal", easing: "standard" },
+		placeholderColor: { duration: "normal", easing: "standard" },
 	} as const;
 }
