@@ -1,6 +1,8 @@
-# Prism
+<p align="center">
+  <img width="150" height="150" src="assets/prism-icon.png" alt="Prism logo">
+</p>
 
-<img src="assets/prism-icon.png" alt="Prism" width="96" height="96">
+<h1 align="center">Prism</h1>
 
 Prism is a Roblox TypeScript UI kit for [`@rbxts/react`](https://github.com/roblox-ts/react). Components share a token theme and Roblox-native sizing (`UDim`, offsets, and scale).
 
