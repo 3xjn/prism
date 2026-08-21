@@ -188,7 +188,7 @@ Set these when using Open Cloud (`JEST_`-prefixed names override the same unpref
 | `ROBLOX_UNIVERSE_ID` | Universe that receives the test place |
 | `ROBLOX_PLACE_ID` | Place to publish and execute |
 
-The key needs `universe-places:write` and `universe.place.luau-execution-session:write`. If those values are missing, `npm test` fails with that requirement instead of falling back to Node. GitHub Actions skips the Roblox jest job until those repository secrets are set; typecheck, lint, and build still run.
+The key needs `universe-places:write` and `universe.place.luau-execution-session:write`. If those values are missing locally, `npm test` fails with that requirement instead of falling back to Node. GitHub Actions skips the Test step until `ROBLOX_OPEN_CLOUD_API_KEY` is set as a repository secret; typecheck, lint, and build still run.
 
 `__typecheck__.tsx` files stay compile-time contracts. They are not the runtime runner.
 
