@@ -1,3 +1,5 @@
+import { describe, expect, it } from "@rbxts/jest-globals";
+
 import { bridgeDiagnostics, componentDiagnostics } from "./diagnostics";
 
 const RunService = game.GetService("RunService");

@@ -1,3 +1,5 @@
+import { describe, expect, it } from "@rbxts/jest-globals";
+
 import { resolveProgressPercent, resolveProgressRange, resolveProgressValue } from "./utils";
 
 const MAX_FINITE = 1.7976931348623157e308;

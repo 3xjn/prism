@@ -1,3 +1,5 @@
+import { describe, expect, it } from "@rbxts/jest-globals";
+
 import {
 	DEFAULT_WINDOW_HEIGHT,
 	DEFAULT_WINDOW_MIN_HEIGHT,

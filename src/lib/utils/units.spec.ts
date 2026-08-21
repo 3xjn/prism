@@ -1,3 +1,5 @@
+import { describe, expect, it } from "@rbxts/jest-globals";
+
 import { toUDim, toUDim2, toUDimAxis } from "./units";
 
 describe("units", () => {
