@@ -1,3 +1,7 @@
+import type { AssertTrue, IsAssignable } from "@prism/testing/typeContracts";
+import { DEFAULT_DARK_THEME } from "@prism/theme";
+import type { ThemeOverride } from "@prism/theme";
+
 import type { PrismLuauMountHandle, PrismLuauNode } from "./LuauBridge";
 import { mountPrism } from "./LuauBridge";
 
@@ -93,7 +97,7 @@ function acceptMountFunction(
 	parent: Instance,
 	tree: PrismLuauNode,
 ): PrismLuauMountHandle {
-	const handle: PrismLuauMountHandle = mount(parent, tree);
+	const handle: PrismLuauMountHandle = mount(parent, tree, DEFAULT_DARK_THEME);
 	handle.update(selectTree);
 	handle.update(segmentedControlTree);
 	handle.update(stepperInputTree);
@@ -106,5 +110,15 @@ function acceptMountFunction(
 
 const acceptsBridgeTrees: PrismLuauNode[] = [fragmentTree, selectTree, segmentedControlTree, stepperInputTree, draggableTree, popoverTree, pressableTree];
 const acceptsMountFunction: (parent: Instance, tree: PrismLuauNode) => PrismLuauMountHandle = mountPrism;
+const acceptsMountFunctionWithTheme: (parent: Instance, tree: PrismLuauNode, theme?: ThemeOverride) => PrismLuauMountHandle =
+	mountPrism;
+type DarkThemeAssignableToOverride = AssertTrue<IsAssignable<typeof DEFAULT_DARK_THEME, ThemeOverride>>;
+const darkThemeAssignableToOverride: DarkThemeAssignableToOverride = true;
 
-export { acceptMountFunction, acceptsBridgeTrees, acceptsMountFunction };
+export {
+	acceptMountFunction,
+	acceptsBridgeTrees,
+	acceptsMountFunction,
+	acceptsMountFunctionWithTheme,
+	darkThemeAssignableToOverride,
+};

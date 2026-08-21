@@ -236,7 +236,7 @@ export function resolveSegmentedControlIndicatorVisualStyles(
 		? mixColor(theme.colors.background.surface, intentColors.light, 0.28)
 		: variant === "subtle"
 		? mixColor(theme.colors.background.surface, theme.colors.border.default, 0.12)
-		: theme.colors.background.surface;
+		: theme.colors.background.raised;
 
 	if (disabled) {
 		return {
