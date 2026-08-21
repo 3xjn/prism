@@ -3,9 +3,6 @@ out/
 include/
 .git/
 .idea/
-.sisyphus/
-.beads/
-.research/
 coverage/
 *.rbxl
 *.rbxlx
