@@ -26,6 +26,11 @@
 					"$path": "out/playground"
 				}
 			}
+		},
+		"ServerScriptService": {
+			"$properties": {
+				"LoadStringEnabled": true
+			}
 		}
 	}
 }
