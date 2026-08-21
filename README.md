@@ -6,16 +6,14 @@
 
 Prism is a Roblox TypeScript UI kit for [`@rbxts/react`](https://github.com/roblox-ts/react). Components share a token theme and Roblox-native sizing (`UDim`, offsets, and scale).
 
-Not published to npm yet (`0.0.0`). The package name is `@rbxts/prism-kit` (private) so roblox-ts can resolve it under `node_modules/@rbxts`. Tokens and visual language are in [DESIGN.md](DESIGN.md).
+Not published to npm yet (`0.0.0`). The package name is `@3xjn/prism` (private). Tokens and visual language are in [DESIGN.md](DESIGN.md).
 
 ## Use in another rbxts project
 
-Add Prism as a git or sibling file dependency:
-
 ```json
 {
 	"dependencies": {
-		"@rbxts/prism-kit": "github:3xjn/prism"
+		"@3xjn/prism": "github:3xjn/prism"
 	}
 }
 ```
@@ -23,37 +21,52 @@ Add Prism as a git or sibling file dependency:
 ```json
 {
 	"dependencies": {
-		"@rbxts/prism-kit": "file:../prism"
+		"@3xjn/prism": "file:../prism"
 	}
 }
 ```
-
-`main` / `types` follow the usual `@rbxts` library layout (`out/lib/init.luau` + `out/lib/index.d.ts`). Import from the package name, or keep this repo's `@prism` aliases with a paths snippet:
 
 ```ts
-import { Button, ThemeProvider, DEFAULT_DARK_THEME } from "@rbxts/prism-kit";
-// or: import { Button, ThemeProvider, DEFAULT_DARK_THEME } from "@prism";
+import { Button, ThemeProvider, DEFAULT_DARK_THEME } from "@3xjn/prism";
 ```
+
+roblox-ts 3 resolves non-`@rbxts` scopes the same way as `@flamework` / `@rbxutil`. Both of these consumer lines are required:
+
+```json
+"typeRoots": ["node_modules/@rbxts", "node_modules/@3xjn"]
+```
+
+```json
+"node_modules": {
+	"$className": "Folder",
+	"@rbxts": {
+		"$path": "node_modules/@rbxts"
+	},
+	"@3xjn": {
+		"$path": "node_modules/@3xjn"
+	}
+}
+```
+
+`main` / `types` follow the usual library layout (`out/lib/init.luau` + `out/lib/index.d.ts`). `@prism` is an optional paths alias if you want the same imports this repo uses internally:
 
 ```json
 {
 	"compilerOptions": {
 		"paths": {
-			"@prism": ["./node_modules/@rbxts/prism-kit/out/lib"],
-			"@prism/*": ["./node_modules/@rbxts/prism-kit/out/lib/*"]
+			"@prism": ["./node_modules/@3xjn/prism/out/lib"],
+			"@prism/*": ["./node_modules/@3xjn/prism/out/lib/*"]
 		}
 	}
 }
 ```
-
-A standard game `default.project.json` that already maps `node_modules/@rbxts` does not need a second Rojo path.
 
 The host must pass a parent `Instance` (PlayerGui, a ScreenGui, a plugin widget, and so on). Wrap the tree in `ThemeProvider`. Pass `density="compact"` for tighter control heights and padding, and `theme={DEFAULT_DARK_THEME}` for dark:
 
 ```tsx
 import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
-import { Button, ThemeProvider, DEFAULT_DARK_THEME } from "@prism";
+import { Button, ThemeProvider, DEFAULT_DARK_THEME } from "@3xjn/prism";
 
 export function mount(parent: Instance) {
 	const root = ReactRoblox.createRoot(parent);
