@@ -1,27 +1,44 @@
 {
-	"name": "prism",
+	"name": "@rbxts/prism-kit",
 	"private": true,
 	"version": "0.0.0",
+	"description": "Roblox TypeScript UI kit for @rbxts/react",
+	"main": "out/lib/init.luau",
+	"types": "out/lib/index.d.ts",
+	"typings": "out/lib/index.d.ts",
+	"files": [
+		"out/lib",
+		"src/lib",
+		"!**/*.tsbuildinfo",
+		"!**/__typecheck__.*",
+		"!**/__test__.*"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/3xjn/prism.git"
+	},
 	"scripts": {
 		"test": "node scripts/run-units-assertions.cjs",
-		"build": "rbxtsc",
+		"build": "rbxtsc --type game",
+		"build:package": "rbxtsc --type package -p tsconfig.package.json",
+		"prepare": "npm run build:package",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
 		"lint": "eslint src --ext .ts,.tsx",
 		"format": "prettier --check ."
 	},
 	"dependencies": {
 		"@rbxts/react": "17.3.7-ts.1",
-		"@rbxts/react-roblox": "17.3.7-ts.1",
-		"@rbxts/ui-labs": "2.4.2",
-		"roblox-ts": "3.0.0"
+		"@rbxts/react-roblox": "17.3.7-ts.1"
 	},
 	"devDependencies": {
 		"@rbxts/compiler-types": "3.0.0-types.0",
 		"@rbxts/types": "1.0.916",
+		"@rbxts/ui-labs": "2.4.2",
 		"@typescript-eslint/parser": "8.58.2",
 		"eslint": "8.57.1",
 		"eslint-plugin-roblox-ts": "1.4.0",
 		"prettier": "3.8.3",
+		"roblox-ts": "3.0.0",
 		"typescript": "5.8.3"
 	}
 }
