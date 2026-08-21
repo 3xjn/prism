@@ -11,14 +11,15 @@
 		"src/lib",
 		"!**/*.tsbuildinfo",
 		"!**/__typecheck__.*",
-		"!**/__test__.*"
+		"!**/__test__.*",
+		"!**/*.spec.*"
 	],
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/3xjn/prism.git"
 	},
 	"scripts": {
-		"test": "node scripts/run-units-assertions.cjs",
+		"test": "rbxtsc --type game && jest-roblox",
 		"build": "rbxtsc --type game",
 		"build:package": "rbxtsc --type package -p tsconfig.package.json",
 		"prepare": "npm run build:package",
@@ -31,7 +32,10 @@
 		"@rbxts/react-roblox": "17.3.7-ts.1"
 	},
 	"devDependencies": {
+		"@isentinel/jest-roblox": "0.3.16",
 		"@rbxts/compiler-types": "3.0.0-types.0",
+		"@rbxts/jest": "3.16.0-ts.1",
+		"@rbxts/jest-globals": "3.16.0-ts.1",
 		"@rbxts/types": "1.0.916",
 		"@rbxts/ui-labs": "2.4.2",
 		"@typescript-eslint/parser": "8.58.2",
