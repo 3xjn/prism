@@ -10,8 +10,44 @@ permissions:
   contents: read
 
 jobs:
-  ci:
+  quality:
+    name: Typecheck, lint, build
     runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+  test:
+    name: Roblox jest (Open Cloud)
+    needs: quality
+    runs-on: ubuntu-24.04
+    # GitHub Actions ubuntu has no Studio GUI. Skip rather than fail the
+    # quality gate when Open Cloud secrets are unset. This is not a Node vm.
+    if: ${{ secrets.ROBLOX_OPEN_CLOUD_API_KEY != '' && secrets.ROBLOX_UNIVERSE_ID != '' && secrets.ROBLOX_PLACE_ID != '' }}
+
+    env:
+      ROBLOX_OPEN_CLOUD_API_KEY: ${{ secrets.ROBLOX_OPEN_CLOUD_API_KEY }}
+      ROBLOX_UNIVERSE_ID: ${{ secrets.ROBLOX_UNIVERSE_ID }}
+      ROBLOX_PLACE_ID: ${{ secrets.ROBLOX_PLACE_ID }}
 
     steps:
       - name: Checkout
@@ -29,25 +65,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Build
-        run: npm run build
-
       - name: Test
-        env:
-          ROBLOX_OPEN_CLOUD_API_KEY: ${{ secrets.ROBLOX_OPEN_CLOUD_API_KEY }}
-          ROBLOX_UNIVERSE_ID: ${{ secrets.ROBLOX_UNIVERSE_ID }}
-          ROBLOX_PLACE_ID: ${{ secrets.ROBLOX_PLACE_ID }}
-        run: |
-          if [ -z "$ROBLOX_OPEN_CLOUD_API_KEY" ] || [ -z "$ROBLOX_UNIVERSE_ID" ] || [ -z "$ROBLOX_PLACE_ID" ]; then
-            echo "::error::npm test runs @rbxts/jest inside a Roblox DataModel via jest-roblox (Open Cloud)."
-            echo "::error::GitHub Actions ubuntu has no Studio GUI. Set repository secrets ROBLOX_OPEN_CLOUD_API_KEY, ROBLOX_UNIVERSE_ID, and ROBLOX_PLACE_ID."
-            echo "::error::This is not a Node vm harness; tests cannot run without a Roblox host."
-            exit 1
-          fi
-          npm test -- --backend open-cloud --formatters github-actions
+        run: npm test -- --backend open-cloud --formatters github-actions
