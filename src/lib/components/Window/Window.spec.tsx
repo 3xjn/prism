@@ -1,3 +1,4 @@
+import "./reactRobloxTestFlags";
 import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
 import { afterEach, describe, expect, it } from "@rbxts/jest-globals";
