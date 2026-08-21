@@ -10,22 +10,23 @@ Prism is a quiet Roblox application UI kit for focused in-game tools. The signat
 
 | Role             | Token                | Light       | Dark        | Usage                                    |
 | ---------------- | -------------------- | ----------- | ----------- | ---------------------------------------- |
-| Surface/default  | `background.default` | `gray.0`    | not defined | Screen and transparent component backing |
-| Surface/elevated | `background.surface` | `#FFFFFF`   | not defined | Cards, popovers, tooltips, modal panels  |
-| Text/primary     | `text.primary`       | `gray.9`    | not defined | Primary labels and content               |
-| Text/secondary   | `text.secondary`     | `gray.7`    | not defined | Supporting copy                          |
-| Text/disabled    | `text.disabled`      | `gray.5`    | not defined | Disabled labels and muted state          |
-| Border/subtle    | `border.subtle`      | `gray.2`    | not defined | Gentle separators                        |
-| Border/default   | `border.default`     | `gray.4`    | not defined | Standard strokes                         |
-| Border/strong    | `border.strong`      | `gray.6`    | not defined | Higher contrast strokes                  |
-| Action/hover     | `action.hover`       | `gray.1`    | not defined | Hover backgrounds                        |
-| Action/pressed   | `action.pressed`     | `gray.2`    | not defined | Pressed backgrounds                      |
-| Intent/primary   | `primary.main`       | `primary.5` | not defined | Primary actions                          |
-| Intent/secondary | `secondary.main`     | `blue.5`    | not defined | Secondary actions                        |
-| Intent/error     | `error.main`         | `red.5`     | not defined | Error and destructive states             |
-| Intent/warning   | `warning.main`       | `yellow.5`  | not defined | Warning states                           |
-| Intent/info      | `info.main`          | `blue.5`    | not defined | Informational states                     |
-| Intent/success   | `success.main`       | `green.5`   | not defined | Success states                           |
+| Surface/default  | `background.default` | `gray.0`    | `#0D1117`   | Screen and transparent component backing |
+| Surface/elevated | `background.surface` | `#FFFFFF`   | `#151B23`   | Cards, popovers, tooltips, modal panels  |
+| Surface/raised   | `background.raised`  | `#FFFFFF`   | `#343C48`   | Controls that must read above their track |
+| Text/primary     | `text.primary`       | `gray.9`    | `#F0F6FC`   | Primary labels and content               |
+| Text/secondary   | `text.secondary`     | `gray.7`    | `#B7BDC8`   | Supporting copy                          |
+| Text/disabled    | `text.disabled`      | `gray.5`    | `#7D8590`   | Disabled labels and muted state          |
+| Border/subtle    | `border.subtle`      | `gray.2`    | `#2F3742`   | Gentle separators                        |
+| Border/default   | `border.default`     | `gray.4`    | `#3D444D`   | Standard strokes                         |
+| Border/strong    | `border.strong`      | `gray.6`    | `#7D8590`   | Higher contrast strokes                  |
+| Action/hover     | `action.hover`       | `gray.1`    | `#2A313C`   | Hover backgrounds                        |
+| Action/pressed   | `action.pressed`     | `gray.2`    | `#2F3742`   | Pressed backgrounds                      |
+| Intent/primary   | `primary.main`       | `primary.5` | `#58A6FF`   | Primary actions                          |
+| Intent/secondary | `secondary.main`     | `blue.5`    | `#8B949E`   | Secondary actions                        |
+| Intent/error     | `error.main`         | `red.5`     | `#F85149`   | Error and destructive states             |
+| Intent/warning   | `warning.main`       | `yellow.5`  | `#D29922`   | Warning states                           |
+| Intent/info      | `info.main`          | `blue.5`    | `#79C0FF`   | Informational states                     |
+| Intent/success   | `success.main`       | `green.5`   | `#3FB950`   | Success states                           |
 
 ### Rules
 
