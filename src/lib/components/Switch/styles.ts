@@ -1,4 +1,5 @@
 import type { Theme } from "@prism/theme";
+import { resolveDensityControlSize, resolveDensityMarkSize, resolveThemeSpacing } from "@prism/theme";
 
 import type { InteractionState } from "../_shared/usePressInteraction";
 import { mixColor } from "../_shared/visual";
@@ -36,64 +37,64 @@ export function resolveSwitchSizeStyles(theme: Theme, size: SwitchSize): SwitchS
 	switch (size) {
 		case "xs":
 			return {
-				trackWidth: 28,
-				trackHeight: 16,
-				thumbDiameter: 10,
+				trackWidth: resolveDensityMarkSize(theme, 28),
+				trackHeight: resolveDensityMarkSize(theme, 16),
+				thumbDiameter: resolveDensityMarkSize(theme, 10),
 				thumbInset: 3,
-				iconSize: 6,
-				labelGap: theme.spacing.xs,
+				iconSize: resolveDensityMarkSize(theme, 6),
+				labelGap: resolveThemeSpacing(theme, "xs"),
 				labelSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.xs,
-				minHeight: 20,
+				minHeight: resolveDensityControlSize(theme, 20),
 			};
 		case "sm":
 			return {
-				trackWidth: 32,
-				trackHeight: 18,
-				thumbDiameter: 12,
+				trackWidth: resolveDensityMarkSize(theme, 32),
+				trackHeight: resolveDensityMarkSize(theme, 18),
+				thumbDiameter: resolveDensityMarkSize(theme, 12),
 				thumbInset: 3,
-				iconSize: 7,
-				labelGap: theme.spacing.xs,
+				iconSize: resolveDensityMarkSize(theme, 7),
+				labelGap: resolveThemeSpacing(theme, "xs"),
 				labelSize: theme.fontSizes.sm,
 				lineHeight: theme.lineHeights.sm,
-				minHeight: 22,
+				minHeight: resolveDensityControlSize(theme, 22),
 			};
 		case "lg":
 			return {
-				trackWidth: 44,
-				trackHeight: 24,
-				thumbDiameter: 18,
+				trackWidth: resolveDensityMarkSize(theme, 44),
+				trackHeight: resolveDensityMarkSize(theme, 24),
+				thumbDiameter: resolveDensityMarkSize(theme, 18),
 				thumbInset: 3,
-				iconSize: 10,
-				labelGap: theme.spacing.sm,
+				iconSize: resolveDensityMarkSize(theme, 10),
+				labelGap: resolveThemeSpacing(theme, "sm"),
 				labelSize: theme.fontSizes.lg,
 				lineHeight: theme.lineHeights.lg,
-				minHeight: 28,
+				minHeight: resolveDensityControlSize(theme, 28),
 			};
 		case "xl":
 			return {
-				trackWidth: 50,
-				trackHeight: 28,
-				thumbDiameter: 20,
+				trackWidth: resolveDensityMarkSize(theme, 50),
+				trackHeight: resolveDensityMarkSize(theme, 28),
+				thumbDiameter: resolveDensityMarkSize(theme, 20),
 				thumbInset: 4,
-				iconSize: 12,
-				labelGap: theme.spacing.md,
+				iconSize: resolveDensityMarkSize(theme, 12),
+				labelGap: resolveThemeSpacing(theme, "md"),
 				labelSize: theme.fontSizes.xl,
 				lineHeight: theme.lineHeights.xl,
-				minHeight: 32,
+				minHeight: resolveDensityControlSize(theme, 32),
 			};
 		case "md":
 		default:
 			return {
-				trackWidth: 38,
-				trackHeight: 20,
-				thumbDiameter: 14,
+				trackWidth: resolveDensityMarkSize(theme, 38),
+				trackHeight: resolveDensityMarkSize(theme, 20),
+				thumbDiameter: resolveDensityMarkSize(theme, 14),
 				thumbInset: 3,
-				iconSize: 8,
-				labelGap: theme.spacing.sm,
+				iconSize: resolveDensityMarkSize(theme, 8),
+				labelGap: resolveThemeSpacing(theme, "sm"),
 				labelSize: theme.fontSizes.md,
 				lineHeight: theme.lineHeights.md,
-				minHeight: 24,
+				minHeight: resolveDensityControlSize(theme, 24),
 			};
 	}
 }
@@ -191,44 +192,44 @@ export function resolveSwitchMotionTransition(state: SwitchInteractionState) {
 
 	if (state === "pressed") {
 		return {
-			trackColor: { duration: 0.06, easing: "standard" },
-			trackStrokeColor: { duration: 0.06, easing: "standard" },
-			trackStrokeTransparency: { duration: 0.06, easing: "standard" },
-			thumbColor: { duration: 0.06, easing: "standard" },
-			thumbStrokeColor: { duration: 0.06, easing: "standard" },
-			thumbStrokeTransparency: { duration: 0.06, easing: "standard" },
-			thumbOffset: { duration: 0.08, easing: "out" },
-			iconColor: { duration: 0.06, easing: "standard" },
-			iconTransparency: { duration: 0.06, easing: "standard" },
-			labelColor: { duration: 0.06, easing: "standard" },
+			trackColor: { duration: "fast", easing: "standard" },
+			trackStrokeColor: { duration: "fast", easing: "standard" },
+			trackStrokeTransparency: { duration: "fast", easing: "standard" },
+			thumbColor: { duration: "fast", easing: "standard" },
+			thumbStrokeColor: { duration: "fast", easing: "standard" },
+			thumbStrokeTransparency: { duration: "fast", easing: "standard" },
+			thumbOffset: { duration: "fast", easing: "out" },
+			iconColor: { duration: "fast", easing: "standard" },
+			iconTransparency: { duration: "fast", easing: "standard" },
+			labelColor: { duration: "fast", easing: "standard" },
 		} as const;
 	}
 
 	if (state === "hovered") {
 		return {
-			trackColor: { duration: 0.12, easing: "standard" },
-			trackStrokeColor: { duration: 0.12, easing: "standard" },
-			trackStrokeTransparency: { duration: 0.12, easing: "standard" },
-			thumbColor: { duration: 0.12, easing: "standard" },
-			thumbStrokeColor: { duration: 0.12, easing: "standard" },
-			thumbStrokeTransparency: { duration: 0.12, easing: "standard" },
-			thumbOffset: { duration: 0.14, easing: "out" },
-			iconColor: { duration: 0.12, easing: "standard" },
-			iconTransparency: { duration: 0.12, easing: "standard" },
-			labelColor: { duration: 0.12, easing: "standard" },
+			trackColor: { duration: "fast", easing: "standard" },
+			trackStrokeColor: { duration: "fast", easing: "standard" },
+			trackStrokeTransparency: { duration: "fast", easing: "standard" },
+			thumbColor: { duration: "fast", easing: "standard" },
+			thumbStrokeColor: { duration: "fast", easing: "standard" },
+			thumbStrokeTransparency: { duration: "fast", easing: "standard" },
+			thumbOffset: { duration: "normal", easing: "out" },
+			iconColor: { duration: "fast", easing: "standard" },
+			iconTransparency: { duration: "fast", easing: "standard" },
+			labelColor: { duration: "fast", easing: "standard" },
 		} as const;
 	}
 
 	return {
-		trackColor: { duration: 0.14, easing: "standard" },
-		trackStrokeColor: { duration: 0.14, easing: "standard" },
-		trackStrokeTransparency: { duration: 0.14, easing: "standard" },
-		thumbColor: { duration: 0.14, easing: "standard" },
-		thumbStrokeColor: { duration: 0.14, easing: "standard" },
-		thumbStrokeTransparency: { duration: 0.14, easing: "standard" },
-		thumbOffset: { duration: 0.14, easing: "out" },
-		iconColor: { duration: 0.14, easing: "standard" },
-		iconTransparency: { duration: 0.14, easing: "standard" },
-		labelColor: { duration: 0.14, easing: "standard" },
+		trackColor: { duration: "normal", easing: "standard" },
+		trackStrokeColor: { duration: "normal", easing: "standard" },
+		trackStrokeTransparency: { duration: "normal", easing: "standard" },
+		thumbColor: { duration: "normal", easing: "standard" },
+		thumbStrokeColor: { duration: "normal", easing: "standard" },
+		thumbStrokeTransparency: { duration: "normal", easing: "standard" },
+		thumbOffset: { duration: "normal", easing: "out" },
+		iconColor: { duration: "normal", easing: "standard" },
+		iconTransparency: { duration: "normal", easing: "standard" },
+		labelColor: { duration: "normal", easing: "standard" },
 	} as const;
 }

@@ -5,10 +5,11 @@ import type { ScrollAreaDirection } from "@prism";
 import { useTheme , theme as themeRefs } from "@prism/theme";
 import { CreateReactStory, EnumList, Number } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	direction: EnumList(
 		{
 			vertical: "vertical",
@@ -69,7 +70,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<ScrollAreaStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

@@ -6,10 +6,11 @@ import { Box, Icon, Popover, Stack, Text } from "@prism";
 import type { PopoverAlign, PopoverPlacement, PopoverTriggerMode } from "@prism";
 import { useTheme , theme as themeRefs } from "@prism/theme";
 
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	placement: EnumList({ bottom: "bottom", top: "top", left: "left", right: "right" }, "bottom"),
 	align: EnumList({ start: "start", center: "center", end: "end" }, "center"),
 	triggerMode: EnumList({ click: "click", hover: "hover", manual: "manual" }, "click"),
@@ -105,7 +106,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<PopoverStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

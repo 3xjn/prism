@@ -1,4 +1,5 @@
 import type { Theme, ThemeSize, Variant } from "@prism/theme";
+import { resolveDensityControlSize, resolveThemeSpacing } from "@prism/theme";
 
 import type { InteractionState } from "../_shared/usePressInteraction";
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
@@ -51,7 +52,7 @@ export function resolveButtonSizeStyles(theme: Theme, size: ButtonSize): ButtonS
 				fontSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.xs,
 				radius: resolveButtonRadius(theme, size),
-				minHeight: theme.spacing.sm * 3,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.sm * 3),
 			};
 		case "sm":
 			return {
@@ -60,7 +61,7 @@ export function resolveButtonSizeStyles(theme: Theme, size: ButtonSize): ButtonS
 				fontSize: theme.fontSizes.sm,
 				lineHeight: theme.lineHeights.sm,
 				radius: resolveButtonRadius(theme, size),
-				minHeight: theme.spacing.xl + theme.spacing.sm,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.sm),
 			};
 		case "lg":
 			return {
@@ -69,7 +70,7 @@ export function resolveButtonSizeStyles(theme: Theme, size: ButtonSize): ButtonS
 				fontSize: theme.fontSizes.lg,
 				lineHeight: theme.lineHeights.lg,
 				radius: resolveButtonRadius(theme, size),
-				minHeight: theme.spacing.xl + theme.spacing.lg,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.lg),
 			};
 		case "xl":
 			return {
@@ -78,7 +79,7 @@ export function resolveButtonSizeStyles(theme: Theme, size: ButtonSize): ButtonS
 				fontSize: theme.fontSizes.xl,
 				lineHeight: theme.lineHeights.xl,
 				radius: resolveButtonRadius(theme, size),
-				minHeight: theme.spacing.xl * 2,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl * 2),
 			};
 		case "md":
 		default:
@@ -88,7 +89,7 @@ export function resolveButtonSizeStyles(theme: Theme, size: ButtonSize): ButtonS
 				fontSize: theme.fontSizes.md,
 				lineHeight: theme.lineHeights.md,
 				radius: resolveButtonRadius(theme, size),
-				minHeight: theme.spacing.xl + theme.spacing.md,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.md),
 			};
 	}
 }
@@ -97,13 +98,13 @@ export function resolveButtonContentGap(theme: Theme, size: ButtonSize): number 
 	switch (size) {
 		case "xs":
 		case "sm":
-			return theme.spacing.xs;
+			return resolveThemeSpacing(theme, "xs");
 		case "lg":
 		case "xl":
-			return theme.spacing.sm;
+			return resolveThemeSpacing(theme, "sm");
 		case "md":
 		default:
-			return theme.spacing.sm;
+			return resolveThemeSpacing(theme, "sm");
 	}
 }
 
@@ -196,32 +197,32 @@ export function resolveButtonMotionTransition(state: ButtonInteractionState) {
 
 	if (state === "pressed") {
 		return {
-			backgroundColor: { duration: 0.045, easing: "standard" },
-			backgroundTransparency: { duration: 0.045, easing: "standard" },
-			textColor: { duration: 0.045, easing: "standard" },
-			strokeColor: { duration: 0.045, easing: "standard" },
-			strokeTransparency: { duration: 0.045, easing: "standard" },
-			scale: { duration: 0.05, easing: "out" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			backgroundTransparency: { duration: "fast", easing: "standard" },
+			textColor: { duration: "fast", easing: "standard" },
+			strokeColor: { duration: "fast", easing: "standard" },
+			strokeTransparency: { duration: "fast", easing: "standard" },
+			scale: { duration: "fast", easing: "out" },
 		} as const;
 	}
 
 	if (state === "hovered") {
 		return {
-			backgroundColor: { duration: 0.1, easing: "standard" },
-			backgroundTransparency: { duration: 0.1, easing: "standard" },
-			textColor: { duration: 0.1, easing: "standard" },
-			strokeColor: { duration: 0.1, easing: "standard" },
-			strokeTransparency: { duration: 0.1, easing: "standard" },
-			scale: { duration: 0.1, easing: "out" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			backgroundTransparency: { duration: "fast", easing: "standard" },
+			textColor: { duration: "fast", easing: "standard" },
+			strokeColor: { duration: "fast", easing: "standard" },
+			strokeTransparency: { duration: "fast", easing: "standard" },
+			scale: { duration: "fast", easing: "out" },
 		} as const;
 	}
 
 	return {
-		backgroundColor: { duration: 0.11, easing: "standard" },
-		backgroundTransparency: { duration: 0.11, easing: "standard" },
-		textColor: { duration: 0.11, easing: "standard" },
-		strokeColor: { duration: 0.11, easing: "standard" },
-		strokeTransparency: { duration: 0.11, easing: "standard" },
-		scale: { duration: 0.11, easing: "out" },
+		backgroundColor: { duration: "normal", easing: "standard" },
+		backgroundTransparency: { duration: "normal", easing: "standard" },
+		textColor: { duration: "normal", easing: "standard" },
+		strokeColor: { duration: "normal", easing: "standard" },
+		strokeTransparency: { duration: "normal", easing: "standard" },
+		scale: { duration: "normal", easing: "out" },
 	} as const;
 }

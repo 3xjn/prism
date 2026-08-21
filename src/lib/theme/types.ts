@@ -1,5 +1,7 @@
 export type ThemeSize = "xs" | "sm" | "md" | "lg" | "xl";
 
+export type ThemeDensity = "default" | "compact";
+
 export type ColorShade = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
 export type PaletteColorName = "gray" | "primary" | "red" | "green" | "yellow" | "blue";
@@ -106,6 +108,7 @@ export interface ThemeMotion {
 
 export interface Theme {
 	readonly colors: ThemeColors;
+	readonly density: ThemeDensity;
 	readonly spacing: ThemeScale<number>;
 	readonly radius: ThemeScale<number>;
 	readonly fontSizes: ThemeScale<number>;
@@ -160,6 +163,7 @@ export interface PartialThemeMotion {
 
 export interface ThemeOverride {
 	readonly colors?: PartialThemeColors;
+	readonly density?: ThemeDensity;
 	readonly spacing?: PartialThemeScale<number>;
 	readonly radius?: PartialThemeScale<number>;
 	readonly fontSizes?: PartialThemeScale<number>;

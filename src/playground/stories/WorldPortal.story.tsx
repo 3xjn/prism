@@ -4,7 +4,7 @@ import ReactRoblox from "@rbxts/react-roblox";
 import { Avatar, Box, Progress, Stack, Text, WorldPortal } from "@prism";
 import { Boolean, CreateReactStory, EnumList, Number, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const Workspace = game.GetService("Workspace");
 const RunService = game.GetService("RunService");
@@ -15,6 +15,7 @@ function avatarThumbnail(userId: number): string {
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	kind: EnumList(
 		{
 			billboard: "billboard",
@@ -191,7 +192,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<WorldPortalStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

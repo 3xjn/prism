@@ -6,7 +6,7 @@ import type { Variant } from "@prism/theme";
 import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const previewOptions: readonly SelectOption[] = [
 	{ value: "aurora", label: "Aurora Watch" },
@@ -21,6 +21,7 @@ const previewOptions: readonly SelectOption[] = [
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	placeholder: String("Choose a queue"),
 	variant: EnumList(
 		{
@@ -224,7 +225,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<SelectStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

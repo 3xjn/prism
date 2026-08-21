@@ -241,6 +241,36 @@ function loadSliderRangeModule() {
 	return module.exports;
 }
 
+function loadDensityModule() {
+	const filePath = path.join(process.cwd(), "src/lib/theme/density.ts");
+	const source = fs.readFileSync(filePath, "utf8");
+	const compiled = ts.transpileModule(source, {
+		compilerOptions: {
+			module: ts.ModuleKind.CommonJS,
+			target: ts.ScriptTarget.ES2019,
+		},
+		fileName: filePath,
+	}).outputText;
+
+	const module = { exports: {} };
+	const context = vm.createContext({
+		module,
+		exports: module.exports,
+		require,
+		table: {
+			freeze(value) {
+				return Object.freeze(value);
+			},
+		},
+		math: {
+			max: Math.max,
+		},
+	});
+
+	vm.runInContext(compiled, context, { filename: filePath });
+	return module.exports;
+}
+
 function assertCondition(condition, message) {
 	if (!condition) {
 		throw new Error(message);
@@ -382,6 +412,27 @@ function run() {
 	assertFiniteNumber(unusableSliderValue, "Slider unusable range value fallback");
 
 	console.log("slider: PASS");
+
+	const {
+		resolveDensityControlSize,
+		resolveDensityGap,
+		resolveDensityMarkSize,
+		resolveThemeSpacing,
+	} = loadDensityModule();
+	const defaultSpacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 };
+	const defaultTheme = { density: "default", spacing: defaultSpacing };
+	const compactTheme = { density: "compact", spacing: defaultSpacing };
+
+	assertCondition(resolveThemeSpacing(defaultTheme, "md") === 12, "default spacing.md stays 12");
+	assertCondition(resolveThemeSpacing(compactTheme, "xs") === 4, "compact spacing.xs stays 4");
+	assertCondition(resolveThemeSpacing(compactTheme, "md") === 8, "compact spacing.md tightens to 8");
+	assertCondition(resolveDensityControlSize(defaultTheme, 36) === 36, "default md control height stays 36");
+	assertCondition(resolveDensityControlSize(compactTheme, 36) === 32, "compact md control height is 32");
+	assertCondition(resolveDensityControlSize(compactTheme, 32) === 32, "compact sm control height stays 32");
+	assertCondition(resolveDensityGap(compactTheme, 6) === 4, "compact gaps tighten by 2");
+	assertCondition(resolveDensityMarkSize(compactTheme, 18) === 16, "compact checkbox marks shrink by 2");
+
+	console.log("density: PASS");
 }
 
 run();

@@ -31,11 +31,6 @@ import type { ModalProps, ModalSize } from "./types";
 
 const DEFAULT_MODAL_BODY_HEIGHT = 160;
 const DEFAULT_MODAL_MAX_HEIGHT = 480;
-const MODAL_BACKDROP_ENTER_DURATION = 0.14;
-const MODAL_BACKDROP_EXIT_DURATION = 0.12;
-const MODAL_PANEL_ENTER_DURATION = 0.13;
-const MODAL_PANEL_EXIT_DURATION = 0.1;
-const MODAL_EXIT_DURATION = MODAL_BACKDROP_EXIT_DURATION;
 const MODAL_CLOSED_SCALE = 0.96;
 const MODAL_CLOSED_OFFSET_Y = 10;
 const MODAL_CLOSE_HOVER_SCALE = 1.04;
@@ -195,9 +190,11 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 	const bodyContentZIndex = slotProps?.bodyContent?.ZIndex ?? bodyZIndex;
 	const closeIconSize = UDim2.fromOffset(sizeStyles.titleSize, sizeStyles.titleSize);
 	const closeIconAsset = getLucideIconAsset("x", sizeStyles.titleSize);
-	const presence = usePresence(opened, { exitDuration: MODAL_EXIT_DURATION });
+	const presence = usePresence(opened, { exitDuration: theme.motion.duration.fast });
 	const closeButtonScale = closePressed ? MODAL_CLOSE_PRESS_SCALE : closeHovered ? MODAL_CLOSE_HOVER_SCALE : 1;
-	const closeButtonMotionDuration = closePressed ? 0.045 : closeHovered ? 0.09 : 0.1;
+	const closeButtonMotionDuration = closePressed || closeHovered ? "fast" : "normal";
+	const overlayEnterDuration = presence.present ? "normal" : "fast";
+	const overlayEnterEasing = presence.present ? "out" : "in";
 	const animated = useMotion({
 		values: {
 			backdropOpacity: presence.present ? 0.28 : 0,
@@ -210,14 +207,14 @@ const ModalBase = React.forwardRef<Frame, ModalProps>((props, ref) => {
 			closeButtonScale,
 		},
 		transition: {
-			backdropOpacity: { duration: presence.present ? MODAL_BACKDROP_ENTER_DURATION : MODAL_BACKDROP_EXIT_DURATION, easing: presence.present ? "out" : "in" },
-			panelOpacity: { duration: presence.present ? MODAL_PANEL_ENTER_DURATION : MODAL_PANEL_EXIT_DURATION, easing: presence.present ? "out" : "in" },
-			panelScale: { duration: presence.present ? MODAL_PANEL_ENTER_DURATION : MODAL_PANEL_EXIT_DURATION, easing: presence.present ? "out" : "in" },
-			panelOffsetY: { duration: presence.present ? MODAL_PANEL_ENTER_DURATION : MODAL_PANEL_EXIT_DURATION, easing: presence.present ? "out" : "in" },
+			backdropOpacity: { duration: overlayEnterDuration, easing: overlayEnterEasing },
+			panelOpacity: { duration: overlayEnterDuration, easing: overlayEnterEasing },
+			panelScale: { duration: overlayEnterDuration, easing: overlayEnterEasing },
+			panelOffsetY: { duration: overlayEnterDuration, easing: overlayEnterEasing },
 			closeButtonBackgroundColor: { duration: closeButtonMotionDuration, easing: "standard" },
 			closeButtonBackgroundTransparency: { duration: closeButtonMotionDuration, easing: "standard" },
 			closeButtonIconColor: { duration: closeButtonMotionDuration, easing: "standard" },
-			closeButtonScale: { duration: closePressed ? 0.05 : 0.1, easing: "out" },
+			closeButtonScale: { duration: "fast", easing: "out" },
 		},
 	});
 

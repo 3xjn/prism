@@ -5,10 +5,11 @@ import { Avatar, Box, Stack, Text } from "@prism";
 import type { AvatarColor, AvatarSize } from "@prism";
 import { CreateReactStory, EnumList, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	fallback: String("AV"),
 	color: EnumList(
 		{
@@ -67,7 +68,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<AvatarStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

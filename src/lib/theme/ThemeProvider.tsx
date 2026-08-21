@@ -23,6 +23,7 @@ import type {
 	SemanticIntentColors,
 	TextColors,
 	Theme,
+	ThemeDensity,
 	ThemeMotion,
 	ThemeMotionDurations,
 	ThemeMotionEasing,
@@ -37,6 +38,7 @@ const ThemeContext = React.createContext<Theme>(DEFAULT_THEME);
 export interface ThemeProviderProps {
 	readonly children?: React.ReactNode;
 	readonly theme?: ThemeOverride;
+	readonly density?: ThemeDensity;
 }
 
 function mergeScale<T>(base: ThemeScale<T>, override?: PartialThemeScale<T>): ThemeScale<T> {
@@ -159,7 +161,7 @@ function mergeMotion(base: ThemeMotion, override?: PartialThemeMotion): ThemeMot
 	});
 }
 
-function mergeTheme(base: Theme, override?: ThemeOverride): Theme {
+function mergeTheme(base: Theme, override?: ThemeOverride, density?: ThemeDensity): Theme {
 	const mergedPalette = mergePaletteColors(base.colors.palette, override?.colors?.palette);
 
 	return table.freeze({
@@ -176,6 +178,7 @@ function mergeTheme(base: Theme, override?: ThemeOverride): Theme {
 			border: mergeBorderColors(base.colors.border, override?.colors?.border),
 			action: mergeActionColors(base.colors.action, override?.colors?.action),
 		}),
+		density: density ?? override?.density ?? base.density,
 		spacing: mergeScale(base.spacing, override?.spacing),
 		radius: mergeScale(base.radius, override?.radius),
 		fontSizes: mergeScale(base.fontSizes, override?.fontSizes),
@@ -192,8 +195,8 @@ function mergeTheme(base: Theme, override?: ThemeOverride): Theme {
 	});
 }
 
-export function ThemeProvider({ children, theme }: ThemeProviderProps): React.ReactElement {
-	const mergedTheme = React.useMemo(() => mergeTheme(DEFAULT_THEME, theme), [theme]);
+export function ThemeProvider({ children, theme, density }: ThemeProviderProps): React.ReactElement {
+	const mergedTheme = React.useMemo(() => mergeTheme(DEFAULT_THEME, theme, density), [density, theme]);
 
 	return <ThemeContext.Provider value={mergedTheme}>{children}</ThemeContext.Provider>;
 }

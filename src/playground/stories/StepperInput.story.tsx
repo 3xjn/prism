@@ -6,7 +6,7 @@ import type { Variant } from "@prism/theme";
 import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, Number } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 function resolveStoryRange(min: number, max: number) {
 	return max <= min ? { min, max: min } : { min, max };
@@ -38,6 +38,7 @@ function normalizeStoryValue(value: number, min: number, max: number, step: numb
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	value: Number(4, -10, 20, 1),
 	min: Number(1, -20, 20, 1),
 	max: Number(8, -20, 30, 1),
@@ -145,7 +146,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<StepperInputStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

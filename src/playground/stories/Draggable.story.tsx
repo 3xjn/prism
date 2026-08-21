@@ -5,7 +5,7 @@ import { Box, Draggable, Image, Stack, Text } from "@prism";
 import type { DraggableItem } from "@prism";
 import { Boolean, CreateReactStory, EnumList, Number } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 interface AbilityItem extends DraggableItem {
 	readonly label: string;
@@ -28,6 +28,7 @@ for (const ability of abilities) {
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	disabled: Boolean(false),
 	active: Boolean(true),
 	direction: EnumList(
@@ -198,7 +199,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<DraggableStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

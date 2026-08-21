@@ -5,10 +5,11 @@ import type { SwitchColor, SwitchProps, SwitchSize } from "@prism";
 import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList, String } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	checked: Boolean(false),
 	label: String("Enable notifications"),
 	showIcons: Boolean(true),
@@ -98,7 +99,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<SwitchStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

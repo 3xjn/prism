@@ -1,4 +1,5 @@
 import type { SemanticIntent, Theme, ThemeSize } from "@prism/theme";
+import { resolveDensityControlSize, resolveThemeSpacing } from "@prism/theme";
 
 import type { InteractionState } from "../_shared/usePressInteraction";
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
@@ -84,8 +85,8 @@ export function resolveMenuSizeStyles(theme: Theme, size: MenuSize): MenuSizeSty
 				listPadding: "xs",
 				itemPaddingX: "sm",
 				itemPaddingY: "xs",
-				itemGap: theme.spacing.xs,
-				itemHeight: theme.spacing.xl + theme.spacing.xs,
+				itemGap: resolveThemeSpacing(theme, "xs"),
+				itemHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.xs),
 				labelHeight: theme.spacing.lg,
 				dividerHeight: theme.spacing.sm,
 				dividerInset: theme.spacing.sm,
@@ -105,8 +106,8 @@ export function resolveMenuSizeStyles(theme: Theme, size: MenuSize): MenuSizeSty
 				listPadding: "xs",
 				itemPaddingX: "md",
 				itemPaddingY: "xs",
-				itemGap: theme.spacing.xs,
-				itemHeight: theme.spacing.xl + theme.spacing.sm,
+				itemGap: resolveThemeSpacing(theme, "xs"),
+				itemHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.sm),
 				labelHeight: theme.spacing.xl,
 				dividerHeight: theme.spacing.sm,
 				dividerInset: theme.spacing.md,
@@ -126,8 +127,8 @@ export function resolveMenuSizeStyles(theme: Theme, size: MenuSize): MenuSizeSty
 				listPadding: "sm",
 				itemPaddingX: "lg",
 				itemPaddingY: "sm",
-				itemGap: theme.spacing.sm,
-				itemHeight: theme.spacing.xl + theme.spacing.lg,
+				itemGap: resolveThemeSpacing(theme, "sm"),
+				itemHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.lg),
 				labelHeight: theme.spacing.xl + theme.spacing.xs,
 				dividerHeight: theme.spacing.md,
 				dividerInset: theme.spacing.lg,
@@ -147,8 +148,8 @@ export function resolveMenuSizeStyles(theme: Theme, size: MenuSize): MenuSizeSty
 				listPadding: "sm",
 				itemPaddingX: "xl",
 				itemPaddingY: "sm",
-				itemGap: theme.spacing.sm,
-				itemHeight: theme.spacing.xl * 2,
+				itemGap: resolveThemeSpacing(theme, "sm"),
+				itemHeight: resolveDensityControlSize(theme, theme.spacing.xl * 2),
 				labelHeight: theme.spacing.xl + theme.spacing.sm,
 				dividerHeight: theme.spacing.md,
 				dividerInset: theme.spacing.lg,
@@ -169,8 +170,8 @@ export function resolveMenuSizeStyles(theme: Theme, size: MenuSize): MenuSizeSty
 				listPadding: "xs",
 				itemPaddingX: "md",
 				itemPaddingY: "sm",
-				itemGap: theme.spacing.xs,
-				itemHeight: theme.spacing.xl + theme.spacing.md,
+				itemGap: resolveThemeSpacing(theme, "xs"),
+				itemHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.md),
 				labelHeight: theme.spacing.xl,
 				dividerHeight: theme.spacing.md,
 				dividerInset: theme.spacing.md,
@@ -271,32 +272,32 @@ export function resolveMenuItemMotionTransition(state: MenuItemState) {
 
 	if (state === "pressed") {
 		return {
-			backgroundColor: { duration: 0.06, easing: "standard" },
-			backgroundTransparency: { duration: 0.06, easing: "standard" },
-			textColor: { duration: 0.06, easing: "standard" },
-			textTransparency: { duration: 0.06, easing: "standard" },
-			rightTextColor: { duration: 0.06, easing: "standard" },
-			rightTextTransparency: { duration: 0.06, easing: "standard" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			backgroundTransparency: { duration: "fast", easing: "standard" },
+			textColor: { duration: "fast", easing: "standard" },
+			textTransparency: { duration: "fast", easing: "standard" },
+			rightTextColor: { duration: "fast", easing: "standard" },
+			rightTextTransparency: { duration: "fast", easing: "standard" },
 		} as const;
 	}
 
 	if (state === "hovered") {
 		return {
-			backgroundColor: { duration: 0.12, easing: "standard" },
-			backgroundTransparency: { duration: 0.12, easing: "standard" },
-			textColor: { duration: 0.12, easing: "standard" },
-			textTransparency: { duration: 0.12, easing: "standard" },
-			rightTextColor: { duration: 0.12, easing: "standard" },
-			rightTextTransparency: { duration: 0.12, easing: "standard" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			backgroundTransparency: { duration: "fast", easing: "standard" },
+			textColor: { duration: "fast", easing: "standard" },
+			textTransparency: { duration: "fast", easing: "standard" },
+			rightTextColor: { duration: "fast", easing: "standard" },
+			rightTextTransparency: { duration: "fast", easing: "standard" },
 		} as const;
 	}
 
 	return {
-		backgroundColor: { duration: 0.14, easing: "standard" },
-		backgroundTransparency: { duration: 0.14, easing: "standard" },
-		textColor: { duration: 0.14, easing: "standard" },
-		textTransparency: { duration: 0.14, easing: "standard" },
-		rightTextColor: { duration: 0.14, easing: "standard" },
-		rightTextTransparency: { duration: 0.14, easing: "standard" },
+		backgroundColor: { duration: "normal", easing: "standard" },
+		backgroundTransparency: { duration: "normal", easing: "standard" },
+		textColor: { duration: "normal", easing: "standard" },
+		textTransparency: { duration: "normal", easing: "standard" },
+		rightTextColor: { duration: "normal", easing: "standard" },
+		rightTextTransparency: { duration: "normal", easing: "standard" },
 	} as const;
 }

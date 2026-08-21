@@ -6,7 +6,7 @@ import type { Variant } from "@prism/theme";
 import { useTheme , theme as themeRefs } from "@prism/theme";
 import { Boolean, CreateReactStory, EnumList } from "@rbxts/ui-labs";
 import type { InferControls } from "@rbxts/ui-labs";
-import { StoryCanvas, StoryThemeProvider, storyThemeControl } from "./_shared";
+import { StoryCanvas, StoryThemeProvider, storyDensityControl, storyThemeControl } from "./_shared";
 
 const modeOptions: readonly SegmentedControlOption[] = [
 	{ value: "solo", label: "Solo" },
@@ -22,6 +22,7 @@ const pacingOptions: readonly SegmentedControlOption[] = [
 
 const controls = {
 	theme: storyThemeControl,
+	density: storyDensityControl,
 	variant: EnumList(
 		{
 			outline: "outline",
@@ -126,7 +127,7 @@ const story = CreateReactStory(
 	},
 	(props) => {
 		return (
-			<StoryThemeProvider mode={props.controls.theme}>
+			<StoryThemeProvider mode={props.controls.theme} density={props.controls.density}>
 				<SegmentedControlStoryCanvas controls={props.controls} />
 			</StoryThemeProvider>
 		);

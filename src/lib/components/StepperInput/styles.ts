@@ -1,4 +1,5 @@
 import type { Theme, ThemeSize, Variant } from "@prism/theme";
+import { resolveDensityControlSize, resolveDensityGap } from "@prism/theme";
 
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 import { mixColor } from "../_shared/visual";
@@ -76,72 +77,72 @@ export function resolveStepperInputSizeStyles(theme: Theme, size: StepperInputSi
 		case "xs":
 			return {
 				padding: "xs",
-				gap: 3,
-				buttonWidth: 28,
+				gap: resolveDensityGap(theme, 3),
+				buttonWidth: resolveDensityControlSize(theme, 28),
 				buttonPaddingX: "xs",
 				buttonPaddingY: "xs",
 				fontSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.xs,
 				radius: resolveControlRadius(theme, size),
 				buttonRadius: resolveButtonRadius(theme, size),
-				minHeight: 30,
+				minHeight: resolveDensityControlSize(theme, 30),
 				defaultWidth: 156,
 			};
 		case "sm":
 			return {
 				padding: "xs",
-				gap: 4,
-				buttonWidth: 32,
+				gap: resolveDensityGap(theme, 4),
+				buttonWidth: resolveDensityControlSize(theme, 32),
 				buttonPaddingX: "xs",
 				buttonPaddingY: "xs",
 				fontSize: theme.fontSizes.sm,
 				lineHeight: theme.lineHeights.sm,
 				radius: resolveControlRadius(theme, size),
 				buttonRadius: resolveButtonRadius(theme, size),
-				minHeight: 34,
+				minHeight: resolveDensityControlSize(theme, 34),
 				defaultWidth: 176,
 			};
 		case "lg":
 			return {
 				padding: "sm",
-				gap: 5,
-				buttonWidth: 44,
+				gap: resolveDensityGap(theme, 5),
+				buttonWidth: resolveDensityControlSize(theme, 44),
 				buttonPaddingX: "sm",
 				buttonPaddingY: "xs",
 				fontSize: theme.fontSizes.lg,
 				lineHeight: theme.lineHeights.lg,
 				radius: resolveControlRadius(theme, size),
 				buttonRadius: resolveButtonRadius(theme, size),
-				minHeight: 46,
+				minHeight: resolveDensityControlSize(theme, 46),
 				defaultWidth: 236,
 			};
 		case "xl":
 			return {
 				padding: "sm",
-				gap: 6,
-				buttonWidth: 50,
+				gap: resolveDensityGap(theme, 6),
+				buttonWidth: resolveDensityControlSize(theme, 50),
 				buttonPaddingX: "sm",
 				buttonPaddingY: "sm",
 				fontSize: theme.fontSizes.xl,
 				lineHeight: theme.lineHeights.xl,
 				radius: resolveControlRadius(theme, size),
 				buttonRadius: resolveButtonRadius(theme, size),
-				minHeight: 54,
+				minHeight: resolveDensityControlSize(theme, 54),
 				defaultWidth: 272,
 			};
 		case "md":
 		default:
 			return {
 				padding: "xs",
-				gap: 4,
-				buttonWidth: 38,
+				gap: resolveDensityGap(theme, 4),
+				buttonWidth: resolveDensityControlSize(theme, 38),
 				buttonPaddingX: "sm",
 				buttonPaddingY: "xs",
 				fontSize: theme.fontSizes.md,
 				lineHeight: theme.lineHeights.md,
 				radius: resolveControlRadius(theme, size),
 				buttonRadius: resolveButtonRadius(theme, size),
-				minHeight: 40,
+				minHeight: resolveDensityControlSize(theme, 40),
 				defaultWidth: 204,
 			};
 	}
@@ -251,16 +252,16 @@ export function resolveStepperInputFrameMotionTransition(state: StepperInputFram
 	}
 
 	return {
-		backgroundColor: { duration: state === "focused" ? 0.12 : 0.14, easing: "standard" },
-		inputBackgroundColor: { duration: state === "focused" ? 0.12 : 0.14, easing: "standard" },
-		inputBackgroundTransparency: { duration: state === "focused" ? 0.12 : 0.14, easing: "standard" },
-		strokeColor: { duration: state === "focused" ? 0.12 : 0.14, easing: "standard" },
-		strokeTransparency: { duration: state === "focused" ? 0.12 : 0.14, easing: "standard" },
-		strokeThickness: { duration: state === "focused" ? 0.12 : 0.14, easing: "out" },
-		textColor: { duration: 0.12, easing: "standard" },
-		placeholderColor: { duration: 0.12, easing: "standard" },
-		railFillColor: { duration: 0.12, easing: "standard" },
-		railFillTransparency: { duration: 0.12, easing: "standard" },
+		backgroundColor: { duration: state === "focused" ? "fast" : "normal", easing: "standard" },
+		inputBackgroundColor: { duration: state === "focused" ? "fast" : "normal", easing: "standard" },
+		inputBackgroundTransparency: { duration: state === "focused" ? "fast" : "normal", easing: "standard" },
+		strokeColor: { duration: state === "focused" ? "fast" : "normal", easing: "standard" },
+		strokeTransparency: { duration: state === "focused" ? "fast" : "normal", easing: "standard" },
+		strokeThickness: { duration: state === "focused" ? "fast" : "normal", easing: "out" },
+		textColor: { duration: "fast", easing: "standard" },
+		placeholderColor: { duration: "fast", easing: "standard" },
+		railFillColor: { duration: "fast", easing: "standard" },
+		railFillTransparency: { duration: "fast", easing: "standard" },
 	} as const;
 }
 
@@ -276,10 +277,10 @@ export function resolveStepperInputButtonMotionTransition(state: StepperInputBut
 	}
 
 	return {
-		backgroundColor: { duration: state === "pressed" ? 0.05 : 0.1, easing: "standard" },
-		backgroundTransparency: { duration: state === "pressed" ? 0.05 : 0.1, easing: "standard" },
-		strokeColor: { duration: state === "pressed" ? 0.05 : 0.1, easing: "standard" },
-		strokeTransparency: { duration: state === "pressed" ? 0.05 : 0.1, easing: "standard" },
-		textColor: { duration: state === "pressed" ? 0.05 : 0.1, easing: "standard" },
+		backgroundColor: { duration: "fast", easing: "standard" },
+		backgroundTransparency: { duration: "fast", easing: "standard" },
+		strokeColor: { duration: "fast", easing: "standard" },
+		strokeTransparency: { duration: "fast", easing: "standard" },
+		textColor: { duration: "fast", easing: "standard" },
 	} as const;
 }

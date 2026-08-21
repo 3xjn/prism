@@ -1,4 +1,5 @@
 import type { Theme } from "@prism/theme";
+import { resolveDensityControlSize, resolveDensityMarkSize, resolveThemeSpacing } from "@prism/theme";
 
 import type { InteractionState } from "../_shared/usePressInteraction";
 import { mixColor } from "../_shared/visual";
@@ -32,54 +33,54 @@ export function resolveCheckboxSizeStyles(theme: Theme, size: CheckboxSize): Che
 	switch (size) {
 		case "xs":
 			return {
-				markWidth: 14,
-				markHeight: 14,
-				glyphSize: 9,
-				labelGap: theme.spacing.xs,
+				markWidth: resolveDensityMarkSize(theme, 14),
+				markHeight: resolveDensityMarkSize(theme, 14),
+				glyphSize: resolveDensityMarkSize(theme, 9),
+				labelGap: resolveThemeSpacing(theme, "xs"),
 				labelSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.xs,
-				minHeight: 20,
+				minHeight: resolveDensityControlSize(theme, 20),
 			};
 		case "sm":
 			return {
-				markWidth: 16,
-				markHeight: 16,
-				glyphSize: 10,
-				labelGap: theme.spacing.xs,
+				markWidth: resolveDensityMarkSize(theme, 16),
+				markHeight: resolveDensityMarkSize(theme, 16),
+				glyphSize: resolveDensityMarkSize(theme, 10),
+				labelGap: resolveThemeSpacing(theme, "xs"),
 				labelSize: theme.fontSizes.sm,
 				lineHeight: theme.lineHeights.sm,
-				minHeight: 22,
+				minHeight: resolveDensityControlSize(theme, 22),
 			};
 		case "lg":
 			return {
-				markWidth: 20,
-				markHeight: 20,
-				glyphSize: 13,
-				labelGap: theme.spacing.sm,
+				markWidth: resolveDensityMarkSize(theme, 20),
+				markHeight: resolveDensityMarkSize(theme, 20),
+				glyphSize: resolveDensityMarkSize(theme, 13),
+				labelGap: resolveThemeSpacing(theme, "sm"),
 				labelSize: theme.fontSizes.lg,
 				lineHeight: theme.lineHeights.lg,
-				minHeight: 28,
+				minHeight: resolveDensityControlSize(theme, 28),
 			};
 		case "xl":
 			return {
-				markWidth: 22,
-				markHeight: 22,
-				glyphSize: 15,
-				labelGap: theme.spacing.md,
+				markWidth: resolveDensityMarkSize(theme, 22),
+				markHeight: resolveDensityMarkSize(theme, 22),
+				glyphSize: resolveDensityMarkSize(theme, 15),
+				labelGap: resolveThemeSpacing(theme, "md"),
 				labelSize: theme.fontSizes.xl,
 				lineHeight: theme.lineHeights.xl,
-				minHeight: 32,
+				minHeight: resolveDensityControlSize(theme, 32),
 			};
 		case "md":
 		default:
 			return {
-				markWidth: 18,
-				markHeight: 18,
-				glyphSize: 12,
-				labelGap: theme.spacing.sm,
+				markWidth: resolveDensityMarkSize(theme, 18),
+				markHeight: resolveDensityMarkSize(theme, 18),
+				glyphSize: resolveDensityMarkSize(theme, 12),
+				labelGap: resolveThemeSpacing(theme, "sm"),
 				labelSize: theme.fontSizes.md,
 				lineHeight: theme.lineHeights.md,
-				minHeight: 24,
+				minHeight: resolveDensityControlSize(theme, 24),
 			};
 	}
 }
@@ -148,25 +149,25 @@ export function resolveCheckboxMotionTransition(state: CheckboxInteractionState)
 
 	if (state === "pressed") {
 		return {
-			markColor: { duration: 0.06, easing: "standard" },
-			markStrokeColor: { duration: 0.06, easing: "standard" },
-			markStrokeTransparency: { duration: 0.06, easing: "standard" },
-			fillColor: { duration: 0.06, easing: "standard" },
-			fillTransparency: { duration: 0.06, easing: "standard" },
-			glyphColor: { duration: 0.06, easing: "standard" },
-			glyphTransparency: { duration: 0.06, easing: "standard" },
-			labelColor: { duration: 0.06, easing: "standard" },
+			markColor: { duration: "fast", easing: "standard" },
+			markStrokeColor: { duration: "fast", easing: "standard" },
+			markStrokeTransparency: { duration: "fast", easing: "standard" },
+			fillColor: { duration: "fast", easing: "standard" },
+			fillTransparency: { duration: "fast", easing: "standard" },
+			glyphColor: { duration: "fast", easing: "standard" },
+			glyphTransparency: { duration: "fast", easing: "standard" },
+			labelColor: { duration: "fast", easing: "standard" },
 		} as const;
 	}
 
 	return {
-		markColor: { duration: 0.14, easing: "standard" },
-		markStrokeColor: { duration: 0.14, easing: "standard" },
-		markStrokeTransparency: { duration: 0.14, easing: "standard" },
-		fillColor: { duration: 0.14, easing: "standard" },
-		fillTransparency: { duration: 0.12, easing: "standard" },
-		glyphColor: { duration: 0.14, easing: "standard" },
-		glyphTransparency: { duration: 0.1, easing: "standard" },
-		labelColor: { duration: 0.14, easing: "standard" },
+		markColor: { duration: "normal", easing: "standard" },
+		markStrokeColor: { duration: "normal", easing: "standard" },
+		markStrokeTransparency: { duration: "normal", easing: "standard" },
+		fillColor: { duration: "normal", easing: "standard" },
+		fillTransparency: { duration: "fast", easing: "standard" },
+		glyphColor: { duration: "normal", easing: "standard" },
+		glyphTransparency: { duration: "fast", easing: "standard" },
+		labelColor: { duration: "normal", easing: "standard" },
 	} as const;
 }

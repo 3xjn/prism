@@ -1,4 +1,5 @@
 import type { Theme, ThemeSize, Variant } from "@prism/theme";
+import { resolveDensityControlSize, resolveDensityMarkSize, resolveThemeSpacing } from "@prism/theme";
 
 import { resolveThemeSizeSafe } from "../_shared/useResolvedStyleProps";
 import { mixColor } from "../_shared/visual";
@@ -88,17 +89,17 @@ export function resolveSelectSizeStyles(theme: Theme, size: SelectSize): SelectS
 				optionPaddingX: "sm",
 				optionPaddingY: "xs",
 				listPadding: "xs",
-				listGap: theme.spacing.xs,
-				optionGap: theme.spacing.xs,
+				listGap: resolveThemeSpacing(theme, "xs"),
+				optionGap: resolveThemeSpacing(theme, "xs"),
 				fontSize: theme.fontSizes.xs,
 				lineHeight: theme.lineHeights.xs,
 				radius: resolveSelectRadius(theme, size),
 				optionRadius: resolveOptionRadius(theme, size),
-				minHeight: theme.spacing.xl + theme.spacing.xs,
-				optionHeight: theme.spacing.xl + theme.spacing.xs,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.xs),
+				optionHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.xs),
 				defaultWidth: theme.spacing.xl * 7,
-				indicatorSize: 12,
-				indicatorGap: theme.spacing.xs,
+				indicatorSize: resolveDensityMarkSize(theme, 12),
+				indicatorGap: resolveThemeSpacing(theme, "xs"),
 			};
 		case "sm":
 			return {
@@ -107,17 +108,17 @@ export function resolveSelectSizeStyles(theme: Theme, size: SelectSize): SelectS
 				optionPaddingX: "md",
 				optionPaddingY: "xs",
 				listPadding: "xs",
-				listGap: theme.spacing.xs,
-				optionGap: theme.spacing.xs,
+				listGap: resolveThemeSpacing(theme, "xs"),
+				optionGap: resolveThemeSpacing(theme, "xs"),
 				fontSize: theme.fontSizes.sm,
 				lineHeight: theme.lineHeights.sm,
 				radius: resolveSelectRadius(theme, size),
 				optionRadius: resolveOptionRadius(theme, size),
-				minHeight: theme.spacing.xl + theme.spacing.sm,
-				optionHeight: theme.spacing.xl + theme.spacing.sm,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.sm),
+				optionHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.sm),
 				defaultWidth: theme.spacing.xl * 8,
-				indicatorSize: 14,
-				indicatorGap: theme.spacing.xs,
+				indicatorSize: resolveDensityMarkSize(theme, 14),
+				indicatorGap: resolveThemeSpacing(theme, "xs"),
 			};
 		case "lg":
 			return {
@@ -126,17 +127,17 @@ export function resolveSelectSizeStyles(theme: Theme, size: SelectSize): SelectS
 				optionPaddingX: "lg",
 				optionPaddingY: "sm",
 				listPadding: "sm",
-				listGap: theme.spacing.sm,
-				optionGap: theme.spacing.xs,
+				listGap: resolveThemeSpacing(theme, "sm"),
+				optionGap: resolveThemeSpacing(theme, "xs"),
 				fontSize: theme.fontSizes.lg,
 				lineHeight: theme.lineHeights.lg,
 				radius: resolveSelectRadius(theme, size),
 				optionRadius: resolveOptionRadius(theme, size),
-				minHeight: theme.spacing.xl + theme.spacing.lg,
-				optionHeight: theme.spacing.xl + theme.spacing.md,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.lg),
+				optionHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.md),
 				defaultWidth: theme.spacing.xl * 11,
-				indicatorSize: 18,
-				indicatorGap: theme.spacing.sm,
+				indicatorSize: resolveDensityMarkSize(theme, 18),
+				indicatorGap: resolveThemeSpacing(theme, "sm"),
 			};
 		case "xl":
 			return {
@@ -145,17 +146,17 @@ export function resolveSelectSizeStyles(theme: Theme, size: SelectSize): SelectS
 				optionPaddingX: "xl",
 				optionPaddingY: "sm",
 				listPadding: "sm",
-				listGap: theme.spacing.sm,
-				optionGap: theme.spacing.sm,
+				listGap: resolveThemeSpacing(theme, "sm"),
+				optionGap: resolveThemeSpacing(theme, "sm"),
 				fontSize: theme.fontSizes.xl,
 				lineHeight: theme.lineHeights.xl,
 				radius: resolveSelectRadius(theme, size),
 				optionRadius: resolveOptionRadius(theme, size),
-				minHeight: theme.spacing.xl * 2,
-				optionHeight: theme.spacing.xl + theme.spacing.lg,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl * 2),
+				optionHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.lg),
 				defaultWidth: theme.spacing.xl * 13,
-				indicatorSize: 20,
-				indicatorGap: theme.spacing.sm,
+				indicatorSize: resolveDensityMarkSize(theme, 20),
+				indicatorGap: resolveThemeSpacing(theme, "sm"),
 			};
 		case "md":
 		default:
@@ -165,17 +166,17 @@ export function resolveSelectSizeStyles(theme: Theme, size: SelectSize): SelectS
 				optionPaddingX: "md",
 				optionPaddingY: "sm",
 				listPadding: "xs",
-				listGap: theme.spacing.xs,
-				optionGap: theme.spacing.xs,
+				listGap: resolveThemeSpacing(theme, "xs"),
+				optionGap: resolveThemeSpacing(theme, "xs"),
 				fontSize: theme.fontSizes.md,
 				lineHeight: theme.lineHeights.md,
 				radius: resolveSelectRadius(theme, size),
 				optionRadius: resolveOptionRadius(theme, size),
-				minHeight: theme.spacing.xl + theme.spacing.md,
-				optionHeight: theme.spacing.xl + theme.spacing.sm,
+				minHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.md),
+				optionHeight: resolveDensityControlSize(theme, theme.spacing.xl + theme.spacing.sm),
 				defaultWidth: theme.spacing.xl * 10,
-				indicatorSize: 16,
-				indicatorGap: theme.spacing.xs,
+				indicatorSize: resolveDensityMarkSize(theme, 16),
+				indicatorGap: resolveThemeSpacing(theme, "xs"),
 			};
 	}
 }
@@ -397,52 +398,52 @@ export function resolveSelectTriggerMotionTransition(state: SelectTriggerState) 
 
 	if (state === "pressed") {
 		return {
-			backgroundColor: { duration: 0.06, easing: "standard" },
-			strokeColor: { duration: 0.06, easing: "standard" },
-			strokeTransparency: { duration: 0.06, easing: "standard" },
-			strokeThickness: { duration: 0.06, easing: "standard" },
-			textColor: { duration: 0.06, easing: "standard" },
-			placeholderColor: { duration: 0.06, easing: "standard" },
-			indicatorColor: { duration: 0.06, easing: "standard" },
-			indicatorRotation: { duration: 0.08, easing: "out" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			strokeColor: { duration: "fast", easing: "standard" },
+			strokeTransparency: { duration: "fast", easing: "standard" },
+			strokeThickness: { duration: "fast", easing: "standard" },
+			textColor: { duration: "fast", easing: "standard" },
+			placeholderColor: { duration: "fast", easing: "standard" },
+			indicatorColor: { duration: "fast", easing: "standard" },
+			indicatorRotation: { duration: "fast", easing: "out" },
 		} as const;
 	}
 
 	if (state === "open") {
 		return {
-			backgroundColor: { duration: 0.12, easing: "standard" },
-			strokeColor: { duration: 0.12, easing: "standard" },
-			strokeTransparency: { duration: 0.12, easing: "standard" },
-			strokeThickness: { duration: 0.12, easing: "out" },
-			textColor: { duration: 0.12, easing: "standard" },
-			placeholderColor: { duration: 0.12, easing: "standard" },
-			indicatorColor: { duration: 0.12, easing: "standard" },
-			indicatorRotation: { duration: 0.12, easing: "out" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			strokeColor: { duration: "fast", easing: "standard" },
+			strokeTransparency: { duration: "fast", easing: "standard" },
+			strokeThickness: { duration: "fast", easing: "out" },
+			textColor: { duration: "fast", easing: "standard" },
+			placeholderColor: { duration: "fast", easing: "standard" },
+			indicatorColor: { duration: "fast", easing: "standard" },
+			indicatorRotation: { duration: "fast", easing: "out" },
 		} as const;
 	}
 
 	if (state === "hovered") {
 		return {
-			backgroundColor: { duration: 0.14, easing: "standard" },
-			strokeColor: { duration: 0.14, easing: "standard" },
-			strokeTransparency: { duration: 0.14, easing: "standard" },
-			strokeThickness: { duration: 0.14, easing: "standard" },
-			textColor: { duration: 0.14, easing: "standard" },
-			placeholderColor: { duration: 0.14, easing: "standard" },
-			indicatorColor: { duration: 0.14, easing: "standard" },
-			indicatorRotation: { duration: 0.14, easing: "out" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			strokeColor: { duration: "fast", easing: "standard" },
+			strokeTransparency: { duration: "fast", easing: "standard" },
+			strokeThickness: { duration: "fast", easing: "standard" },
+			textColor: { duration: "fast", easing: "standard" },
+			placeholderColor: { duration: "fast", easing: "standard" },
+			indicatorColor: { duration: "fast", easing: "standard" },
+			indicatorRotation: { duration: "fast", easing: "out" },
 		} as const;
 	}
 
 	return {
-		backgroundColor: { duration: 0.16, easing: "standard" },
-		strokeColor: { duration: 0.16, easing: "standard" },
-		strokeTransparency: { duration: 0.16, easing: "standard" },
-		strokeThickness: { duration: 0.16, easing: "standard" },
-		textColor: { duration: 0.16, easing: "standard" },
-		placeholderColor: { duration: 0.16, easing: "standard" },
-		indicatorColor: { duration: 0.16, easing: "standard" },
-		indicatorRotation: { duration: 0.16, easing: "out" },
+		backgroundColor: { duration: "normal", easing: "standard" },
+		strokeColor: { duration: "normal", easing: "standard" },
+		strokeTransparency: { duration: "normal", easing: "standard" },
+		strokeThickness: { duration: "normal", easing: "standard" },
+		textColor: { duration: "normal", easing: "standard" },
+		placeholderColor: { duration: "normal", easing: "standard" },
+		indicatorColor: { duration: "normal", easing: "standard" },
+		indicatorRotation: { duration: "normal", easing: "out" },
 	} as const;
 }
 
@@ -458,26 +459,26 @@ export function resolveSelectOptionMotionTransition(state: SelectOptionState) {
 
 	if (state === "selected") {
 		return {
-			backgroundColor: { duration: 0.12, easing: "standard" },
-			backgroundTransparency: { duration: 0.12, easing: "standard" },
-			textColor: { duration: 0.12, easing: "standard" },
-			textTransparency: { duration: 0.12, easing: "standard" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			backgroundTransparency: { duration: "fast", easing: "standard" },
+			textColor: { duration: "fast", easing: "standard" },
+			textTransparency: { duration: "fast", easing: "standard" },
 		} as const;
 	}
 
 	if (state === "hovered") {
 		return {
-			backgroundColor: { duration: 0.12, easing: "standard" },
-			backgroundTransparency: { duration: 0.12, easing: "standard" },
-			textColor: { duration: 0.12, easing: "standard" },
-			textTransparency: { duration: 0.12, easing: "standard" },
+			backgroundColor: { duration: "fast", easing: "standard" },
+			backgroundTransparency: { duration: "fast", easing: "standard" },
+			textColor: { duration: "fast", easing: "standard" },
+			textTransparency: { duration: "fast", easing: "standard" },
 		} as const;
 	}
 
 	return {
-		backgroundColor: { duration: 0.14, easing: "standard" },
-		backgroundTransparency: { duration: 0.14, easing: "standard" },
-		textColor: { duration: 0.14, easing: "standard" },
-		textTransparency: { duration: 0.14, easing: "standard" },
+		backgroundColor: { duration: "normal", easing: "standard" },
+		backgroundTransparency: { duration: "normal", easing: "standard" },
+		textColor: { duration: "normal", easing: "standard" },
+		textTransparency: { duration: "normal", easing: "standard" },
 	} as const;
 }
