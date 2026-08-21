@@ -122,7 +122,7 @@ Pass `density="compact"` (or `theme={{ density: "compact" }}`) for tighter contr
 | Inputs and forms | `Button`, `Pressable`, `Input`, `KeybindInput`, `Checkbox`, `Switch`, `StepperInput`, `Slider` |
 | Feedback | `Progress`, `CircularProgress`, `Backdrop` |
 | Navigation | `SegmentedControl`, `Tabs`, `Menu`, `Select` |
-| Overlays | `WorldPortal`, `Popover`, `Modal`, `Tooltip` |
+| Overlays | `WorldPortal`, `Popover`, `Modal`, `Tooltip`, `Window` |
 | Utility | `Draggable` |
 
 `@prism/theme` is providers and tokens, `@prism/motion` is motion hooks, `@prism/utils` is unit helpers, and `mountPrism` is the Luau bridge.
@@ -173,3 +173,23 @@ npm run lint
 npm test
 npm run build
 ```
+
+## Tests
+
+`npm test` compiles with `rbxtsc` and runs `@rbxts/jest` **inside a Roblox DataModel** via [`@isentinel/jest-roblox`](https://github.com/christopher-buss/jest-roblox-cli). It is not Vitest and not a Node `vm` fake DataModel.
+
+The CLI needs [Rojo](https://rojo.space/) on `PATH` (this repo pins it in `rokit.toml`) and **Node.js 24.12+**. GitHub Actions ubuntu has no Studio GUI, so CI uses Roblox Open Cloud Luau execution. Locally, `jest-roblox` uses a connected Studio plugin when present, otherwise Open Cloud.
+
+Set these when using Open Cloud (`JEST_`-prefixed names override the same unprefixed values):
+
+| Variable | Purpose |
+| --- | --- |
+| `ROBLOX_OPEN_CLOUD_API_KEY` | Open Cloud API key |
+| `ROBLOX_UNIVERSE_ID` | Universe that receives the test place |
+| `ROBLOX_PLACE_ID` | Place to publish and execute |
+
+The key needs `universe-places:write` and `universe.place.luau-execution-session:write`. If those values are missing locally, `npm test` fails with that requirement instead of falling back to Node. GitHub Actions skips the Test step until `ROBLOX_OPEN_CLOUD_API_KEY` is set as a repository secret; typecheck, lint, and build still run.
+
+`__typecheck__.tsx` files stay compile-time contracts. They are not the runtime runner.
+
+`Window` overlay tests mount a `ScreenGui` with `ZIndexBehavior.Sibling`, the same host requirement as Modal.

@@ -23,6 +23,7 @@ export * from "./components/Popover";
 export * from "./components/Menu";
 export * from "./components/Select";
 export * from "./components/Modal";
+export * from "./components/Window";
 export * from "./components/Slider";
 export * from "./components/Tooltip";
 export * from "./components/Backdrop";

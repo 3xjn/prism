@@ -13,6 +13,11 @@ jobs:
   ci:
     runs-on: ubuntu-24.04
 
+    env:
+      ROBLOX_OPEN_CLOUD_API_KEY: ${{ secrets.ROBLOX_OPEN_CLOUD_API_KEY }}
+      ROBLOX_UNIVERSE_ID: ${{ secrets.ROBLOX_UNIVERSE_ID }}
+      ROBLOX_PLACE_ID: ${{ secrets.ROBLOX_PLACE_ID }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,9 +31,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Test
-        run: npm test
-
       - name: Typecheck
         run: npm run typecheck
 
@@ -37,3 +39,15 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Setup Rokit
+        if: ${{ env.ROBLOX_OPEN_CLOUD_API_KEY != '' }}
+        uses: CompeyDev/setup-rokit@v0.1.2
+
+      - name: Test
+        if: ${{ env.ROBLOX_OPEN_CLOUD_API_KEY != '' }}
+        env:
+          ROBLOX_OPEN_CLOUD_API_KEY: ${{ secrets.ROBLOX_OPEN_CLOUD_API_KEY }}
+          ROBLOX_UNIVERSE_ID: ${{ secrets.ROBLOX_UNIVERSE_ID }}
+          ROBLOX_PLACE_ID: ${{ secrets.ROBLOX_PLACE_ID }}
+        run: npm test -- --backend open-cloud --formatters github-actions

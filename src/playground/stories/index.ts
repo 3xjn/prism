@@ -23,6 +23,7 @@ import "./Popover.story";
 import "./Menu.story";
 import "./Select.story";
 import "./Modal.story";
+import "./Window.story";
 import "./Tooltip.story";
 import "./Slider.story";
 import "./Backdrop.story";
