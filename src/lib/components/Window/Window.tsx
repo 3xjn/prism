@@ -1,19 +1,8 @@
 import React from "@rbxts/react";
 
-import { useMotion } from "@prism/motion";
 import { theme as themeRefs, useTheme } from "@prism/theme";
 
-import { Divider } from "../Divider";
-import { Icon } from "../Icon";
-import type { IconName } from "../Icon";
-import { Text } from "../Text";
-import { CaptureOverlay, ScreenOverlayLayer, usePortalTarget } from "../_shared/layering";
-import {
-	renderCornerDecorator,
-	renderSizeConstraintDecorator,
-	renderStrokeDecorator,
-} from "../_shared/foundationDecorators";
-import { renderElevationShadow } from "../_shared/elevation";
+import { usePortalTarget } from "../_shared/layering";
 import {
 	assignRef,
 	composeEventMaps,
@@ -28,13 +17,19 @@ import {
 import {
 	DEFAULT_SCREEN_OVERLAY_BASE_Z_INDEX,
 	incrementZIndex,
-	type GuiZIndex,
 } from "../_shared/overlayLayerPolicy";
 import { mergeSharedStyleProps, useResolvedStyleProps } from "../_shared/useResolvedStyleProps";
 import { useControllableState } from "../_shared/useControllableState";
-import { usePressInteraction } from "../_shared/usePressInteraction";
 import { useRootCursorEvent } from "../_shared/useRootCursor";
 
+import { WindowView } from "./WindowView";
+import {
+	useAbsoluteSize,
+	resolveInitialWindowBounds,
+	resolveLocalInputPosition,
+	resolveViewport,
+	toClampOptions,
+} from "./layout";
 import { resolveWindowSizeStyles } from "./styles";
 import type { WindowProps } from "./types";
 import {
@@ -46,171 +41,18 @@ import {
 	applyWindowResize,
 	areWindowBoundsEqual,
 	clampWindowBounds,
-	resolveCenteredWindowPosition,
 	resolveMaximizedWindowBounds,
 	resolveUDimPixels,
 	type WindowBounds,
-	type WindowClampOptions,
-	type WindowViewport,
 } from "./utils";
 
 const UserInputService = game.GetService("UserInputService");
 
-const WINDOW_CHROME_HOVER_SCALE = 1.04;
-const WINDOW_CHROME_PRESS_SCALE = 0.92;
 const WINDOW_DRAG_CLICK_THRESHOLD = 4;
 
 type WindowFrameEventMap = React.InstanceProps<Frame>["Event"];
 type TextButtonEventMap = React.InstanceProps<TextButton>["Event"];
 type WindowDragMode = "move" | "resize";
-
-function useAbsoluteSize(instance: GuiObject | undefined): Vector2 | undefined {
-	const [absoluteSize, setAbsoluteSize] = React.useState<Vector2>();
-
-	React.useEffect(() => {
-		if (instance === undefined) {
-			setAbsoluteSize(undefined);
-			return;
-		}
-
-		const updateAbsoluteSize = () => {
-			const nextSize = instance.AbsoluteSize;
-			setAbsoluteSize((currentSize) =>
-				currentSize !== undefined && currentSize.X === nextSize.X && currentSize.Y === nextSize.Y ? currentSize : nextSize,
-			);
-		};
-
-		updateAbsoluteSize();
-		const absoluteSizeConnection = instance.GetPropertyChangedSignal("AbsoluteSize").Connect(updateAbsoluteSize);
-
-		return () => {
-			absoluteSizeConnection.Disconnect();
-		};
-	}, [instance]);
-
-	return absoluteSize;
-}
-
-function resolveViewport(size: Vector2 | undefined): WindowViewport {
-	if (size === undefined) {
-		return { width: 0, height: 0 };
-	}
-
-	return { width: size.X, height: size.Y };
-}
-
-function resolveLocalInputPosition(input: InputObject, overlay: GuiObject): Vector2 {
-	return new Vector2(input.Position.X, input.Position.Y).sub(overlay.AbsolutePosition);
-}
-
-function resolveInitialWindowBounds(
-	viewport: WindowViewport,
-	width: number,
-	height: number,
-	position: UDim2 | undefined,
-	center: boolean | undefined,
-	options: WindowClampOptions,
-): WindowBounds {
-	const centered = resolveCenteredWindowPosition(width, height, viewport);
-	const usesCenteredPlacement = position === undefined && center !== false;
-	const x = usesCenteredPlacement || position === undefined ? centered.x : resolveUDimPixels(position.X, viewport.width);
-	const y = usesCenteredPlacement || position === undefined ? centered.y : resolveUDimPixels(position.Y, viewport.height);
-
-	return clampWindowBounds({ x, y, width, height }, options);
-}
-
-function toClampOptions(
-	viewport: WindowViewport,
-	minWidth: number,
-	minHeight: number,
-	maxWidth: number | undefined,
-	maxHeight: number | undefined,
-	margin: number,
-): WindowClampOptions {
-	return {
-		minWidth,
-		minHeight,
-		maxWidth,
-		maxHeight,
-		viewport,
-		margin,
-	};
-}
-
-interface WindowChromeButtonProps {
-	readonly iconName: IconName;
-	readonly size: number;
-	readonly iconSize: number;
-	readonly radius: UDim;
-	readonly zIndex: GuiZIndex | undefined;
-	readonly onPress: () => void;
-	readonly onInputBegan?: (input: InputObject) => void;
-	readonly layoutOrder?: number;
-	readonly slotProps?: Partial<React.InstanceProps<TextButton>>;
-	readonly iconSlotProps?: Partial<React.InstanceProps<ImageLabel>>;
-}
-
-function WindowChromeButton(props: WindowChromeButtonProps) {
-	const theme = useTheme();
-	const press = usePressInteraction({ interactive: true, onActivated: props.onPress });
-	const closeButtonScale = press.pressed ? WINDOW_CHROME_PRESS_SCALE : press.hovered ? WINDOW_CHROME_HOVER_SCALE : 1;
-	const motionDuration = press.pressed || press.hovered ? "fast" : "normal";
-	const animated = useMotion({
-		values: {
-			backgroundColor: press.pressed ? theme.colors.action.pressed : theme.colors.action.hover,
-			backgroundTransparency: press.hovered || press.pressed ? 0 : 1,
-			iconColor: press.pressed ? theme.colors.text.primary : theme.colors.text.secondary,
-			scale: closeButtonScale,
-		},
-		transition: {
-			backgroundColor: { duration: motionDuration, easing: "standard" },
-			backgroundTransparency: { duration: motionDuration, easing: "standard" },
-			iconColor: { duration: motionDuration, easing: "standard" },
-			scale: { duration: "fast", easing: "out" },
-		},
-	});
-	const buttonEvent = useRootCursorEvent(
-		composeEventMaps(
-			{
-				...press.eventMap,
-				InputBegan: (_button: TextButton, input: InputObject) => {
-					press.eventMap?.InputBegan?.(_button, input);
-					props.onInputBegan?.(input);
-				},
-			},
-			props.slotProps?.Event,
-		),
-		props.slotProps?.Event === undefined ? "pointer" : undefined,
-	);
-
-	return (
-		<textbutton
-			AutoButtonColor={false}
-			BackgroundColor3={animated.backgroundColor}
-			BackgroundTransparency={animated.backgroundTransparency}
-			BorderSizePixel={0}
-			Size={UDim2.fromOffset(props.size, props.size)}
-			LayoutOrder={props.layoutOrder}
-			Text=""
-			TextTransparency={1}
-			ZIndex={props.zIndex}
-			Event={buttonEvent}
-			{...props.slotProps}
-		>
-			<uiscale Scale={animated.scale} />
-			{renderCornerDecorator({ radius: props.radius, slotProps: undefined })}
-			<Icon
-				name={props.iconName}
-				size={props.iconSize}
-				color={animated.iconColor}
-				anchor={new Vector2(0.5, 0.5)}
-				position={UDim2.fromScale(0.5, 0.5)}
-				slotProps={{ root: { ZIndex: incrementZIndex(props.zIndex, 1), ...props.iconSlotProps } }}
-			/>
-		</textbutton>
-	);
-}
-
 type WindowComponent = ((props: WindowProps) => React.ReactElement) & React.ForwardRefExoticComponent<WindowProps>;
 
 const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
@@ -668,11 +510,6 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 			raiseWindow();
 		}
 	};
-	const hasRail = rail !== undefined;
-	const railWidth = hasRail ? sizeStyles.railMinWidth : 0;
-	const railDividerWidth = hasRail ? 1 : 0;
-	const bodyLeftOffset = railWidth + railDividerWidth;
-	const rootSlotProps = slotProps?.root;
 	const rootInstanceProps: Partial<React.InstanceProps<Frame>> = {
 		BackgroundColor3: panelBackgroundColor,
 		BackgroundTransparency: mergedStyleProps.bgTransparency ?? 0,
@@ -690,257 +527,46 @@ const WindowBase = React.forwardRef<Frame, WindowProps>((props, ref) => {
 	};
 
 	return (
-		<ScreenOverlayLayer zIndex={overlayZIndex} slotProps={slotProps?.overlay}>
-			<frame
-				BackgroundTransparency={1}
-				BorderSizePixel={0}
-				Size={UDim2.fromScale(1, 1)}
-				Active={false}
-				Selectable={false}
-				ZIndex={overlayZIndex}
-				ref={overlayRef}
-			/>
-			<frame {...rootInstanceProps} {...rootSlotProps} ref={windowRef}>
-				{renderElevationShadow({
-					shadow: theme.shadows.md,
-					radius: sizeStyles.radius,
-					zIndex: shadowZIndex,
-					slotProps: { root: slotProps?.shadow },
-				})}
-				{renderCornerDecorator({ radius: sizeStyles.radius, slotProps: slotProps?.rootCorner })}
-				{renderStrokeDecorator({
-					enabled: true,
-					color: theme.colors.border.default,
-					thickness: 1,
-					transparency: 0.08,
-					slotProps: slotProps?.rootStroke,
-				})}
-				{renderSizeConstraintDecorator({ constraint: resolvedConstraint, slotProps: slotProps?.sizeConstraint })}
-				{collapsed ? (
-					<textbutton
-						AutoButtonColor={false}
-						BackgroundTransparency={1}
-						BorderSizePixel={0}
-						Size={UDim2.fromScale(1, 1)}
-						Text=""
-						TextTransparency={1}
-						ZIndex={collapseControlZIndex}
-						Event={collapseControlEvent}
-						{...slotProps?.collapseControl}
-					>
-						<Icon
-							name="app-window"
-							size={sizeStyles.iconSize}
-							color={themeRefs.text.secondary}
-							anchor={new Vector2(0.5, 0.5)}
-							position={UDim2.fromScale(0.5, 0.5)}
-							slotProps={{ root: { ZIndex: incrementZIndex(collapseControlZIndex, 1) } }}
-						/>
-					</textbutton>
-				) : (
-					<>
-						<frame
-							BackgroundTransparency={1}
-							BorderSizePixel={0}
-							Active={true}
-							Selectable={false}
-							Size={new UDim2(1, 0, 0, sizeStyles.titleBarHeight)}
-							ZIndex={titleBarZIndex}
-							Event={titleBarEvent}
-							{...slotProps?.titleBar}
-						>
-							{leading !== undefined ? (
-								<frame
-									BackgroundTransparency={1}
-									BorderSizePixel={0}
-									Position={UDim2.fromOffset(sizeStyles.titlePaddingX, 0)}
-									Size={UDim2.fromOffset(sizeStyles.controlSize, sizeStyles.titleBarHeight)}
-									ZIndex={incrementZIndex(titleBarZIndex, 1)}
-									{...slotProps?.leading}
-								>
-									<uilistlayout
-										FillDirection={Enum.FillDirection.Horizontal}
-										HorizontalAlignment={Enum.HorizontalAlignment.Center}
-										VerticalAlignment={Enum.VerticalAlignment.Center}
-										SortOrder={Enum.SortOrder.LayoutOrder}
-									/>
-									{leading}
-								</frame>
-							) : undefined}
-							<Text
-								text={title ?? ""}
-								size={sizeStyles.titleSize}
-								weight={700}
-								lineHeight={sizeStyles.titleLineHeight}
-								color={themeRefs.text.primary}
-								valign="middle"
-								truncate="atend"
-								position={UDim2.fromOffset(titleLeft, 0)}
-								width={new UDim(1, -titleWidthOffset)}
-								height={sizeStyles.titleBarHeight}
-								slotProps={{ root: { ZIndex: incrementZIndex(titleBarZIndex, 1), ...slotProps?.title } }}
-							/>
-							<frame
-								BackgroundTransparency={1}
-								BorderSizePixel={0}
-								Position={new UDim2(1, -sizeStyles.titlePaddingX, 0.5, 0)}
-								AnchorPoint={new Vector2(1, 0.5)}
-								Size={new UDim2(0, 0, 0, sizeStyles.controlSize)}
-								AutomaticSize={Enum.AutomaticSize.X}
-								ZIndex={controlsZIndex}
-								ref={controlsRef}
-								{...slotProps?.controls}
-							>
-								<uilistlayout
-									FillDirection={Enum.FillDirection.Horizontal}
-									HorizontalAlignment={Enum.HorizontalAlignment.Right}
-									VerticalAlignment={Enum.VerticalAlignment.Center}
-									Padding={new UDim(0, sizeStyles.titleGap)}
-									SortOrder={Enum.SortOrder.LayoutOrder}
-								/>
-								{trailing !== undefined ? (
-									<frame
-										BackgroundTransparency={1}
-										BorderSizePixel={0}
-										Size={UDim2.fromOffset(0, sizeStyles.controlSize)}
-										AutomaticSize={Enum.AutomaticSize.X}
-										LayoutOrder={1}
-										{...slotProps?.trailing}
-									>
-										{trailing}
-									</frame>
-								) : undefined}
-								<WindowChromeButton
-									iconName="minus"
-									size={sizeStyles.controlSize}
-									iconSize={sizeStyles.iconSize}
-									radius={controlRadius}
-									zIndex={incrementZIndex(controlsZIndex, 1)}
-									layoutOrder={2}
-									onPress={() => setCollapsed(true)}
-									onInputBegan={chromeInputBegan}
-									slotProps={slotProps?.collapseButton}
-								/>
-								<WindowChromeButton
-									iconName={maximized ? "minimize" : "maximize"}
-									size={sizeStyles.controlSize}
-									iconSize={sizeStyles.iconSize}
-									radius={controlRadius}
-									zIndex={incrementZIndex(controlsZIndex, 1)}
-									layoutOrder={3}
-									onPress={() => setMaximized(!maximized)}
-									onInputBegan={chromeInputBegan}
-									slotProps={slotProps?.maximizeButton}
-								/>
-								{hasClose ? (
-									<WindowChromeButton
-										iconName="x"
-										size={sizeStyles.controlSize}
-										iconSize={sizeStyles.iconSize}
-										radius={controlRadius}
-										zIndex={incrementZIndex(controlsZIndex, 1)}
-										layoutOrder={4}
-										onPress={() => onClose?.()}
-										onInputBegan={chromeInputBegan}
-										slotProps={slotProps?.closeButton}
-									/>
-								) : undefined}
-							</frame>
-						</frame>
-						<Divider
-							color={themeRefs.border.subtle}
-							size={1}
-							slotProps={{
-								root: {
-									Position: UDim2.fromOffset(0, sizeStyles.titleBarHeight),
-									ZIndex: titleBarZIndex,
-								},
-							}}
-						/>
-						<frame
-							BackgroundTransparency={1}
-							BorderSizePixel={0}
-							Position={UDim2.fromOffset(0, sizeStyles.titleBarHeight + 1)}
-							Size={new UDim2(1, 0, 1, -(sizeStyles.titleBarHeight + 1))}
-							ZIndex={bodyZIndex}
-							{...slotProps?.body}
-						>
-							{hasRail ? (
-								<frame
-									BackgroundTransparency={1}
-									BorderSizePixel={0}
-									ClipsDescendants={true}
-									Size={new UDim2(0, railWidth, 1, 0)}
-									ZIndex={incrementZIndex(bodyZIndex, 1)}
-									{...slotProps?.rail}
-								>
-									{rail}
-								</frame>
-							) : undefined}
-							{hasRail ? (
-								<Divider
-									orientation="vertical"
-									color={themeRefs.border.subtle}
-									size={1}
-									layoutOrder={2}
-									slotProps={{
-										root: {
-											Position: UDim2.fromOffset(railWidth, 0),
-										},
-									}}
-								/>
-							) : undefined}
-							<frame
-								BackgroundTransparency={1}
-								BorderSizePixel={0}
-								ClipsDescendants={true}
-								Position={UDim2.fromOffset(bodyLeftOffset, 0)}
-								Size={new UDim2(1, -bodyLeftOffset, 1, 0)}
-								ZIndex={incrementZIndex(bodyZIndex, 1)}
-								{...slotProps?.content}
-							>
-								{children}
-							</frame>
-						</frame>
-						{canResize ? (
-							<textbutton
-								AutoButtonColor={false}
-								BackgroundTransparency={1}
-								BorderSizePixel={0}
-								Size={UDim2.fromOffset(sizeStyles.resizeHandleSize, sizeStyles.resizeHandleSize)}
-								Position={UDim2.fromScale(1, 1)}
-								AnchorPoint={new Vector2(1, 1)}
-								Text=""
-								TextTransparency={1}
-								ZIndex={resizeHandleZIndex}
-								Event={resizeHandleEvent}
-								{...slotProps?.resizeHandle}
-							>
-								<frame
-									BackgroundColor3={theme.colors.text.disabled}
-									BackgroundTransparency={0.35}
-									BorderSizePixel={0}
-									Size={UDim2.fromOffset(math.max(2, sizeStyles.resizeHandleSize - 6), 2)}
-									Position={new UDim2(1, -2, 1, -6)}
-									AnchorPoint={new Vector2(1, 1)}
-									Active={false}
-								/>
-								<frame
-									BackgroundColor3={theme.colors.text.disabled}
-									BackgroundTransparency={0.35}
-									BorderSizePixel={0}
-									Size={UDim2.fromOffset(2, math.max(2, sizeStyles.resizeHandleSize - 6))}
-									Position={new UDim2(1, -6, 1, -2)}
-									AnchorPoint={new Vector2(1, 1)}
-									Active={false}
-								/>
-							</textbutton>
-						) : undefined}
-					</>
-				)}
-			</frame>
-			<CaptureOverlay active={mouseDragCaptureActive} target={portalTarget} Event={dragCaptureOverlayEvent} />
-		</ScreenOverlayLayer>
+		<WindowView
+			theme={theme}
+			sizeStyles={sizeStyles}
+			slotProps={slotProps}
+			overlayZIndex={overlayZIndex}
+			overlayRef={overlayRef}
+			windowRef={windowRef}
+			controlsRef={controlsRef}
+			rootInstanceProps={rootInstanceProps}
+			resolvedConstraint={resolvedConstraint}
+			shadowZIndex={shadowZIndex}
+			collapsed={collapsed}
+			collapseControlZIndex={collapseControlZIndex}
+			collapseControlEvent={collapseControlEvent}
+			titleBarZIndex={titleBarZIndex}
+			titleBarEvent={titleBarEvent}
+			leading={leading}
+			title={title}
+			titleLeft={titleLeft}
+			titleWidthOffset={titleWidthOffset}
+			controlsZIndex={controlsZIndex}
+			trailing={trailing}
+			controlRadius={controlRadius}
+			maximized={maximized}
+			hasClose={hasClose}
+			onCollapse={() => setCollapsed(true)}
+			onToggleMaximized={() => setMaximized(!maximized)}
+			onClose={onClose}
+			chromeInputBegan={chromeInputBegan}
+			bodyZIndex={bodyZIndex}
+			rail={rail}
+			canResize={canResize}
+			resizeHandleZIndex={resizeHandleZIndex}
+			resizeHandleEvent={resizeHandleEvent}
+			mouseDragCaptureActive={mouseDragCaptureActive}
+			portalTarget={portalTarget}
+			dragCaptureOverlayEvent={dragCaptureOverlayEvent}
+		>
+			{children}
+		</WindowView>
 	);
 });
 
