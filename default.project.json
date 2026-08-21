@@ -28,6 +28,7 @@
 			}
 		},
 		"ServerScriptService": {
+			"$className": "ServerScriptService",
 			"$properties": {
 				"LoadStringEnabled": true
 			}
