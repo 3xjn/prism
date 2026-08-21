@@ -8,22 +8,6 @@ const flagsLines = `_G.__DEV__ = true
 _G.__ROACT_17_MOCK_SCHEDULER__ = true
 `;
 
-function prependFlags(filePath, reason) {
-	if (!fs.existsSync(filePath)) {
-		process.stderr.write(`scripts/patch-runtime-lib.cjs: missing ${filePath}\n`);
-		process.exit(1);
-	}
-
-	let source = fs.readFileSync(filePath, "utf8");
-	if (source.includes(flagsMarker)) {
-		return false;
-	}
-
-	source = `-- ${flagsMarker} (${reason})\n${flagsLines}\n${source}`;
-	fs.writeFileSync(filePath, source);
-	return true;
-}
-
 const runtimeLibPath = path.join(__dirname, "..", "include", "RuntimeLib.lua");
 let source = fs.readFileSync(runtimeLibPath, "utf8");
 
@@ -82,9 +66,8 @@ if (changed) {
 	process.stdout.write("include/RuntimeLib.lua already patched for Jest\n");
 }
 
-// Jest loadstring gives each ModuleScript its own environment. RuntimeLib _G
-// writes therefore never reach ReactGlobals.loadFromGlobal. Set the flags in
-// ReactGlobals's own source so act/mock-scheduler wire on first require.
+// Jest loadstring re-executes RuntimeLib per spec. That isolated _G is not the
+// _G ReactGlobals sees. Patch the real ReactGlobals ModuleScript on disk.
 const reactGlobalsPath = path.join(
 	__dirname,
 	"..",
@@ -94,7 +77,17 @@ const reactGlobalsPath = path.join(
 	"src",
 	"ReactGlobals.global.lua",
 );
-if (prependFlags(reactGlobalsPath, "ReactGlobals sandbox, before loadFromGlobal")) {
+if (!fs.existsSync(reactGlobalsPath)) {
+	process.stderr.write(`scripts/patch-runtime-lib.cjs: missing ${reactGlobalsPath}\n`);
+	process.exit(1);
+}
+
+const reactGlobalsMarker =
+	"Prism Jest: ReactGlobals is a real ModuleScript; RuntimeLib loadstring _G never reaches it";
+let reactGlobalsSource = fs.readFileSync(reactGlobalsPath, "utf8");
+if (!reactGlobalsSource.includes(reactGlobalsMarker)) {
+	reactGlobalsSource = `-- ${reactGlobalsMarker}\n${flagsLines}\n${reactGlobalsSource}`;
+	fs.writeFileSync(reactGlobalsPath, reactGlobalsSource);
 	process.stdout.write("patched ReactGlobals.global.lua with ReactRoblox.act _G flags\n");
 } else {
 	process.stdout.write("ReactGlobals.global.lua already patched for Jest\n");
