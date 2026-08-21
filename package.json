@@ -19,7 +19,7 @@
 		"url": "git+https://github.com/3xjn/prism.git"
 	},
 	"scripts": {
-		"test": "rbxtsc --type game && jest-roblox",
+		"test": "rbxtsc --type game && node scripts/patch-runtime-lib.cjs && jest-roblox",
 		"build": "rbxtsc --type game",
 		"build:package": "rbxtsc --type package -p tsconfig.package.json",
 		"prepare": "npm run build:package",
