@@ -60,7 +60,43 @@ export function resolveMaximizedWindowBounds(viewport: WindowViewport): WindowBo
 	};
 }
 
-function resolveAvailableSize(viewport: WindowViewport, margin: number): { readonly width: number; readonly height: number } {
+export function resolveCollapsedWindowBounds(
+	origin: WindowBounds,
+	collapseControlSize: number,
+	viewport: WindowViewport,
+	margin: number,
+): WindowBounds {
+	return clampWindowBounds(
+		{
+			x: origin.x,
+			y: origin.y,
+			width: collapseControlSize,
+			height: collapseControlSize,
+		},
+		{
+			minWidth: collapseControlSize,
+			minHeight: collapseControlSize,
+			maxWidth: collapseControlSize,
+			maxHeight: collapseControlSize,
+			viewport,
+			margin,
+		},
+	);
+}
+
+export function interpolateWindowBounds(from: WindowBounds, to: WindowBounds, alpha: number): WindowBounds {
+	return {
+		x: from.x + (to.x - from.x) * alpha,
+		y: from.y + (to.y - from.y) * alpha,
+		width: from.width + (to.width - from.width) * alpha,
+		height: from.height + (to.height - from.height) * alpha,
+	};
+}
+
+function resolveAvailableSize(
+	viewport: WindowViewport,
+	margin: number,
+): { readonly width: number; readonly height: number } {
 	return {
 		width: math.max(0, viewport.width - margin * 2),
 		height: math.max(0, viewport.height - margin * 2),
