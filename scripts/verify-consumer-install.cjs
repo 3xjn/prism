@@ -112,6 +112,9 @@ function createConsumerProject(consumerDir, prismSpec) {
 		tree: {
 			$className: "DataModel",
 			ReplicatedStorage: {
+				TS: {
+					$path: "out",
+				},
 				rbxts_include: {
 					$path: "include",
 					node_modules: {
@@ -150,7 +153,7 @@ function createConsumerProject(consumerDir, prismSpec) {
 	useMotion,
 } from "@3xjn/prism";
 
-export const exports = {
+export const prismApi = {
 	Avatar,
 	Box,
 	Button,
