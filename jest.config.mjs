@@ -11,7 +11,7 @@ export default defineConfig({
 				test: {
 					displayName: { name: "prism", color: "cyan" },
 					include: ["src/lib/**/*.spec.ts", "src/lib/**/*.spec.tsx"],
-					outDir: "out/lib",
+					outDir: "out-game/lib",
 				},
 			}),
 		],

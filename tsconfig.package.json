@@ -1,10 +1,18 @@
 {
 	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"declaration": true
+		"declaration": true,
+		"outDir": "out"
 	},
 	"include": ["src/lib"],
-	"exclude": ["node_modules", "out", "src/playground", "src/lib/**/__typecheck__.*", "src/lib/**/__test__.*", "src/lib/**/*.spec.*"],
+	"exclude": [
+		"node_modules",
+		"out",
+		"src/playground",
+		"src/lib/**/__typecheck__.*",
+		"src/lib/**/__test__.*",
+		"src/lib/**/*.spec.*"
+	],
 	"rbxts": {
 		"type": "package"
 	}

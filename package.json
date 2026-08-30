@@ -9,6 +9,7 @@
 	"files": [
 		"out/lib",
 		"src/lib",
+		"scripts/prepare-package.cjs",
 		"!**/*.tsbuildinfo",
 		"!**/__typecheck__.*",
 		"!**/__test__.*",
@@ -21,8 +22,10 @@
 	"scripts": {
 		"test": "rbxtsc --type game && node scripts/patch-runtime-lib.cjs && jest-roblox",
 		"build": "rbxtsc --type game",
-		"build:package": "rbxtsc --type package -p tsconfig.package.json",
-		"prepare": "npm run build:package",
+		"build:package": "rbxtsc --type package -p tsconfig.package.json --rojo package.project.json",
+		"prepare": "node scripts/prepare-package.cjs",
+		"check:package": "npm run build:package && node scripts/check-package-output.cjs",
+		"verify:consumer": "node scripts/verify-consumer-install.cjs",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
 		"lint": "eslint src --ext .ts,.tsx",
 		"format": "prettier --check ."

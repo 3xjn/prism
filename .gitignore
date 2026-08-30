@@ -1,6 +1,13 @@
 node_modules/
-out/
+out-game/
+out/playground/
+out/*.tsbuildinfo
+out/lib/**/__typecheck__.*
+out/lib/**/__test__.*
+out/lib/**/*.spec.lua
+out/lib/**/*.spec.luau
+out/lib/**/*.spec.d.ts
 *.rbxl
 *.rbxlx
 .jest-roblox/
-.idea
+*.tgz

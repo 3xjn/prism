@@ -1,0 +1,12 @@
+import type React from "@rbxts/react";
+type EventMapLike = Record<string, unknown>;
+export type DragInputKind = "mouse" | "touch";
+export declare function isPressInput(input: InputObject): boolean;
+export declare function resolveDragInputKind(input: InputObject): DragInputKind | undefined;
+export declare function shouldHandleTouchDragMoveInput(kind: DragInputKind | undefined, activeTouch: InputObject | undefined, input: InputObject): boolean;
+export declare function shouldHandleMouseDragMoveInput(kind: DragInputKind | undefined, input: InputObject): boolean;
+export declare function isMouseDragActive(kind: DragInputKind | undefined): boolean;
+export declare function shouldHandleDragEndInput(kind: DragInputKind | undefined, activeTouch: InputObject | undefined, input: InputObject): boolean;
+export declare function composeEventMaps<TEventMap>(internal?: EventMapLike | TEventMap, external?: TEventMap): TEventMap | undefined;
+export declare function assignRef<TInstance>(ref: React.Ref<TInstance> | undefined, value: TInstance | undefined): void;
+export {};

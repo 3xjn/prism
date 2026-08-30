@@ -1,0 +1,7 @@
+{
+	"name": "prism",
+	"globIgnorePaths": ["**/package.json", "**/tsconfig.json"],
+	"tree": {
+		"$path": "out/lib"
+	}
+}

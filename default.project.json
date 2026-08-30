@@ -5,25 +5,25 @@
 		"$className": "DataModel",
 		"ReplicatedStorage": {
 			"Prism": {
-				"$path": "out/lib"
+				"$path": "out-game/lib"
 			},
 			"rbxts_include": {
 				"$path": "include",
-					"node_modules": {
-						"$className": "Folder",
-						"@rbxts": {
-							"$path": "node_modules/@rbxts"
-						},
-						"@rbxts-js": {
-							"$path": "node_modules/@rbxts-js"
-						}
+				"node_modules": {
+					"$className": "Folder",
+					"@rbxts": {
+						"$path": "node_modules/@rbxts"
+					},
+					"@rbxts-js": {
+						"$path": "node_modules/@rbxts-js"
 					}
 				}
+			}
 		},
 		"StarterPlayer": {
 			"StarterPlayerScripts": {
 				"Playground": {
-					"$path": "out/playground"
+					"$path": "out-game/playground"
 				}
 			}
 		},

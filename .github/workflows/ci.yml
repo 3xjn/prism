@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check committed out/lib is up to date
+        run: npm run check:package
+
       - name: Typecheck
         run: npm run typecheck
 
@@ -39,6 +42,12 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Verify consumer install
+        run: npm run verify:consumer
 
       - name: Setup Rokit
         if: ${{ env.ROBLOX_OPEN_CLOUD_API_KEY != '' }}

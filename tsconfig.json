@@ -12,7 +12,7 @@
 		"moduleResolution": "Node",
 		"noLib": true,
 		"skipLibCheck": true,
-		"outDir": "out",
+		"outDir": "out-game",
 		"rootDir": "src",
 		"paths": {
 			"@prism": ["lib/index"],
