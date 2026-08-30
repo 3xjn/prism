@@ -37,6 +37,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Verify package tarball
+        run: npm run verify:package
+
       - name: Build
         run: npm run build
 

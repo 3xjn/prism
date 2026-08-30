@@ -1,14 +1,12 @@
 {
 	"name": "@3xjn/prism",
-	"private": true,
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"description": "Roblox TypeScript UI kit for @rbxts/react",
 	"main": "out/lib/init.luau",
 	"types": "out/lib/index.d.ts",
 	"typings": "out/lib/index.d.ts",
 	"files": [
 		"out/lib",
-		"src/lib",
 		"!**/*.tsbuildinfo",
 		"!**/__typecheck__.*",
 		"!**/__test__.*",
@@ -18,14 +16,22 @@
 		"type": "git",
 		"url": "git+https://github.com/3xjn/prism.git"
 	},
+	"homepage": "https://github.com/3xjn/prism#readme",
+	"bugs": {
+		"url": "https://github.com/3xjn/prism/issues"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"test": "rbxtsc --type game && node scripts/patch-runtime-lib.cjs && jest-roblox",
 		"build": "rbxtsc --type game",
 		"build:package": "rbxtsc --type package -p tsconfig.package.json",
-		"prepare": "npm run build:package",
+		"prepack": "npm run build:package",
 		"typecheck": "tsc --noEmit -p tsconfig.json",
 		"lint": "eslint src --ext .ts,.tsx",
-		"format": "prettier --check ."
+		"format": "prettier --check .",
+		"verify:package": "node scripts/verify-package.cjs"
 	},
 	"dependencies": {
 		"@rbxts/react": "17.3.7-ts.1",

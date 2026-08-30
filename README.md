@@ -6,25 +6,16 @@
 
 Prism is a Roblox TypeScript UI kit for [`@rbxts/react`](https://github.com/roblox-ts/react). Components share a token theme and Roblox-native sizing (`UDim`, offsets, and scale).
 
-Not published to npm yet (`0.0.0`). The package name is `@3xjn/prism` (private). Tokens and visual language are in [DESIGN.md](DESIGN.md).
+Not published to npm yet — the package name is `@3xjn/prism`. Tokens and visual language are in [DESIGN.md](DESIGN.md).
 
 ## Use in another rbxts project
 
-```json
-{
-	"dependencies": {
-		"@3xjn/prism": "github:3xjn/prism"
-	}
-}
+```sh
+npm install @3xjn/prism
+# or: bun add @3xjn/prism
 ```
 
-```json
-{
-	"dependencies": {
-		"@3xjn/prism": "file:../prism"
-	}
-}
-```
+Do not use `github:3xjn/prism`, and do not add a consumer postinstall or Prism build step. The published tarball already contains compiled `out/lib`.
 
 ```ts
 import { Button, ThemeProvider, DEFAULT_DARK_THEME } from "@3xjn/prism";
@@ -79,8 +70,6 @@ export function mount(parent: Instance) {
 }
 ```
 
-`npm install` / `prepare` compiles `out/lib`, so a `file:` or `github:` consumer does not copy `src/` into their tree.
-
 ## Quick start
 
 You need [Node.js](https://nodejs.org/), [Rojo](https://rojo.space/), and Roblox Studio.
@@ -115,15 +104,15 @@ Pass `density="compact"` (or `theme={{ density: "compact" }}`) for tighter contr
 
 ## Components
 
-| Family | Components |
-| --- | --- |
-| Layout | `Box`, `Stack`, `Divider`, `Card`, `ScrollArea` |
-| Text and media | `Text`, `Icon`, `Image`, `Avatar` |
+| Family           | Components                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------- |
+| Layout           | `Box`, `Stack`, `Divider`, `Card`, `ScrollArea`                                                |
+| Text and media   | `Text`, `Icon`, `Image`, `Avatar`                                                              |
 | Inputs and forms | `Button`, `Pressable`, `Input`, `KeybindInput`, `Checkbox`, `Switch`, `StepperInput`, `Slider` |
-| Feedback | `Progress`, `CircularProgress`, `Backdrop` |
-| Navigation | `SegmentedControl`, `Tabs`, `Menu`, `Select` |
-| Overlays | `WorldPortal`, `Popover`, `Modal`, `Tooltip`, `Window` |
-| Utility | `Draggable` |
+| Feedback         | `Progress`, `CircularProgress`, `Backdrop`                                                     |
+| Navigation       | `SegmentedControl`, `Tabs`, `Menu`, `Select`                                                   |
+| Overlays         | `WorldPortal`, `Popover`, `Modal`, `Tooltip`, `Window`                                         |
+| Utility          | `Draggable`                                                                                    |
 
 `@prism/theme` is providers and tokens, `@prism/motion` is motion hooks, `@prism/utils` is unit helpers, and `mountPrism` is the Luau bridge.
 
@@ -172,7 +161,10 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
+npm run build:package
 ```
+
+`npm run build` compiles the playground and tests. `npm run build:package` (also `prepack`) compiles the library into `out/lib` for the npm tarball. Generated `out/` stays gitignored — do not commit it.
 
 ## Tests
 
@@ -182,11 +174,11 @@ The CLI needs [Rojo](https://rojo.space/) on `PATH` (this repo pins it in `rokit
 
 Set these when using Open Cloud (`JEST_`-prefixed names override the same unprefixed values):
 
-| Variable | Purpose |
-| --- | --- |
-| `ROBLOX_OPEN_CLOUD_API_KEY` | Open Cloud API key |
-| `ROBLOX_UNIVERSE_ID` | Universe that receives the test place |
-| `ROBLOX_PLACE_ID` | Place to publish and execute |
+| Variable                    | Purpose                               |
+| --------------------------- | ------------------------------------- |
+| `ROBLOX_OPEN_CLOUD_API_KEY` | Open Cloud API key                    |
+| `ROBLOX_UNIVERSE_ID`        | Universe that receives the test place |
+| `ROBLOX_PLACE_ID`           | Place to publish and execute          |
 
 The key needs `universe-places:write` and `universe.place.luau-execution-session:write`. If those values are missing locally, `npm test` fails with that requirement instead of falling back to Node. GitHub Actions skips the Test step until `ROBLOX_OPEN_CLOUD_API_KEY` is set as a repository secret; typecheck, lint, and build still run.
 
