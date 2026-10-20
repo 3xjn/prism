@@ -1,13 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { emitNativeTypes } from "./native-types.mjs";
+import { emitNativeTypes } from "./native-types.ts";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const output = path.join(root, "dist", "native");
 const source = path.join(output, "src");
 
-function copyLuau(from, to) {
+function copyLuau(from: string, to: string): void {
 	fs.mkdirSync(to, { recursive: true });
 	for (const entry of fs.readdirSync(from, { withFileTypes: true })) {
 		if (/^(__tests?__|__typecheck__|testing)$/.test(entry.name)) continue;
@@ -21,8 +21,7 @@ function copyLuau(from, to) {
 }
 
 export function buildNative() {
-	if (!fs.existsSync(path.join(root, "out/lib/init.luau")))
-		throw new Error("Run build:package before build-native.mjs");
+	if (!fs.existsSync(path.join(root, "out/lib/init.luau"))) throw new Error("Run build:package before build-native.ts");
 	// Delete only this build's generated output, never follow an output symlink.
 	if (path.resolve(output) !== path.join(root, "dist", "native")) throw new Error("Invalid native output path");
 	if (fs.existsSync(path.dirname(output)) && fs.lstatSync(path.dirname(output)).isSymbolicLink())
@@ -38,10 +37,10 @@ export function buildNative() {
 	if (runtime.includes("Prism Jest"))
 		throw new Error("Rebuild with clean compiler helpers; test-only runtime flags cannot ship");
 
-	const versions = {};
-	const notices = [];
-	const installed = new Map();
-	function collect(name) {
+	const versions: Record<string, string> = {};
+	const notices: string[] = [];
+	const installed = new Map<string, string>();
+	function collect(name: string): void {
 		if (versions[name]) return;
 		const packageDir = path.join(root, "node_modules", name);
 		const metadata = JSON.parse(fs.readFileSync(path.join(packageDir, "package.json"), "utf8"));
@@ -102,8 +101,8 @@ export function buildNative() {
 	const compilerLicense = path.join(root, "node_modules/roblox-ts/LICENSE");
 	fs.mkdirSync(path.join(output, "licenses/roblox-ts"), { recursive: true });
 	fs.copyFileSync(compilerLicense, path.join(output, "licenses/roblox-ts/LICENSE"));
-	const licenseFiles = [];
-	function licensesIn(directory) {
+	const licenseFiles: string[] = [];
+	function licensesIn(directory: string): void {
 		for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
 			const file = path.join(directory, entry.name);
 			if (entry.isDirectory()) licensesIn(file);

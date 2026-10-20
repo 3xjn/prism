@@ -4,150 +4,109 @@
 
 <h1 align="center">Prism</h1>
 
-Prism is a Roblox TypeScript UI kit for [`@rbxts/react`](https://github.com/roblox-ts/react). Components share a token theme and Roblox-native sizing (`UDim`, offsets, and scale).
+A React component library for Roblox. Build interfaces with ready-made controls, shared themes, and built-in motion, using TypeScript or Luau.
 
-The npm package is `@3xjn/prism`. Tokens and visual language are in [DESIGN.md](DESIGN.md).
+- **Compose your UI.** Combine buttons, inputs, tabs, windows, and layout components in a React tree.
+- **Make it yours.** Start with a light or dark theme, then customize colors, spacing, and component styles.
+- **Use Roblox sizes.** Pass pixels, percentages, `UDim`, or `UDim2` wherever you need them.
 
-## Use from Luau
+## Installation
 
-The native package exports the actual components for React-Luau composition, with generated public Luau types. Build it with `npm run build:native`, then insert the generated Rojo model or map `dist/native/src` into your project. Consumers do not need TypeScript or npm. A Wally packaging manifest is included in the output; no native registry release is published by the build.
-
-```luau
-local Package = game:GetService("ReplicatedStorage").Prism
-local React = require(Package.React)
-local ReactRoblox = require(Package.ReactRoblox)
-local Prism = require(Package)
-
-local root = ReactRoblox.createRoot(host)
-root:render(React.createElement(Prism.ThemeProvider, {}, {
-	Save = React.createElement(Prism.Button, { label = "Save", onPress = save }),
-}))
--- root:unmount() when the owner releases the UI
-```
-
-Use the package's React and ReactRoblox child modules so native consumers and Prism share the same pinned runtime. See [native installation, typing, and examples](native/README.md) for the complete contract, including integration with projects that already own a React runtime.
-
-## Use in another rbxts project
+### TypeScript
 
 ```sh
 npm install @3xjn/prism
-# or: bun add @3xjn/prism
 ```
 
-Do not use `github:3xjn/prism`, and do not add a consumer postinstall or Prism build step. The published tarball already contains compiled `out/lib`.
-
-```ts
-import { Button, ThemeProvider, DEFAULT_DARK_THEME } from "@3xjn/prism";
-```
-
-roblox-ts 3 resolves non-`@rbxts` scopes the same way as `@flamework` / `@rbxutil`. Both of these consumer lines are required:
-
-```json
-"typeRoots": ["node_modules/@rbxts", "node_modules/@3xjn"]
-```
-
-```json
-"node_modules": {
-	"$className": "Folder",
-	"@rbxts": {
-		"$path": "node_modules/@rbxts"
-	},
-	"@3xjn": {
-		"$path": "node_modules/@3xjn"
-	}
-}
-```
-
-`main` / `types` follow the usual library layout (`out/lib/init.luau` + `out/lib/index.d.ts`). `@prism` is an optional paths alias if you want the same imports this repo uses internally:
+Add `node_modules/@3xjn` to your `tsconfig.json` type roots:
 
 ```json
 {
 	"compilerOptions": {
-		"paths": {
-			"@prism": ["./node_modules/@3xjn/prism/out/lib"],
-			"@prism/*": ["./node_modules/@3xjn/prism/out/lib/*"]
-		}
+		"typeRoots": ["node_modules/@rbxts", "node_modules/@3xjn"]
 	}
 }
 ```
 
-The host must pass a parent `Instance` (PlayerGui, a ScreenGui, a plugin widget, and so on). Wrap the tree in `ThemeProvider`. Pass `density="compact"` for tighter control heights and padding, and `theme={DEFAULT_DARK_THEME}` for dark:
+In your Rojo project, map the `@3xjn` scope alongside `@rbxts` under your existing `node_modules` folder:
+
+```json
+"node_modules": {
+	"$className": "Folder",
+	"@rbxts": { "$path": "node_modules/@rbxts" },
+	"@3xjn": { "$path": "node_modules/@3xjn" }
+}
+```
+
+The npm package includes compiled Luau. Import components directly from `@3xjn/prism`.
+
+### Luau
+
+Use the native package with React-Luau. It includes Prism, React, ReactRoblox, and Luau types.
+
+See [Prism for Luau](native/README.md) for installation and a complete example.
+
+## Quick start
+
+Wrap your interface in `ThemeProvider`, then compose components inside it:
 
 ```tsx
 import React from "@rbxts/react";
 import ReactRoblox from "@rbxts/react-roblox";
-import { Button, ThemeProvider, DEFAULT_DARK_THEME } from "@3xjn/prism";
+import { Button, Stack, Text, ThemeProvider } from "@3xjn/prism";
 
-export function mount(parent: Instance) {
-	const root = ReactRoblox.createRoot(parent);
-	root.render(
-		<ThemeProvider theme={DEFAULT_DARK_THEME} density="compact">
-			<Button label="Save changes" />
-		</ThemeProvider>,
+function Counter() {
+	const [count, setCount] = React.useState(0);
+
+	return (
+		<Stack width={280} p="md" gap="sm">
+			<Text text={`Count: ${count}`} size="lg" layoutOrder={1} />
+			<Button label="Add one" onPress={() => setCount(count + 1)} layoutOrder={2} />
+		</Stack>
 	);
-	return root;
 }
+
+const screen = new Instance("ScreenGui");
+screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+screen.Parent = game.GetService("Players").LocalPlayer.WaitForChild("PlayerGui");
+
+const root = ReactRoblox.createRoot(screen);
+root.render(
+	<ThemeProvider>
+		<Counter />
+	</ThemeProvider>,
+);
 ```
 
-## Quick start
+Run this on the client. When you remove the interface, call `root.unmount()` and destroy its `ScreenGui`.
 
-You need [Node.js](https://nodejs.org/), [Rojo](https://rojo.space/), and Roblox Studio.
+## Themes
 
-```sh
-npm install
-npm run build
-rojo serve
-```
-
-Wrap your tree in `ThemeProvider`:
+Prism uses a light theme by default. Choose the dark theme and compact spacing through the provider:
 
 ```tsx
-import React from "@rbxts/react";
-import { Button, Divider, Stack, Text } from "@prism";
-import { ThemeProvider, theme } from "@prism/theme";
+import { DEFAULT_DARK_THEME, ThemeProvider } from "@3xjn/prism";
 
-export function ServerControls() {
-	return (
-		<ThemeProvider>
-			<Stack width={280} bg={theme.primary.main} radius="md" p="md" gap="sm">
-				<Text size="lg" color={theme.text.inverse} text="Server controls" />
-				<Divider color={theme.border.subtle} />
-				<Button variant="light" color="secondary" label="Save changes" />
-			</Stack>
-		</ThemeProvider>
-	);
-}
+<ThemeProvider theme={DEFAULT_DARK_THEME} density="compact">
+	<App />
+</ThemeProvider>;
 ```
 
-Pass `density="compact"` (or `theme={{ density: "compact" }}`) for tighter control heights and padding. Light and dark themes both honor it; default density stays as it is today.
+Components read colors, spacing, and motion settings from the provider. Use semantic colors such as `color="success"` on controls, and theme tokens or `Color3` values for concrete colors.
 
-## Components
+See [the design guide](DESIGN.md) for tokens and visual conventions.
 
-| Family           | Components                                                                                     |
-| ---------------- | ---------------------------------------------------------------------------------------------- |
-| Layout           | `Box`, `Stack`, `Divider`, `Card`, `ScrollArea`                                                |
-| Text and media   | `Text`, `Icon`, `Image`, `Avatar`                                                              |
-| Inputs and forms | `Button`, `Pressable`, `Input`, `KeybindInput`, `Checkbox`, `Switch`, `StepperInput`, `Slider` |
-| Feedback         | `Progress`, `CircularProgress`, `Backdrop`                                                     |
-| Navigation       | `SegmentedControl`, `Tabs`, `Menu`, `Select`                                                   |
-| Overlays         | `WorldPortal`, `Popover`, `Modal`, `Tooltip`, `Window`                                         |
-| Utility          | `Draggable`                                                                                    |
+## Layout and styling
 
-`@prism/theme` is providers and tokens, `@prism/motion` is motion hooks, and `@prism/utils` is unit helpers. `mountPrism` is the legacy string-tree bridge; use direct component composition for new Luau code.
+`Stack` arranges children and controls their spacing. Use `layoutOrder` to choose their order, `gap` for space between them, and `p` for padding.
 
-## Notes
+Sizes accept pixel numbers, percentage strings such as `"100%"`, and Roblox `UDim` / `UDim2` values. Spacing, radius, and text sizes also accept tokens from `"xs"` to `"xl"`.
 
-Copy goes through `text` and `label`. JSX text children are not typed on these `forwardRef` components.
-
-Intent props take strings (`color="success"`). Concrete color props take `theme.*` refs or raw `Color3` — not dotted strings like `"text.secondary"`.
-
-Numbers are pixel offsets, `"50%"` is scale, and `UDim` / `UDim2` pass through. Size tokens `"xs"` through `"xl"` cover spacing, radius, and text size.
-
-`slotProps` are last-write-wins escapes for instance properties the component API does not cover. Do not override a property the component is already animating.
+Set text through `text` or `label` props. To customize a Roblox property a component does not expose, use `slotProps`:
 
 ```tsx
 <Button
-	label="Danger"
+	label="Delete"
 	color="error"
 	variant="outline"
 	slotProps={{
@@ -157,50 +116,26 @@ Numbers are pixel offsets, `"50%"` is scale, and `UDim` / `UDim2` pass through. 
 />
 ```
 
-`useMotion` animates numbers, `Color3` values, and theme refs:
+Slot properties override component defaults. Avoid overriding properties the component animates; use `styleOverrides` for state-dependent styles.
 
-```tsx
-const animated = useMotion({
-	values: {
-		scale: hovered ? 1.04 : 1,
-		bg: hovered ? theme.primary.light : theme.background.surface,
-	},
-	transition: { duration: "fast", easing: "out" },
-});
-```
+## Components
 
-## Playground
+| Category       | Components                                                                                     |
+| -------------- | ---------------------------------------------------------------------------------------------- |
+| Layout         | `Box`, `Stack`, `Divider`, `Card`, `ScrollArea`                                                |
+| Text and media | `Text`, `Icon`, `Image`, `Avatar`                                                              |
+| Controls       | `Button`, `Pressable`, `Input`, `KeybindInput`, `Checkbox`, `Switch`, `StepperInput`, `Slider` |
+| Feedback       | `Progress`, `CircularProgress`, `Backdrop`                                                     |
+| Navigation     | `SegmentedControl`, `Tabs`, `Menu`, `Select`                                                   |
+| Overlays       | `WorldPortal`, `Popover`, `Modal`, `Tooltip`, `Window`                                         |
+| Utility        | `Draggable`                                                                                    |
 
-Stories live in `src/playground/stories` ([ui-labs](https://ui-labs.luau.page/)).
+Browse [the playground stories](src/playground/stories) for component examples. Run them in Studio with [UI Labs](https://ui-labs.luau.page/).
 
-## Scripts
+## Development
 
-```sh
-npm run typecheck
-npm run lint
-npm test
-npm run build
-npm run build:package
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, native builds, and checks.
 
-`npm run build` compiles the playground and tests. `npm run build:package` (also `prepack`) compiles the library into `out/lib` for the npm tarball. Generated `out/` stays gitignored — do not commit it.
+## License
 
-## Tests
-
-`npm test` compiles with `rbxtsc` and runs `@rbxts/jest` **inside a Roblox DataModel** via [`@isentinel/jest-roblox`](https://github.com/christopher-buss/jest-roblox-cli). It is not Vitest and not a Node `vm` fake DataModel.
-
-The CLI needs [Rojo](https://rojo.space/) on `PATH` (this repo pins it in `rokit.toml`) and **Node.js 24.12+**. GitHub Actions ubuntu has no Studio GUI, so CI uses Roblox Open Cloud Luau execution. Locally, `jest-roblox` uses a connected Studio plugin when present, otherwise Open Cloud.
-
-Set these when using Open Cloud (`JEST_`-prefixed names override the same unprefixed values):
-
-| Variable                    | Purpose                               |
-| --------------------------- | ------------------------------------- |
-| `ROBLOX_OPEN_CLOUD_API_KEY` | Open Cloud API key                    |
-| `ROBLOX_UNIVERSE_ID`        | Universe that receives the test place |
-| `ROBLOX_PLACE_ID`           | Place to publish and execute          |
-
-The key needs `universe-places:write` and `universe.place.luau-execution-session:write`. If those values are missing locally, `npm test` fails with that requirement instead of falling back to Node. GitHub Actions skips the Test step until `ROBLOX_OPEN_CLOUD_API_KEY` is set as a repository secret; typecheck, lint, and build still run.
-
-`__typecheck__.tsx` files stay compile-time contracts. They are not the runtime runner.
-
-`Window` overlay tests mount a `ScreenGui` with `ZIndexBehavior.Sibling`, the same host requirement as Modal.
+[MIT](LICENSE).

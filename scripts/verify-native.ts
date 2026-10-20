@@ -6,14 +6,14 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const output = path.join(root, "dist/native");
-const read = (relative) => fs.readFileSync(path.join(root, relative), "utf8");
-function walk(directory) {
+const read = (relative: string) => fs.readFileSync(path.join(root, relative), "utf8");
+function walk(directory: string): string[] {
 	return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
 		const full = path.join(directory, entry.name);
 		return entry.isDirectory() ? walk(full) : [full];
 	});
 }
-function run(command, args, cwd = root, quiet = false) {
+function run(command: string, args: string[], cwd = root, quiet = false): string {
 	const result = spawnSync(command, args, { cwd, encoding: "utf8" });
 	if (result.error) throw result.error;
 	if (result.status !== 0) throw new Error(`${command} failed:\n${result.stdout}\n${result.stderr}`);

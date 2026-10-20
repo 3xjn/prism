@@ -4,31 +4,37 @@ import { createHash } from "node:crypto";
 
 // Read the same public declarations as rbxtsc. This is a type-only emitter;
 // component execution remains entirely in Prism's compiled implementation.
-export function emitNativeTypes(repoRoot) {
+export function emitNativeTypes(repoRoot: string) {
 	const configPath = path.join(repoRoot, "tsconfig.package.json");
 	const config = ts.readConfigFile(configPath, ts.sys.readFile);
 	if (config.error) throw new Error(ts.flattenDiagnosticMessageText(config.error.messageText, "\n"));
 	const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, repoRoot);
 	const program = ts.createProgram(parsed.fileNames, parsed.options);
 	const checker = program.getTypeChecker();
-	const entry = program.getSourceFile(path.join(repoRoot, "src/lib/index.ts"));
-	const exports = checker.getExportsOfModule(checker.getSymbolAtLocation(entry));
-	const pending = new Map();
-	const emitted = new Map();
-	const unions = new Map();
-	const normalized = (value) => value.replace(/\\/g, "/");
+	const sourceEntry = program.getSourceFile(path.join(repoRoot, "src/lib/index.ts"));
+	if (!sourceEntry) throw new Error("Missing Prism entry point");
+	const entry: ts.SourceFile = sourceEntry;
+	const entrySymbol = checker.getSymbolAtLocation(entry);
+	if (!entrySymbol) throw new Error("Missing Prism module symbol");
+	const exports = checker.getExportsOfModule(entrySymbol);
+	const pending = new Map<string, ts.Symbol>();
+	const emitted = new Map<string, string>();
+	const unions = new Map<string, string>();
+	const normalized = (value: string) => value.replace(/\\/g, "/");
 	const libRoot = normalized(path.join(repoRoot, "src/lib")) + "/";
-	const quote = (value) => JSON.stringify(value);
+	const quote = (value: string) => JSON.stringify(value);
 	const keywords = new Set(
 		"and break continue do else elseif end export false for function if in local nil not or repeat return then true type until while".split(
 			" ",
 		),
 	);
-	const field = (name) => (/^[A-Za-z_][A-Za-z_0-9]*$/.test(name) && !keywords.has(name) ? name : `[${quote(name)}]`);
-	const resolve = (symbol) => (symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol);
-	const localDecl = (symbol) =>
+	const field = (name: string) =>
+		/^[A-Za-z_][A-Za-z_0-9]*$/.test(name) && !keywords.has(name) ? name : `[${quote(name)}]`;
+	const resolve = (symbol: ts.Symbol) =>
+		symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
+	const localDecl = (symbol: ts.Symbol | undefined) =>
 		symbol?.declarations?.find(
-			(decl) =>
+			(decl): decl is ts.InterfaceDeclaration | ts.TypeAliasDeclaration =>
 				normalized(decl.getSourceFile().fileName).startsWith(libRoot) &&
 				(ts.isInterfaceDeclaration(decl) || ts.isTypeAliasDeclaration(decl)),
 		);
@@ -38,7 +44,7 @@ export function emitNativeTypes(repoRoot) {
 		["Binding", "React.Binding"],
 		["Ref", "React.Ref"],
 	]);
-	function union(parts) {
+	function union(parts: string[]): string {
 		const unique = [...new Set(parts)].map((part) => (part.includes(" -> ") ? `(${part})` : part));
 		if (unique.length <= 64) return unique.join(" | ");
 		const name = `NativeUnion_${createHash("sha256").update(unique.join("|")).digest("hex").slice(0, 8)}`;
@@ -53,7 +59,7 @@ export function emitNativeTypes(repoRoot) {
 		return name;
 	}
 
-	function enqueue(symbol) {
+	function enqueue(symbol: ts.Symbol): string {
 		const name = symbol.getName();
 		const prior = pending.get(name);
 		if (prior && prior !== symbol) throw new Error(`Native type name collision: ${name}`);
@@ -61,13 +67,16 @@ export function emitNativeTypes(repoRoot) {
 		return name;
 	}
 
-	function convert(type, expanding, depth = 0) {
+	function convert(type: ts.Type, expanding?: ts.Symbol, depth = 0): string {
 		if (depth > 30) throw new Error(`Native type nesting exceeded: ${checker.typeToString(type)}`);
-		const recur = (next) => convert(next, undefined, depth + 1);
+		const recur = (next: ts.Type): string => convert(next, undefined, depth + 1);
 		const symbol = type.aliasSymbol || type.getSymbol();
 		const name = symbol?.getName();
 		const args =
-			type.aliasTypeArguments || (type.objectFlags & ts.ObjectFlags.Reference ? checker.getTypeArguments(type) : []);
+			type.aliasTypeArguments ||
+			((type as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference
+				? checker.getTypeArguments(type as ts.TypeReference)
+				: []);
 		const enumDecl = symbol?.declarations?.find((decl) =>
 			normalized(decl.getSourceFile().fileName).endsWith("/generated/enums.d.ts"),
 		);
@@ -77,7 +86,7 @@ export function emitNativeTypes(repoRoot) {
 			return `Enum.${scope?.name.text === "Enum" ? name : scope?.name.text}`;
 		}
 		if (name && nativeReact.has(name) && !localDecl(symbol)) {
-			const base = nativeReact.get(name);
+			const base = nativeReact.get(name)!;
 			return (name === "Binding" || name === "Ref") && args.length ? `${base}<${recur(args[0])}>` : base;
 		}
 		if (name === "RawSlotProps") {
@@ -95,16 +104,16 @@ export function emitNativeTypes(repoRoot) {
 				);
 			return `(styles: ${recur(args[0])}, context: ${recur(args[1])}) -> { ${fields.join(", ")} }`;
 		}
-		if (name && localDecl(symbol) && symbol !== expanding) {
+		if (symbol && name && localDecl(symbol) && symbol !== expanding) {
 			return enqueue(symbol) + (args.length ? `<${args.map(recur).join(", ")}>` : "");
 		}
-		if (type.flags & ts.TypeFlags.TypeParameter) return name;
+		if (type.flags & ts.TypeFlags.TypeParameter) return name ?? checker.typeToString(type);
 		if (type.flags & ts.TypeFlags.Any) return "any";
 		if (type.flags & ts.TypeFlags.Unknown) return "unknown";
 		if (type.flags & ts.TypeFlags.Never) return "never";
 		if (type.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Null | ts.TypeFlags.Void)) return "nil";
 		if (type.flags & ts.TypeFlags.BooleanLike) return "boolean";
-		if (type.flags & ts.TypeFlags.StringLiteral) return quote(type.value);
+		if (type.isStringLiteral()) return quote(type.value);
 		if (type.flags & ts.TypeFlags.StringLike) return "string";
 		if (type.flags & ts.TypeFlags.EnumLike) {
 			const member = symbol?.declarations?.find(ts.isEnumMember);
@@ -114,11 +123,13 @@ export function emitNativeTypes(repoRoot) {
 		if (type.flags & ts.TypeFlags.NumberLike) return "number";
 		if (type.isUnion()) return union(type.types.map(recur));
 		if (type.isIntersection()) return type.types.map((part) => `(${recur(part)})`).join(" & ");
-		if (checker.isArrayType(type)) return `{ ${recur(checker.getTypeArguments(type)[0])} }`;
-		if (checker.isTupleType(type)) return `{ ${[...new Set(checker.getTypeArguments(type).map(recur))].join(" | ")} }`;
+		if (checker.isArrayType(type)) return `{ ${recur(checker.getTypeArguments(type as ts.TypeReference)[0])} }`;
+		if (checker.isTupleType(type))
+			return `{ ${[...new Set(checker.getTypeArguments(type as ts.TypeReference).map(recur))].join(" | ")} }`;
 		// Roblox datatypes and classes remain native Luau engine types.
 		if (
 			name &&
+			symbol &&
 			symbol.declarations?.some((decl) => normalized(decl.getSourceFile().fileName).includes("/@rbxts/types/"))
 		) {
 			const text = checker.typeToString(type);
@@ -134,7 +145,7 @@ export function emitNativeTypes(repoRoot) {
 						const value = checker.getTypeOfSymbolAtLocation(param, decl || entry);
 						const rest = decl && ts.isParameter(decl) && decl.dotDotDotToken;
 						return rest
-							? `...${checker.isArrayType(value) ? recur(checker.getTypeArguments(value)[0]) : recur(value)}`
+							? `...${checker.isArrayType(value) ? recur(checker.getTypeArguments(value as ts.TypeReference)[0]) : recur(value)}`
 							: `${field(param.name || `arg${index}`)}: ${recur(value)}`;
 					});
 					const result = checker.getReturnTypeOfSignature(signature);
@@ -149,8 +160,11 @@ export function emitNativeTypes(repoRoot) {
 			let value;
 			if (prop.name === "children") value = "React.Node";
 			else if (prop.name === "Event" || prop.name === "Change") {
+				const declaration = prop.valueDeclaration;
 				const instance =
-					prop.valueDeclaration?.type?.getText().match(/InstanceProps<([A-Za-z0-9_]+)>/)?.[1] || "Instance";
+					(declaration && ts.isPropertySignature(declaration)
+						? declaration.type?.getText().match(/InstanceProps<([A-Za-z0-9_]+)>/)?.[1]
+						: undefined) || "Instance";
 				value = `InstanceEventMap<${instance}> | nil`;
 			} else {
 				try {
@@ -158,7 +172,9 @@ export function emitNativeTypes(repoRoot) {
 						checker.getTypeOfSymbolAtLocation(prop, prop.valueDeclaration || prop.declarations?.[0] || entry),
 					);
 				} catch (error) {
-					throw new Error(`${name || checker.typeToString(type)}.${prop.name}: ${error.message}`);
+					throw new Error(
+						`${name || checker.typeToString(type)}.${prop.name}: ${error instanceof Error ? error.message : String(error)}`,
+					);
 				}
 			}
 			if (prop.flags & ts.SymbolFlags.Optional) value = `(${value})?`;
@@ -170,7 +186,7 @@ export function emitNativeTypes(repoRoot) {
 		throw new Error(`Unsupported public native type: ${checker.typeToString(type)} (${type.flags})`);
 	}
 
-	const components = [];
+	const components: string[] = [];
 	for (const exported of exports) {
 		const symbol = resolve(exported);
 		const decl = localDecl(symbol);
@@ -191,7 +207,7 @@ export function emitNativeTypes(repoRoot) {
 		} else if (exported.name === "ThemeProvider") {
 			const signature = type.getCallSignatures()[0];
 			const param = signature.getParameters()[0];
-			const propsType = checker.getTypeOfSymbolAtLocation(param, param.valueDeclaration);
+			const propsType = checker.getTypeOfSymbolAtLocation(param, param.valueDeclaration || entry);
 			components.push(`ThemeProvider: (${convert(propsType)}) -> React.ReactElement`);
 		} else if (exported.name === "SUPPORTED_LUCIDE_ICON_NAMES") {
 			components.push("SUPPORTED_LUCIDE_ICON_NAMES: { string }");
@@ -215,6 +231,7 @@ export function emitNativeTypes(repoRoot) {
 	}
 	for (const [name, symbol] of pending) {
 		const decl = localDecl(symbol);
+		if (!decl) throw new Error(`Missing native type declaration: ${name}`);
 		const params = decl.typeParameters;
 		const generics = params?.length
 			? `<${params.map((param) => param.name.text + (param.default ? ` = ${convert(checker.getTypeFromTypeNode(param.default))}` : "")).join(", ")}>`

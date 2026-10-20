@@ -1,81 +1,152 @@
 # Prism for Luau
 
-Prism's native package exports the real components for normal React-Luau composition. Use component values, keyed children, hooks, refs, bindings, and callbacks. No string component names or bridge node format are involved.
+Build Roblox interfaces with Prism and React-Luau. The native package includes all Prism components, Luau types, and the React modules you need to render them.
 
-## Install
+## Installation
 
-Build the native package from a source checkout:
+Download the `prism-native` artifact from a successful [CI build](https://github.com/3xjn/prism/actions/workflows/ci.yml). It contains a Studio model and a source archive. Native packages are not published to Wally yet.
 
-```sh
-npm ci
-npm run build:native
-rojo build dist/native/default.project.json -o dist/Prism.rbxm
+### Roblox Studio
+
+Insert `Prism.rbxm` into `ReplicatedStorage`. The resulting module should be named `Prism`.
+
+### Rojo
+
+Extract `prism-native.zip` into `vendor/prism`, then add Prism to your project's `ReplicatedStorage`:
+
+```json
+"ReplicatedStorage": {
+	"$className": "ReplicatedStorage",
+	"Prism": { "$path": "vendor/prism/src" }
+}
 ```
 
-Insert `Prism.rbxm` in your project, or map `dist/native/src` into your Rojo project as `ReplicatedStorage.Prism`. The whole directory must travel together. The consumer needs no npm or TypeScript build. `dist/native` also contains a Wally manifest and can be packaged with `wally package` from that directory; this build does not publish it to a registry.
+Keep the entire `src` folder together. Your game does not need npm or a TypeScript compiler to use it.
 
-The package includes the exact React/ReactRoblox dependency graph from Prism's lockfile. Its public `React` and `ReactRoblox` child modules resolve to the runtime used inside the components. Use these imports throughout a native Prism tree. A separately installed React or renderer may use a different dispatcher/context; do not mix runtime copies. Applications that already own a React dependency graph should continue using the npm/roblox-ts integration until a compatible external-runtime package target is available.
+To build the package yourself, follow the [contributor guide](https://github.com/3xjn/prism/blob/master/CONTRIBUTING.md#native-package).
 
-## Compose
+## Quick start
+
+Create a LocalScript in `StarterPlayerScripts`:
 
 ```luau
+local Players = game:GetService("Players")
 local Package = game:GetService("ReplicatedStorage").Prism
 local React = require(Package.React)
 local ReactRoblox = require(Package.ReactRoblox)
 local Prism = require(Package)
 local e = React.createElement
 
-local function Preferences()
-    local enabled, setEnabled = React.useState(false)
+local function Counter()
+	local count, setCount = React.useState(0)
 
-    return e(Prism.Stack, { width = "100%", gap = "sm" }, {
-        Heading = e(Prism.Text, { text = "Preferences", size = "lg" }),
-        Notifications = e(Prism.Switch, {
-            label = "Notifications",
-            checked = enabled,
-            onChange = setEnabled,
-        }),
-    })
+	return e(Prism.Stack, { width = 280, p = "md", gap = "sm" }, {
+		Count = e(Prism.Text, {
+			text = "Count: " .. count,
+			size = "lg",
+			layoutOrder = 1,
+		}),
+		Add = e(Prism.Button, {
+			label = "Add one",
+			layoutOrder = 2,
+			onPress = function()
+				setCount(count + 1)
+			end,
+		}),
+	})
 end
 
-local root = ReactRoblox.createRoot(host)
-root:render(e(Prism.ThemeProvider, { density = "compact" }, {
-    Content = e(Preferences),
-}))
+local screen = Instance.new("ScreenGui")
+screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screen.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Release the tree when its owner closes:
-root:unmount()
+local root = ReactRoblox.createRoot(screen)
+root:render(e(Prism.ThemeProvider, {}, {
+	Counter = e(Counter),
+}))
 ```
 
-`host` is an application-owned GUI container. React owns its mounted descendants. For portal components such as Window and Modal, use a ScreenGui with `ZIndexBehavior.Sibling`. Native Roblox host elements use Roblox class names (`"Frame"`, `"TextButton"`) and native React event keys; Prism component props use the same `onPress`, `onChange`, `Event`, `Change`, `styleOverrides`, and `slotProps` as their TypeScript counterparts.
+When you remove the interface, call `root:unmount()` and `screen:Destroy()`.
 
-All public Prism components are available, including Window, Tabs, Avatar, and the form controls. The same component implementations supply the same defaults, sizing, interaction, and motion. The old mountPrism API remains a legacy npm export; native applications should use direct composition.
+Use `Package.React` and `Package.ReactRoblox` throughout this UI. They share the React runtime used by Prism. Mixing them with another React installation can break hooks and context. If your app already uses its own React installation, use the npm integration for now.
+
+## Working with state
+
+Pass the current value to a control and update it in its callback:
+
+```luau
+local function Notifications()
+	local enabled, setEnabled = React.useState(false)
+
+	return e(Prism.Switch, {
+		label = "Notifications",
+		checked = enabled,
+		onChange = setEnabled,
+	})
+end
+```
+
+`Input` uses `value` and `onChange`. `Button` uses `onPress`. Components accept React children, refs, and bindings just like other React-Luau components.
+
+## Themes
+
+Choose a dark theme or compact spacing on the provider:
+
+```luau
+root:render(e(Prism.ThemeProvider, {
+	theme = Prism.DEFAULT_DARK_THEME,
+	density = "compact",
+}, {
+	Counter = e(Counter),
+}))
+```
+
+Use semantic control colors such as `color = "success"`. For concrete colors, pass a theme token such as `Prism.theme.text.primary` or a `Color3` value.
+
+## Layout and styling
+
+`Stack` owns the spacing between children. Set `layoutOrder` on each child to control the order, `gap` for spacing, and `p` for padding.
+
+Sizes accept pixels (`280`), percentages (`"100%"`), and `UDim` / `UDim2` values. Spacing, radius, and text sizes also accept tokens from `"xs"` to `"xl"`.
+
+Use `slotProps` to set a Roblox property a component does not expose:
+
+```luau
+e(Prism.Button, {
+	label = "Delete",
+	color = "error",
+	variant = "outline",
+	slotProps = {
+		root = { LayoutOrder = 10 },
+		stroke = { Thickness = 2 },
+	},
+})
+```
+
+Slot properties override component defaults. Avoid overriding animated properties; use `styleOverrides` for state-dependent styles.
+
+`Window` and `Modal` need a `ScreenGui` with `ZIndexBehavior.Sibling`, as used in the quick start.
 
 ## Types
 
-The build emits public `export type` definitions from the TypeScript contracts. They cover component props, slot names, theme overrides, style overrides, and callback signatures. No generated type file needs to be edited by hand.
+Annotate prop tables to get field completion and catch invalid values:
 
 ```luau
-local props: Prism.ButtonProps = {
-    label = "Save",
-    disabled = false,
-    onPress = function()
-        print("Saved")
-    end,
+local saveProps: Prism.ButtonProps = {
+	label = "Save",
+	disabled = false,
+	onPress = function()
+		print("Saved")
+	end,
 }
-local button = e(Prism.Button, props)
+
+local saveButton = e(Prism.Button, saveProps)
 ```
 
-Explicit prop annotations catch invalid values even when the underlying React createElement signature does not check a particular component's props. Raw instance slot values are deliberately dynamic `any` maps: these are engine property/binding escape hatches, with checked slot names. Event maps retain the owning instance type and allow variable engine event arguments. Luau cannot express every TypeScript mapped/conditional type: useMotion returns a dictionary of number/Color3 values, and styled accepts a partial preset dictionary while retaining the component's prop type. These are type-surface differences, not alternate runtime behaviors.
+Every component exports a corresponding props type. Theme overrides, style overrides, and callback signatures are typed too.
 
-Use `Prism.useMotion` inside a Luau React component. Motion durations and easing still come from ThemeProvider. For immediate updates, override the theme's `motion.duration` values to zero; there is no second renderer or animation mode.
+Slot names are checked, but the Roblox properties inside each slot are dynamic. `styled` presets also accept dynamic fields, and `useMotion` returns a dictionary of numbers and colors. Annotate component prop tables when you need stricter checks.
 
-## Development checks
+## More examples
 
-```sh
-npm run verify:native
-```
-
-The verifier rebuilds the package, checks component/type coverage and runtime dependency identity/layout, compiles its Luau files using Lune, and analyzes the generated API and a handwritten consumer with luau-lsp. Negative fixtures check that invalid props, callbacks, and slot values are rejected. It also builds the Rojo model and Wally archive. The first check run downloads Roblox type definitions from a pinned luau-lsp commit; later runs reuse the cached file in `dist`.
-
-`native/examples/Preferences.luau` is a handwritten consumer fixture with a controlled input, state updates, keyed children, style overrides, a styled preset, and cleanup. Real GUI behavior still needs to be exercised in an isolated Studio place; package checks alone do not establish rendered appearance or engine interaction behavior.
+See [Preferences.luau](https://github.com/3xjn/prism/blob/master/native/examples/Preferences.luau) for a form with inputs, conditional content, and custom button styles.
