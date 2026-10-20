@@ -42,9 +42,9 @@ The npm package includes compiled Luau. Import components directly from `@3xjn/p
 
 ### Luau
 
-Use the native package with React-Luau. It includes Prism, React, ReactRoblox, and Luau types.
+Use the Luau package with React-Luau. It includes Prism, React, ReactRoblox, and Luau types.
 
-See [Prism for Luau](native/README.md) for installation and a complete example.
+See [Prism for Luau](bindings/README.md) for installation and a complete example.
 
 ## Quick start
 
@@ -134,7 +134,7 @@ Browse [the playground stories](src/playground/stories) for component examples. 
 
 ## Development
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, native builds, and checks.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, Luau builds, and checks.
 
 ## License
 

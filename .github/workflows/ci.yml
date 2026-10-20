@@ -49,16 +49,21 @@ jobs:
       - name: Setup Rokit
         uses: CompeyDev/setup-rokit@v0.1.2
 
-      - name: Verify native Luau package
-        run: npm run verify:native
+      - name: Package Luau bindings
+        run: npm run package:bindings
 
-      - name: Upload native Luau package
+      - name: Typecheck Luau bindings
+        run: |
+          curl --fail --location https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/5c14dad8d4e82357074e5553244d3621797ff876/scripts/globalTypes.d.luau --output dist/robloxTypes.d.luau
+          npm run typecheck:bindings
+
+      - name: Upload Luau bindings
         uses: actions/upload-artifact@v4
         with:
-          name: prism-native
+          name: prism-bindings
           path: |
             dist/Prism.rbxm
-            dist/prism-native.zip
+            dist/prism-bindings.zip
 
       - name: Test
         if: ${{ env.ROBLOX_OPEN_CLOUD_API_KEY != '' }}

@@ -15,49 +15,49 @@ Connect Studio to Rojo to open the playground. Component stories live in `src/pl
 
 ## Commands
 
-| Command                  | Purpose                                          |
-| ------------------------ | ------------------------------------------------ |
-| `npm run build`          | Compile the playground and tests                 |
-| `npm run build:package`  | Compile the npm library into `out/lib`           |
-| `npm run build:native`   | Build the native source package in `dist/native` |
-| `npm run typecheck`      | Check library and build-script types             |
-| `npm run lint`           | Lint library source                              |
-| `npm run format`         | Check formatting                                 |
-| `npm run verify:package` | Check npm package contents                       |
-| `npm run verify:native`  | Check and package native Luau output             |
-| `npm test`               | Run tests in a Roblox DataModel                  |
+| Command                      | Purpose                                          |
+| ---------------------------- | ------------------------------------------------ |
+| `npm run build`              | Compile the playground and tests                 |
+| `npm run build:package`      | Compile the npm library into `out/lib`           |
+| `npm run build:bindings`     | Build the Luau package and Studio model          |
+| `npm run package:bindings`   | Build the model and Wally source archive         |
+| `npm run typecheck`          | Check library and build-script types             |
+| `npm run lint`               | Lint library source                              |
+| `npm run format`             | Check formatting                                 |
+| `npm run verify:package`     | Check npm package contents                       |
+| `npm run typecheck:bindings` | Check Luau declarations and the consumer example |
+| `npm test`                   | Run tests in a Roblox DataModel                  |
 
 Generated `out/` and `dist/` directories are gitignored. The npm `prepack` script builds `out/lib` automatically.
 
-## Native package
+## Luau bindings
 
 ```sh
-npm run build:native
-rojo build dist/native/default.project.json -o dist/Prism.rbxm
+npm run package:bindings
 ```
 
-`dist/native` contains the source package and a Wally manifest. To create its archive:
+This uses rbxtsc to compile the library, Rojo to build `dist/Prism.rbxm`, and Wally to create `dist/prism-bindings.zip`. The source package is in `dist/bindings`.
 
-```sh
-cd dist/native
-wally package --output ../prism-native.zip
-```
-
-These commands build local artifacts; they do not publish to a registry. CI runs `npm run verify:native` and uploads both the model and archive as `prism-native`.
+These commands build local artifacts; they do not publish to a registry. CI uploads both the model and archive as `prism-bindings`.
 
 ### How it works
 
-The scripts in `scripts/*.ts` run directly on Node.js. `tsconfig.scripts.json` checks them separately from the Roblox source.
+`scripts/package-bindings.ts` stages the compiled library, binding files, and runtime dependencies reported by `npm ls --omit=dev`. It also includes dependency licenses. It runs directly on Node.js; `tsconfig.scripts.json` checks its types.
 
-`build-native.ts` copies Prism's compiled components and the React dependency graph from the lockfile. `native-types.ts` uses the TypeScript compiler API to generate public Luau types. The hand-written entry modules live in `native/`.
+`bindings/init.luau` exposes the components and public types. Maintain `bindings/types.luau` alongside changes to TypeScript props, themes, and callbacks. The declarations are checked in and require no generation step.
 
-All native components use the bundled React runtime. Keep its dependency graph together when changing the package layout. The native API uses direct React component composition; `mountPrism` remains a legacy npm export.
+All components use the bundled React runtime. Keep its dependency graph together when changing the package layout. `mountPrism` remains a legacy npm export.
 
 ### Checks
 
-`verify-native.ts` checks component exports, generated types, source parity, and dependency versions. It compiles Luau with Lune, checks positive and negative type fixtures with luau-lsp, then builds the Rojo model and Wally archive. Roblox definitions are downloaded from a pinned luau-lsp revision and cached in `dist`.
+CI calls Rojo and luau-lsp directly to check the binding declarations and `bindings/examples/Preferences.luau`. To run the same check locally after building:
 
-The consumer example is `native/examples/Preferences.luau`. Package checks cover syntax, types, and packaging; inspect rendering and interactions separately in Studio.
+```sh
+curl --fail --location https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/5c14dad8d4e82357074e5553244d3621797ff876/scripts/globalTypes.d.luau --output dist/robloxTypes.d.luau
+npm run typecheck:bindings
+```
+
+Inspect rendering and interactions separately in Studio.
 
 ## Runtime tests
 

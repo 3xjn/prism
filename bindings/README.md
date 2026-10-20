@@ -1,10 +1,10 @@
 # Prism for Luau
 
-Build Roblox interfaces with Prism and React-Luau. The native package includes all Prism components, Luau types, and the React modules you need to render them.
+Build Roblox interfaces with Prism and React-Luau. The Luau package includes all Prism components, Luau types, and the React modules you need to render them.
 
 ## Installation
 
-Download the `prism-native` artifact from a successful [CI build](https://github.com/3xjn/prism/actions/workflows/ci.yml). It contains a Studio model and a source archive. Native packages are not published to Wally yet.
+Download the `prism-bindings` artifact from a successful [CI build](https://github.com/3xjn/prism/actions/workflows/ci.yml). It contains a Studio model and a source archive. Luau packages are not published to Wally yet.
 
 ### Roblox Studio
 
@@ -12,7 +12,7 @@ Insert `Prism.rbxm` into `ReplicatedStorage`. The resulting module should be nam
 
 ### Rojo
 
-Extract `prism-native.zip` into `vendor/prism`, then add Prism to your project's `ReplicatedStorage`:
+Extract `prism-bindings.zip` into `vendor/prism`, then add Prism to your project's `ReplicatedStorage`:
 
 ```json
 "ReplicatedStorage": {
@@ -23,7 +23,7 @@ Extract `prism-native.zip` into `vendor/prism`, then add Prism to your project's
 
 Keep the entire `src` folder together. Your game does not need npm or a TypeScript compiler to use it.
 
-To build the package yourself, follow the [contributor guide](https://github.com/3xjn/prism/blob/master/CONTRIBUTING.md#native-package).
+To build the package yourself, follow the [contributor guide](https://github.com/3xjn/prism/blob/master/CONTRIBUTING.md#luau-bindings).
 
 ## Quick start
 
@@ -149,4 +149,4 @@ Slot names are checked, but the Roblox properties inside each slot are dynamic. 
 
 ## More examples
 
-See [Preferences.luau](https://github.com/3xjn/prism/blob/master/native/examples/Preferences.luau) for a form with inputs, conditional content, and custom button styles.
+See [Preferences.luau](https://github.com/3xjn/prism/blob/master/bindings/examples/Preferences.luau) for a form with inputs, conditional content, and custom button styles.
