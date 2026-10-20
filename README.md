@@ -6,7 +6,26 @@
 
 Prism is a Roblox TypeScript UI kit for [`@rbxts/react`](https://github.com/roblox-ts/react). Components share a token theme and Roblox-native sizing (`UDim`, offsets, and scale).
 
-Not published to npm yet — the package name is `@3xjn/prism`. Tokens and visual language are in [DESIGN.md](DESIGN.md).
+The npm package is `@3xjn/prism`. Tokens and visual language are in [DESIGN.md](DESIGN.md).
+
+## Use from Luau
+
+The native package exports the actual components for React-Luau composition, with generated public Luau types. Build it with `npm run build:native`, then insert the generated Rojo model or map `dist/native/src` into your project. Consumers do not need TypeScript or npm. A Wally packaging manifest is included in the output; no native registry release is published by the build.
+
+```luau
+local Package = game:GetService("ReplicatedStorage").Prism
+local React = require(Package.React)
+local ReactRoblox = require(Package.ReactRoblox)
+local Prism = require(Package)
+
+local root = ReactRoblox.createRoot(host)
+root:render(React.createElement(Prism.ThemeProvider, {}, {
+	Save = React.createElement(Prism.Button, { label = "Save", onPress = save }),
+}))
+-- root:unmount() when the owner releases the UI
+```
+
+Use the package's React and ReactRoblox child modules so native consumers and Prism share the same pinned runtime. See [native installation, typing, and examples](native/README.md) for the complete contract, including integration with projects that already own a React runtime.
 
 ## Use in another rbxts project
 
@@ -114,7 +133,7 @@ Pass `density="compact"` (or `theme={{ density: "compact" }}`) for tighter contr
 | Overlays         | `WorldPortal`, `Popover`, `Modal`, `Tooltip`, `Window`                                         |
 | Utility          | `Draggable`                                                                                    |
 
-`@prism/theme` is providers and tokens, `@prism/motion` is motion hooks, `@prism/utils` is unit helpers, and `mountPrism` is the Luau bridge.
+`@prism/theme` is providers and tokens, `@prism/motion` is motion hooks, and `@prism/utils` is unit helpers. `mountPrism` is the legacy string-tree bridge; use direct component composition for new Luau code.
 
 ## Notes
 

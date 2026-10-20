@@ -47,8 +47,18 @@ jobs:
         run: npm run build
 
       - name: Setup Rokit
-        if: ${{ env.ROBLOX_OPEN_CLOUD_API_KEY != '' }}
         uses: CompeyDev/setup-rokit@v0.1.2
+
+      - name: Verify native Luau package
+        run: npm run verify:native
+
+      - name: Upload native Luau package
+        uses: actions/upload-artifact@v4
+        with:
+          name: prism-native
+          path: |
+            dist/Prism.rbxm
+            dist/prism-native.zip
 
       - name: Test
         if: ${{ env.ROBLOX_OPEN_CLOUD_API_KEY != '' }}
