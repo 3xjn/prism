@@ -1,6 +1,7 @@
 {
 	"name": "@3xjn/prism",
 	"version": "0.1.0",
+	"license": "MIT",
 	"description": "Roblox TypeScript UI kit for @rbxts/react",
 	"main": "out/lib/init.luau",
 	"types": "out/lib/index.d.ts",
@@ -27,8 +28,11 @@
 		"test": "rbxtsc --type game && node scripts/patch-runtime-lib.cjs && jest-roblox",
 		"build": "rbxtsc --type game",
 		"build:package": "rbxtsc --type package -p tsconfig.package.json",
+		"build:bindings": "npm run build:package && node scripts/package-bindings.ts && rojo build dist/bindings/default.project.json --output dist/Prism.rbxm",
+		"package:bindings": "npm run build:bindings && wally package --project-path dist/bindings --output dist/prism-bindings.zip",
+		"typecheck:bindings": "rojo sourcemap bindings/check.project.json --absolute --output dist/bindings-sourcemap.json && luau-lsp analyze --platform=roblox --definitions=dist/robloxTypes.d.luau --sourcemap=dist/bindings-sourcemap.json --ignore=**/node_modules/** --ignore=**/_runtime/** --ignore=**/_lib/** dist/bindings/src/init.luau dist/bindings/src/types.luau dist/bindings/src/React.luau dist/bindings/src/ReactRoblox.luau bindings/examples/Preferences.luau",
 		"prepack": "npm run build:package",
-		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json && tsc -p tsconfig.scripts.json",
 		"lint": "eslint src --ext .ts,.tsx",
 		"format": "prettier --check .",
 		"verify:package": "node scripts/verify-package.cjs"
@@ -44,6 +48,7 @@
 		"@rbxts/jest-globals": "3.16.0-ts.1",
 		"@rbxts/types": "1.0.916",
 		"@rbxts/ui-labs": "2.4.2",
+		"@types/node": "24.19.2",
 		"@typescript-eslint/parser": "8.58.2",
 		"eslint": "8.57.1",
 		"eslint-plugin-roblox-ts": "1.4.0",

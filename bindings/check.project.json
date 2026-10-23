@@ -1,0 +1,17 @@
+{
+	"name": "PrismBindings",
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"$className": "ReplicatedStorage",
+			"Prism": { "$path": "../dist/bindings/src" }
+		},
+		"StarterPlayer": {
+			"$className": "StarterPlayer",
+			"StarterPlayerScripts": {
+				"$className": "StarterPlayerScripts",
+				"Preferences": { "$path": "examples/Preferences.luau" }
+			}
+		}
+	}
+}
